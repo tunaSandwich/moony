@@ -6,15 +6,24 @@ Automated daily spending tracker that connects to your bank via Plaid, computes 
 - **Plaid integration**: Link your bank, exchange public token, and fetch accounts/transactions.
 - **Daily scheduler**: Cron-based job runs at a configurable local time to compute and send updates.
 - **WhatsApp/SMS messaging**: Sends a friendly daily summary through Twilio.
-- **Minimal UI**: Static page to initiate Plaid Link and save an access token locally for development.
+- **Modern Web UI**: React + TypeScript frontend with Tailwind CSS design system.
 - **Simple calculations**: Current month total, last month total, and last month daily average.
 
 ### Tech Stack
+
+#### Backend
 - Node.js + TypeScript (ESM) with `tsx`
 - Express for APIs and static hosting
 - Plaid SDK for banking data
 - Twilio SDK for WhatsApp/SMS
 - node-cron for scheduling
+
+#### Frontend
+- React 19 + TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- Zustand for state management
+- React Hook Form + Zod for forms
 
 ---
 
@@ -146,6 +155,31 @@ npm run test:whatsapp      # send WhatsApp hello + spending update
 ## Security Notes
 - Never commit real access tokens or secrets.
 - `src/temp_access_token.json` is for development convenience; use environment variables/secrets in production.
+
+---
+
+## Documentation
+
+### Frontend
+- **[Web Application Guide](./documentation/WEB_README.md)** - Complete frontend setup, development guide, and component documentation
+- **[Design Specification](./docs/design_spec.md)** - UI/UX design system and component specifications  
+- **[Frontend Technical Specification](./docs/frontend_spec.md)** - Detailed technical implementation guide
+
+### Backend
+- Current README (above) covers the Node.js/TypeScript backend setup and API documentation
+
+---
+
+## Project Structure
+
+```
+budget_pal/
+├── apps/
+│   └── web/                    # React frontend application
+├── docs/                       # Design and technical specifications
+├── documentation/              # Setup and development guides
+└── src/                       # Node.js backend application
+```
 
 ---
 
