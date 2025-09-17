@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:15
     container_name: budgeting_db
+    env_file: ../../.env.development  # Point to top level
     environment:
       POSTGRES_USER: lucas
       POSTGRES_PASSWORD: dev_password_123
