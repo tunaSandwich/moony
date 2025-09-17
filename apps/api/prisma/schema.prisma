@@ -1,15 +1,66 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
+
+// Seed configuration
+// Run with: npm run db:seed
+// Clear and seed: npm run db:seed --clear
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  inviteCode        String   @unique @map("invite_code")
+  plaidAccessToken  String?  @map("plaid_access_token")
+  firstName         String   @map("first_name")
+  lastName          String   @map("last_name")
+  phoneNumber       String   @unique @map("phone_number")
+  phoneVerified     Boolean  @default(false) @map("phone_verified")
+  optOutStatus      String   @default("opted_in") @map("opt_out_status")
+  isActive          Boolean  @default(true) @map("is_active")
+  currency          String   @default("USD")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  spendingGoals     SpendingGoal[]
+  dailyMessages     DailyMessage[]
+
+  @@map("users")
+}
+
+model SpendingGoal {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  monthlyLimit   Decimal  @map("monthly_limit") @db.Decimal(10,2)
+  monthStartDay  Int      @map("month_start_day")
+  periodStart    DateTime @map("period_start") @db.Date
+  periodEnd      DateTime @map("period_end") @db.Date
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyMessages  DailyMessage[]
+
+  @@map("spending_goals")
+}
+
+model DailyMessage {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  spendingGoalId   String    @map("spending_goal_id")
+  messageDate      DateTime  @map("message_date") @db.Date
+  messageType      String    @map("message_type")
+  messageData      Json      @map("message_data")
+  sentAt           DateTime? @map("sent_at")
+  deliveryStatus   String    @default("pending") @map("delivery_status")
+  twilioMessageSid String?   @map("twilio_message_sid")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spendingGoal SpendingGoal @relation(fields: [spendingGoalId], references: [id], onDelete: Cascade)
+
+  @@map("daily_messages")
 }

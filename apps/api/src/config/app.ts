@@ -13,8 +13,10 @@ import {
 } from '../middleware/security.js';
 import routes from '../routes/index.js';
 
-// Load environment variables
-dotenv.config();
+// Load environment-specific configuration
+const nodeEnv = process.env.NODE_ENV || 'development';
+dotenv.config({ path: `.env.${nodeEnv}` });
+dotenv.config({ path: '.env' }); // fallback for shared variables
 
 export const createApp = (): express.Application => {
   const app = express();

@@ -2,7 +2,10 @@ import dotenv from 'dotenv';
 import { logger } from './utils/logger.js';
 import { SchedulerService } from '../../packages/services/schedulerService.js';
 
-dotenv.config();
+// Load environment-specific configuration
+const nodeEnv = process.env.NODE_ENV || 'development';
+dotenv.config({ path: `.env.${nodeEnv}` });
+dotenv.config({ path: '.env' }); // fallback for shared variables
 
 const scheduler = new SchedulerService();
 
