@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { logger } from '../../../../packages/utils/logger.js';
+import { logger } from '@logger';
 import { 
   globalErrorHandler, 
   notFoundHandler 

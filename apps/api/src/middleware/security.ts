@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../../../../packages/utils/logger.js';
+import { logger } from '@logger';
 import { AppError } from './errorHandler.js';
 
 // Simple in-memory rate limiter (in production, use Redis)

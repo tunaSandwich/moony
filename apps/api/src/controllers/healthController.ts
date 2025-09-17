@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { PlaidService } from '../../../../packages/services/plaidService.js';
-import { logger } from '../../../../packages/utils/logger.js';
+import { PlaidService } from '@services/plaidService';
+import { logger } from '@logger';
 import { HealthStatus, ApiResponse } from '../types/index.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 

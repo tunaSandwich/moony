@@ -1,5 +1,5 @@
 import { createApp, getServerConfig } from './src/config/app.js';
-import { logger } from '../../packages/utils/logger.js';
+import { logger } from '@logger';
 
 async function startServer(): Promise<void> {
   try {

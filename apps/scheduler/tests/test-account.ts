@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import { formatISO, subDays } from 'date-fns';
 import dotenv from 'dotenv';
-import { PlaidService } from '../../../packages/services/plaidService.js';
-import { logger } from '../../../packages//utils/logger.js';
+import { PlaidService } from '@services/plaidService';
+import { logger } from '@logger';
 
 dotenv.config();
 

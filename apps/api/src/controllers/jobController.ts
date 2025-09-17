@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { SchedulerService } from '../../../../packages/services/schedulerService.js';
-import { logger } from '../../../../packages/utils/logger.js';
+import { SchedulerService } from '@services/schedulerService';
+import { logger } from '@logger';
 import { ApiResponse, RunJobResponse } from '../types/index.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 

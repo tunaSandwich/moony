@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../../../../packages/utils/logger.js';
+import { logger } from '@logger';
 import { ApiResponse } from '../types/index.js';
 
 export class AppError extends Error {

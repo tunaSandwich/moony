@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { PlaidService } from '../../../../packages/services/plaidService.js';
-import { logger } from '../../../../packages/utils/logger.js';
+import { PlaidService } from '@services/plaidService';
+import { logger } from '@logger';
 import { ApiResponse, LinkTokenRequest, ExchangeTokenRequest } from '../types/index.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 
