@@ -6,10 +6,17 @@
   "type": "module",
   "scripts": {
     "start": "concurrently \"npm run start:server\" \"npm run start:scheduler\"",
+    "start:all": "concurrently \"npm run start:server\" \"npm run start:web\"",
     "dev": "tsx watch apps/scheduler/index.ts",
+    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
     "start:schedular": "tsx apps/scheduler/index.ts",
     "start:server": "tsx apps/api/server.ts",
+    "start:web": "cd apps/web && npm run dev -- --port 3001 --host",
     "dev:server": "tsx watch apps/api/server.ts",
+    "dev:web": "cd apps/web && npm run dev -- --port 3001 --host",
+    "build:web": "cd apps/web && npm run build",
+    "test:web": "cd apps/web && npm run test",
+    "lint:web": "cd apps/web && npm run lint",
     "start:now": "tsx apps/scheduler/tests/test-run-daily-now.ts",
     "run:now:local": "curl -sS -X POST http://localhost:3000/api/run-now",
     "run:now:remote": "curl -sS -X POST $APP_URL/api/run-now",
@@ -22,12 +29,14 @@
     "tree": "node scripts/print-tree.js ."
   },
   "dependencies": {
+    "@prisma/client": "^6.16.2",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.0.3",
     "express": "^4.19.2",
     "plaid": "^11.0.0",
+    "prisma": "^6.16.2",
     "twilio": "^4.19.0"
   },
   "devDependencies": {

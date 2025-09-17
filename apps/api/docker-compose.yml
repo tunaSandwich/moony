@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: budgeting_db
+    environment:
+      POSTGRES_USER: lucas
+      POSTGRES_PASSWORD: dev_password_123
+      POSTGRES_DB: budgeting_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
