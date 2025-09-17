@@ -1,85 +1,67 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'node:path';
-import fs from 'node:fs/promises';
-import dotenv from 'dotenv';
-import { PlaidService } from '../../packages/services/plaidService.js';
-import { SchedulerService } from '../../packages/services/schedulerService.js';
+import { createApp, getServerConfig } from './src/config/app.js';
 import { logger } from '../../packages/utils/logger.js';
 
-dotenv.config();
-
-const app = express();
-const plaidService = new PlaidService();
-
-app.use(cors());
-app.use(express.json());
-
-// const publicDir = path.join(process.cwd(), 'src', 'public');
-// app.use(express.static(publicDir));
-
-// Simple health endpoint
-app.get('/health', (_req, res) => {
-  res.json({ ok: true });
-});
-
-// Trigger the daily job immediately (for live testing)
-app.post('/api/run-now', (_req, res) => {
+async function startServer(): Promise<void> {
   try {
-    const scheduler = new SchedulerService();
-    // Fire-and-forget to avoid request timeouts at the edge
-    void scheduler.runDailyJob();
-    res.status(202).json({ ok: true, started: true });
+    // Create Express application
+    const app = createApp();
+    
+    // Get server configuration
+    const { PORT, HOST } = getServerConfig();
+
+    // Start server
+    const server = app.listen(PORT, HOST, () => {
+      logger.info(`🚀 Server started successfully`, {
+        port: PORT,
+        host: HOST,
+        environment: process.env.NODE_ENV || 'development',
+        url: `http://${HOST}:${PORT}`,
+      });
+      
+      logger.info('📋 Available endpoints:', {
+        health: `http://${HOST}:${PORT}/health`,
+        ready: `http://${HOST}:${PORT}/ready`,
+        createLinkToken: `http://${HOST}:${PORT}/api/create_link_token`,
+        exchangeToken: `http://${HOST}:${PORT}/api/exchange_public_token`,
+        runJob: `http://${HOST}:${PORT}/api/run-now`,
+      });
+    });
+
+    // Graceful shutdown handling
+    const gracefulShutdown = (signal: string) => {
+      logger.info(`Received ${signal}. Starting graceful shutdown...`);
+      
+      server.close((err) => {
+        if (err) {
+          logger.error('Error during server shutdown:', err);
+          process.exit(1);
+        }
+        
+        logger.info('Server closed successfully');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+      logger.error('Uncaught Exception:', error);
+      process.exit(1);
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      process.exit(1);
+    });
+
   } catch (error) {
-    logger.error('Failed to trigger daily job via /api/run-now', error);
-    res.status(500).json({ ok: false, error: 'Failed to trigger job' });
+    logger.error('Failed to start server:', error);
+    process.exit(1);
   }
-});
+}
 
-// Create a link token for the client
-app.post('/api/create_link_token', async (req, res) => {
-  try {
-    const userId = req.body?.userId || 'demo-user';
-    const linkToken = await plaidService.createLinkToken(userId);
-    logger.info('Created link token');
-    res.json({ link_token: linkToken });
-  } catch (error) {
-    logger.error('Failed to create link token', error);
-    res.status(500).json({ error: 'Failed to create link token' });
-  }
-});
-
-// Exchange public token and persist the access token for testing
-app.post('/api/exchange_public_token', async (req, res) => {
-  try {
-    const publicToken = req.body?.public_token;
-    if (!publicToken) {
-      return res.status(400).json({ error: 'public_token is required' });
-    }
-    const accessToken = await plaidService.exchangePublicToken(publicToken);
-    const storagePath = path.join(process.cwd(), 'temp_access_token.json');
-    await fs.writeFile(storagePath, JSON.stringify({ access_token: accessToken }, null, 2), 'utf8');
-    logger.info('Stored access token at temp_access_token.json');
-    res.json({ status: 'success' });
-  } catch (error) {
-    logger.error('Failed to exchange public token', error);
-    res.status(500).json({ error: 'Failed to exchange public token' });
-  }
-});
-
-const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || '0.0.0.0';
-
-// Debug logging
-logger.info('Environment check:', {
-  PORT_env: process.env.PORT,
-  HOST_env: process.env.HOST,
-  PORT_final: PORT,
-  HOST_final: HOST
-});
-
-app.listen(PORT, HOST, () => {
-  logger.info(`Server listening on http://${HOST}:${PORT}`);
-  logger.info(`Railway should connect to this exact port: ${PORT}`);
-});
+// Start the server
+startServer();
 
