@@ -1,25 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { authApi } from '@/api';
 
 const InviteCodePage = () => {
   const [inviteCode, setInviteCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteCode.trim()) return;
+    if (!inviteCode.trim() || !phoneNumber.trim()) return;
 
     setIsLoading(true);
+    setError('');
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Here you would validate the invite code with your backend
-    console.log('Invite code submitted:', inviteCode);
-    
-    setIsLoading(false);
+    try {
+      // Call the API to validate invite code
+      const response = await authApi.validateInviteCode(inviteCode, phoneNumber);
+      
+      console.log('User authenticated:', response.user);
+      console.log('Token stored successfully');
+      
+      // Navigate to next step (you can add a success page or dashboard)
+      navigate('/dashboard'); // You'll need to create this route
+      
+    } catch (error) {
+      // Error is already user-friendly thanks to our interceptor
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -39,6 +52,12 @@ const InviteCodePage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+              <p className="text-red-200 text-sm">{error}</p>
+            </div>
+          )}
+          
           <div>
             <label htmlFor="inviteCode" className="sr-only">
               Invite Code
@@ -54,10 +73,25 @@ const InviteCodePage = () => {
             />
           </div>
 
+          <div>
+            <label htmlFor="phoneNumber" className="sr-only">
+              Phone Number
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="Enter phone number (e.g., +15551234567)"
+              className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+              required
+            />
+          </div>
+
           <div className="space-y-3">
             <Button
               type="submit"
-              disabled={!inviteCode.trim() || isLoading}
+              disabled={!inviteCode.trim() || !phoneNumber.trim() || isLoading}
               isLoading={isLoading}
               className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
               size="lg"
