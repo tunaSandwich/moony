@@ -46,3 +46,19 @@ export const validateRequestBody = (
   
   next();
 };
+
+export const validateInviteCodeRequest = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { code, phone_number } = req.body;
+  
+  // Check if both fields are present and are non-empty strings
+  if (!code || typeof code !== 'string' || code.trim().length === 0 ||
+      !phone_number || typeof phone_number !== 'string' || phone_number.trim().length === 0) {
+    throw new AppError('Code and phone number are required', 400);
+  }
+  
+  next();
+};
