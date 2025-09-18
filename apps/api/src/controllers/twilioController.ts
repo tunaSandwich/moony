@@ -55,7 +55,7 @@ export class TwilioController {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-    console.log('verifyServiceSid', verifyServiceSid)
+
     if (!accountSid || !authToken) {
       throw new Error('Twilio credentials (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) not configured');
     }

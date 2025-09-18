@@ -14,7 +14,7 @@ export const authenticateJWT = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers.authorization;
-
+  
   if (!authHeader) {
     throw new AppError('Authorization token required', 401);
   }
