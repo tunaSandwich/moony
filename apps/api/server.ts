@@ -1,3 +1,4 @@
+import './src/config/loadEnv.js';
 import { createApp, getServerConfig } from './src/config/app.js';
 import { logger } from '@logger';
 import { getRegisteredRoutes, formatRoutesForLogging } from './src/utils/routeDiscovery.js';
