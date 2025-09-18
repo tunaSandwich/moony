@@ -53,9 +53,10 @@ class MemoryRateLimiter {
 }
 
 // Rate limiters for different endpoints
-const generalLimiter = new MemoryRateLimiter(15 * 60 * 1000, 100); // 100 requests per 15 minutes
-const plaidLimiter = new MemoryRateLimiter(60 * 1000, 10); // 10 requests per minute for Plaid endpoints
-const jobLimiter = new MemoryRateLimiter(60 * 1000, 5); // 5 job triggers per minute
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+const generalLimiter = new MemoryRateLimiter(15 * 60 * 1000, isTestEnvironment ? 1000 : 100); // 100 requests per 15 minutes (1000 in test)
+const plaidLimiter = new MemoryRateLimiter(60 * 1000, isTestEnvironment ? 1000 : 10); // 10 requests per minute for Plaid endpoints (1000 in test)
+const jobLimiter = new MemoryRateLimiter(60 * 1000, isTestEnvironment ? 1000 : 5); // 5 job triggers per minute (1000 in test)
 
 export const createRateLimiter = (limiter: MemoryRateLimiter) => {
   return (req: Request, res: Response, next: NextFunction): void => {

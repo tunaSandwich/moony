@@ -1,5 +1,6 @@
 import { createApp, getServerConfig } from './src/config/app.js';
 import { logger } from '@logger';
+import { getRegisteredRoutes, formatRoutesForLogging } from './src/utils/routeDiscovery.js';
 
 async function startServer(): Promise<void> {
   try {
@@ -18,13 +19,14 @@ async function startServer(): Promise<void> {
         url: `http://${HOST}:${PORT}`,
       });
       
-      logger.info('📋 Available endpoints:', {
-        health: `http://${HOST}:${PORT}/health`,
-        ready: `http://${HOST}:${PORT}/ready`,
-        createLinkToken: `http://${HOST}:${PORT}/api/create_link_token`,
-        exchangeToken: `http://${HOST}:${PORT}/api/exchange_public_token`,
-        runJob: `http://${HOST}:${PORT}/api/run-now`,
-      });
+      // Dynamically discover and log all registered routes
+      const routes = getRegisteredRoutes(app, HOST, PORT);
+      const formattedRoutes = formatRoutesForLogging(routes);
+      
+      logger.info('📋 Available endpoints:', formattedRoutes);
+      
+      // Also log a summary count
+      logger.info(`📊 Total registered routes: ${routes.length}`);
     });
 
     // Graceful shutdown handling

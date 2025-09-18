@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PlaidController } from '../controllers/plaidController.js';
 import { plaidRateLimit } from '../middleware/security.js';
+import { authenticateJWT } from '../middleware/auth.js';
 import { 
   validateRequestBody, 
   validateLinkTokenRequest, 
@@ -26,6 +27,15 @@ router.post(
   validateRequestBody,
   validateExchangeTokenRequest,
   plaidController.exchangePublicToken
+);
+
+// Connect bank account with JWT authentication
+router.post(
+  '/connect',
+  plaidRateLimit,
+  validateRequestBody,
+  authenticateJWT,
+  plaidController.connectBank
 );
 
 export default router;
