@@ -47,7 +47,7 @@ export const PlaidTestPage: React.FC = () => {
               <div className="text-sm text-gray-600">
                 Bank Connected: {hasConnectedBank ? 'Yes' : 'No'}
               </div>
-              <Button onClick={handleStartOver} variant="outline" className="w-full">
+              <Button onClick={handleStartOver} variant="secondary" className="w-full">
                 Test Again
               </Button>
             </div>
@@ -61,7 +61,7 @@ export const PlaidTestPage: React.FC = () => {
               <p className="text-red-700 bg-red-50 p-3 rounded border text-sm">
                 {message}
               </p>
-              <Button onClick={handleStartOver} variant="outline" className="w-full">
+              <Button onClick={handleStartOver} variant="secondary" className="w-full">
                 Try Again
               </Button>
             </div>

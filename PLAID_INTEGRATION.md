@@ -40,11 +40,17 @@ interface PlaidLinkProps {
 }
 ```
 
-## Testing
+## User Flow Integration ✅
 
-### Test Page
-- Available at `/plaid-test` route
-- Provides complete integration testing
+### Complete Onboarding Flow
+1. **Landing Page** (`/`) - User clicks "Get Started"
+2. **Invite Code Page** (`/invite`) - User enters invite code and phone number
+3. **Bank Connection Page** (`/connect-bank`) - User connects bank account via Plaid
+4. **Phone Verification Page** (`/phone-verification`) - Placeholder for phone verification
+
+### Direct Testing
+- **Test Page** available at `/plaid-test` route
+- Provides isolated integration testing
 - Shows success/error states
 - Includes test requirements checklist
 
@@ -127,8 +133,11 @@ const MyComponent = () => {
 - ✅ `apps/web/src/api/plaid.ts` (new)
 - ✅ `apps/web/src/components/PlaidLink.tsx` (new)
 - ✅ `apps/web/src/components/index.ts` (new)
-- ✅ `apps/web/src/pages/PlaidTestPage.tsx` (new)
-- ✅ `apps/web/src/App.tsx`
+- ✅ `apps/web/src/pages/PlaidConnectionPage.tsx` (new) - **Main onboarding page**
+- ✅ `apps/web/src/pages/PhoneVerificationPage.tsx` (new) - **Placeholder for next step**
+- ✅ `apps/web/src/pages/PlaidTestPage.tsx` (new) - **Standalone testing page**
+- ✅ `apps/web/src/pages/InviteCodePage.tsx` - **Updated navigation**
+- ✅ `apps/web/src/App.tsx` - **Added new routes**
 - ✅ `apps/web/src/api/index.ts`
 - ✅ `apps/web/package.json`
 

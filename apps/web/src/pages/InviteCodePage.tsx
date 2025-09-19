@@ -24,8 +24,8 @@ const InviteCodePage = () => {
       console.log('User authenticated:', response.user);
       console.log('Token stored successfully');
       
-      // Navigate to next step (you can add a success page or dashboard)
-      navigate('/dashboard'); // You'll need to create this route
+      // Navigate to bank connection step
+      navigate('/connect-bank');
       
     } catch (error) {
       // Error is already user-friendly thanks to our interceptor

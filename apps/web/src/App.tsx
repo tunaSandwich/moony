@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import InviteCodePage from './pages/InviteCodePage';
 import ApiTestPage from './pages/ApiTestPage';
+import PlaidConnectionPage from './pages/PlaidConnectionPage';
+import PhoneVerificationPage from './pages/PhoneVerificationPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -10,6 +12,8 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/invite" element={<InviteCodePage />} />
+        <Route path="/connect-bank" element={<PlaidConnectionPage />} />
+        <Route path="/phone-verification" element={<PhoneVerificationPage />} />
         <Route path="/api-test" element={<ApiTestPage />} />
         <Route path="/plaid-test" element={<PlaidTestPage />} />
       </Routes>
