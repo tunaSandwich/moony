@@ -29,7 +29,7 @@ export interface HealthStatus {
 }
 
 export interface LinkTokenRequest {
-  userId?: string;
+  // No body parameters needed - userId extracted from JWT
 }
 
 export interface ExchangeTokenRequest {

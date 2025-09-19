@@ -4,7 +4,6 @@ import { plaidRateLimit } from '../middleware/security.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { 
   validateRequestBody, 
-  validateLinkTokenRequest, 
   validateExchangeTokenRequest 
 } from '../middleware/validation.js';
 
@@ -15,8 +14,7 @@ const plaidController = new PlaidController();
 router.post(
   '/create_link_token',
   plaidRateLimit,
-  validateRequestBody,
-  validateLinkTokenRequest,
+  authenticateJWT,
   plaidController.createLinkToken
 );
 

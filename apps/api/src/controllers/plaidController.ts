@@ -4,7 +4,8 @@ import fs from 'node:fs/promises';
 import { PlaidApi, Configuration, PlaidEnvironments } from 'plaid';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
-import { ApiResponse, LinkTokenRequest, ExchangeTokenRequest } from '../types/index.js';
+import { PlaidService } from '@services/plaidService.js';
+import { ApiResponse, ExchangeTokenRequest } from '../types/index.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { encrypt, validateEncryptionKey } from '../utils/encryption.js';
@@ -35,9 +36,9 @@ export class PlaidController {
   constructor() {
     // Initialize PlaidService only if it exists (for backward compatibility)
     try {
-      const { PlaidService } = require('@services/plaidService');
       this.plaidService = new PlaidService();
-    } catch {
+    } catch (error) {
+      console.error('PlaidService import failed:', error);
       this.plaidService = null;
     }
     
@@ -54,8 +55,12 @@ export class PlaidController {
     this.plaidClient = new PlaidApi(configuration);
   }
 
-  public createLinkToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { userId = 'demo-user' } = req.body as LinkTokenRequest;
+  public createLinkToken = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      throw new AppError('Invalid or expired token', 401);
+    }
     
     logger.info('Creating link token', { userId });
     

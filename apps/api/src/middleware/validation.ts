@@ -6,13 +6,7 @@ export const validateLinkTokenRequest = (
   res: Response,
   next: NextFunction
 ): void => {
-  const { userId } = req.body;
-  
-  // userId is optional, but if provided should be a non-empty string
-  if (userId !== undefined && (typeof userId !== 'string' || userId.trim().length === 0)) {
-    throw new AppError('userId must be a non-empty string if provided', 400);
-  }
-  
+  // No body validation needed for link token creation - userId comes from JWT
   next();
 };
 
