@@ -52,3 +52,35 @@ CREATE TABLE daily_messages (
     created_at TIMESTAMP DEFAULT NOW()
 );
 ```
+
+## Daily Messages Table
+```sql
+CREATE TABLE user_spending_analytics (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    average_monthly_spending DECIMAL(10,2),
+    last_month_spending DECIMAL(10,2),
+    current_month_spending DECIMAL(10,2) DEFAULT 0,
+    last_calculated_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+## Recurring Expenses Table
+```sql
+CREATE TABLE recurring_expenses (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    merchant_name VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    category VARCHAR(50),
+    frequency VARCHAR(20) NOT NULL, -- 'MONTHLY', 'WEEKLY', etc.
+    last_occurrence_date DATE,
+    predicted_next_date DATE,
+    is_active BOOLEAN DEFAULT true,
+    confidence_score DECIMAL(3,2), -- 0.00-1.00 for prediction reliability
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```

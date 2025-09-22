@@ -25,8 +25,10 @@ model User {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
-  spendingGoals     SpendingGoal[]
-  dailyMessages     DailyMessage[]
+  spendingGoals       SpendingGoal[]
+  dailyMessages       DailyMessage[]
+  spendingAnalytics   UserSpendingAnalytics?
+  recurringExpenses   RecurringExpense[]
 
   @@map("users")
 }
@@ -63,4 +65,38 @@ model DailyMessage {
   spendingGoal SpendingGoal @relation(fields: [spendingGoalId], references: [id], onDelete: Cascade)
 
   @@map("daily_messages")
+}
+
+model UserSpendingAnalytics {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique @map("user_id")
+  averageMonthlySpending Decimal?  @map("average_monthly_spending") @db.Decimal(10,2)
+  lastMonthSpending      Decimal?  @map("last_month_spending") @db.Decimal(10,2)
+  currentMonthSpending   Decimal   @default(0) @map("current_month_spending") @db.Decimal(10,2)
+  lastCalculatedAt       DateTime? @map("last_calculated_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_spending_analytics")
+}
+
+model RecurringExpense {
+  id                   String    @id @default(cuid())
+  userId               String    @map("user_id")
+  merchantName         String    @map("merchant_name") @db.VarChar(100)
+  amount               Decimal   @db.Decimal(10,2)
+  category             String?   @db.VarChar(50)
+  frequency            String    @db.VarChar(20)
+  lastOccurrenceDate   DateTime? @map("last_occurrence_date") @db.Date
+  predictedNextDate    DateTime? @map("predicted_next_date") @db.Date
+  isActive             Boolean   @default(true) @map("is_active")
+  confidenceScore      Decimal?  @map("confidence_score") @db.Decimal(3,2)
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recurring_expenses")
 }
