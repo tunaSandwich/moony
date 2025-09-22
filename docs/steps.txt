@@ -76,7 +76,6 @@ Input should be large and touch-friendly
 Navigation:
 
 Primary button: "Continue" (disabled until valid input entered)
-Secondary link: "Back to home"
 
 Additional Features:
 

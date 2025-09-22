@@ -7,7 +7,6 @@ import {
   ProcessedTransaction, 
   MonthlySpending,
   AnalyticsProcessingOptions,
-  TransactionSyncResult,
   ANALYTICS_CONSTANTS,
   AnalyticsError
 } from '../types/analytics.js';

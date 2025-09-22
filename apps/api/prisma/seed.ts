@@ -33,9 +33,9 @@ const sampleUsers = [
     inviteCode: 'FRIEND1',
     firstName: 'John',
     lastName: 'Doe',
-    phoneNumber: '+14155552001',
-    phoneVerified: true,
-    plaidAccessToken: 'access-sandbox-test-user-1',
+    phoneNumber: '+16268075538',
+    phoneVerified: false,
+    plaidAccessToken: null,
     currency: 'USD',
   },
   {

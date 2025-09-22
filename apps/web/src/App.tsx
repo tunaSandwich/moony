@@ -4,6 +4,8 @@ import InviteCodePage from './pages/InviteCodePage';
 import ApiTestPage from './pages/ApiTestPage';
 import PlaidConnectionPage from './pages/PlaidConnectionPage';
 import PhoneVerificationPage from './pages/PhoneVerificationPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -14,6 +16,8 @@ function App() {
         <Route path="/invite" element={<InviteCodePage />} />
         <Route path="/connect-bank" element={<PlaidConnectionPage />} />
         <Route path="/phone-verification" element={<PhoneVerificationPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/api-test" element={<ApiTestPage />} />
         <Route path="/plaid-test" element={<PlaidTestPage />} />
       </Routes>

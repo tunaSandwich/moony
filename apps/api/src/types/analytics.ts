@@ -37,12 +37,7 @@ export interface AnalyticsError {
   timestamp: Date;
 }
 
-export interface TransactionSyncResult {
-  transactions: ProcessedTransaction[];
-  totalCount: number;
-  hasMore: boolean;
-  nextCursor?: string;
-}
+// Removed unused TransactionSyncResult interface
 
 // Plaid specific types for our use case
 export interface PlaidTransactionResponse {

@@ -69,15 +69,6 @@ const PlaidConnectionPage = () => {
     }
   }, [ready, linkToken, isConnecting, open]);
 
-  const handleBack = () => {
-    navigate('/invite');
-  };
-
-  const handleSkip = () => {
-    // Allow users to skip bank connection for now
-    navigate('/phone-verification');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
@@ -155,30 +146,6 @@ const PlaidConnectionPage = () => {
               </div>
             </div>
           )}
-
-          <div className="space-y-3">
-            <Button
-              type="button"
-              onClick={handleSkip}
-              variant="ghost"
-              className="w-full text-white/60 hover:text-white/80 hover:bg-white/10 rounded-lg text-sm"
-              size="md"
-              disabled={isInitializing || isConnecting}
-            >
-              Skip for now
-            </Button>
-
-            <Button
-              type="button"
-              onClick={handleBack}
-              variant="ghost"
-              className="w-full text-white/80 hover:text-white hover:bg-white/10 rounded-lg"
-              size="lg"
-              disabled={isInitializing || isConnecting}
-            >
-              Back
-            </Button>
-          </div>
         </div>
       </div>
     </div>

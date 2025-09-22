@@ -234,6 +234,9 @@ export class TwilioController {
           });
         });
 
+        // Send welcome SMS with analytics data
+        this.sendWelcomeSMS(userId);
+
         // Return success response after successful database update
         res.status(200).json({
           message: ERROR_MESSAGES.VERIFICATION_SUCCESS,
@@ -294,4 +297,72 @@ export class TwilioController {
       throw new AppError(ERROR_MESSAGES.VERIFICATION_ERROR, 502);
     }
   });
+
+  /**
+   * Send welcome SMS with analytics data after successful phone verification
+   * Non-blocking operation with error handling
+   */
+  private sendWelcomeSMS = async (userId: string): Promise<void> => {
+    try {
+      logger.info('Sending welcome SMS with analytics', { userId });
+
+      // Get user data and analytics
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          firstName: true,
+          phoneNumber: true,
+          spendingAnalytics: {
+            select: {
+              averageMonthlySpending: true,
+              lastMonthSpending: true,
+              currentMonthSpending: true
+            }
+          }
+        }
+      });
+
+      if (!user || !user.phoneNumber) {
+        logger.error('User not found or missing phone number for welcome SMS', { userId });
+        return;
+      }
+
+      const analytics = user.spendingAnalytics;
+      let message = `👋 Welcome to Budget Pal, ${user.firstName}!\n\n`;
+
+      if (analytics) {
+        message += `Here's your spending overview:\n`;
+        message += `📊 Avg monthly: $${analytics.averageMonthlySpending || 0}\n`;
+        message += `📅 Last month: $${analytics.lastMonthSpending || 0}\n`;
+        message += `💰 This month: $${analytics.currentMonthSpending || 0}\n\n`;
+        message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
+      } else {
+        message += `We're analyzing your spending patterns and will send you your first budget insights soon!\n\n`;
+        message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
+      }
+
+      // Get Twilio WhatsApp number from environment
+      const fromNumber = process.env.TWILIO_WHATSAPP_FROM;
+      if (!fromNumber) {
+        logger.error('TWILIO_WHATSAPP_FROM not configured');
+        return;
+      }
+
+      // Send welcome SMS
+      await this.twilioClient.messages.create({
+        body: message,
+        from: fromNumber,
+        to: user.phoneNumber
+      });
+
+      logger.info('Welcome SMS sent successfully', { userId });
+
+    } catch (error: any) {
+      // Log error but don't throw - welcome SMS failure shouldn't break verification
+      logger.error('Failed to send welcome SMS', { 
+        userId, 
+        error: error.message 
+      });
+    }
+  };
 }
