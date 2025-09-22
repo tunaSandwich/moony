@@ -11,10 +11,13 @@ export const twilioApi = {
    * Send SMS verification code to user's phone number
    * POST /api/twilio/send-code
    */
-  async sendVerificationCode(): Promise<SendVerificationCodeResponse> {
+  async sendVerificationCode(phoneNumber?: string): Promise<SendVerificationCodeResponse> {
     try {
+      const requestData = phoneNumber ? { phoneNumber } : {};
+      
       const response = await apiClient.post<SendVerificationCodeResponse>(
-        '/api/twilio/send-code'
+        '/api/twilio/send-code',
+        requestData
       );
 
       return response.data;

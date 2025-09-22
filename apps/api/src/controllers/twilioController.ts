@@ -69,6 +69,7 @@ export class TwilioController {
 
   public sendVerificationCode = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const userId = req.user?.id;
+    const { phoneNumber: requestPhoneNumber } = req.body;
 
     if (!userId) {
       throw new AppError('Invalid or expired token', 401);
@@ -77,7 +78,7 @@ export class TwilioController {
     try {
       logger.info('Sending verification code for user', { userId });
 
-      // Look up user's phone number from database
+      // Look up user from database
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { phoneNumber: true, phoneVerified: true },
@@ -92,13 +93,25 @@ export class TwilioController {
         throw new AppError(ERROR_MESSAGES.PHONE_ALREADY_VERIFIED, 409);
       }
 
+      // Use provided phone number or fall back to user's stored number
+      const phoneNumberToUse = requestPhoneNumber || user.phoneNumber;
+
       // Validate phone number format
-      if (!isValidPhoneNumber(user.phoneNumber)) {
-        logger.error('User has invalid phone number format', { 
+      if (!isValidPhoneNumber(phoneNumberToUse)) {
+        logger.error('Invalid phone number format', { 
           userId, 
-          phoneNumber: user.phoneNumber ? `${user.phoneNumber.substring(0, 4)}...` : 'null'
+          phoneNumber: phoneNumberToUse ? `${phoneNumberToUse.substring(0, 4)}...` : 'null'
         });
         throw new AppError(ERROR_MESSAGES.TWILIO_ERROR, 502);
+      }
+
+      // Update user's phone number if a new one was provided
+      if (requestPhoneNumber && requestPhoneNumber !== user.phoneNumber) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { phoneNumber: requestPhoneNumber }
+        });
+        logger.info('Updated user phone number', { userId });
       }
 
       // Get Twilio Verify Service SID from environment
@@ -112,7 +125,7 @@ export class TwilioController {
       await this.twilioClient.verify.v2
         .services(verifyServiceSid)
         .verifications.create({
-          to: user.phoneNumber,
+          to: phoneNumberToUse,
           channel: 'sms',
         });
 
@@ -341,10 +354,10 @@ export class TwilioController {
         message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
       }
 
-      // Get Twilio WhatsApp number from environment
-      const fromNumber = process.env.TWILIO_WHATSAPP_FROM;
+      // Get Twilio phone number from environment (same as verification)
+      const fromNumber = process.env.TWILIO_PHONE_NUMBER;
       if (!fromNumber) {
-        logger.error('TWILIO_WHATSAPP_FROM not configured');
+        logger.error('TWILIO_PHONE_NUMBER not configured');
         return;
       }
 

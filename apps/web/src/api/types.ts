@@ -7,6 +7,12 @@ export interface User {
   phoneNumber: string;
   hasConnectedBank: boolean;
   twilioStatus: 'verified' | 'unverified';
+  analytics?: {
+    averageMonthlySpending: string;
+    lastMonthSpending: string;
+    currentMonthSpending: string;
+    lastCalculatedAt: Date;
+  } | null;
 }
 
 export interface ApiError {

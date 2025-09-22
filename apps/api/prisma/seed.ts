@@ -27,34 +27,37 @@ function createMonthPeriod(monthsOffset: number = 0, startDay: number = 1) {
   return { periodStart, periodEnd };
 }
 
-// Sample users data
+// Sample users data - bare bones with just required fields
 const sampleUsers = [
   {
-    inviteCode: 'FRIEND1',
-    firstName: 'John',
-    lastName: 'Doe',
+    inviteCode: 'LUCAS',
+    firstName: 'Lucas',
+    lastName: 'Garza',
     phoneNumber: '+16268075538',
-    phoneVerified: false,
-    plaidAccessToken: null,
-    currency: 'USD',
   },
   {
-    inviteCode: 'FRIEND2',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    phoneNumber: '+14155552002',
-    phoneVerified: true,
-    plaidAccessToken: null, // User without bank connection
-    currency: 'USD',
-  },
-  {
-    inviteCode: 'FRIEND3',
-    firstName: 'Michael',
+    inviteCode: 'DEMO1',
+    firstName: 'Alice',
     lastName: 'Johnson',
-    phoneNumber: '+14155552003',
-    phoneVerified: false, // Unverified user
-    plaidAccessToken: 'access-sandbox-test-user-3',
-    currency: 'USD',
+    phoneNumber: '+14155551001',
+  },
+  {
+    inviteCode: 'DEMO2',
+    firstName: 'Bob',
+    lastName: 'Smith',
+    phoneNumber: '+14155551002',
+  },
+  {
+    inviteCode: 'DEMO3',
+    firstName: 'Carol',
+    lastName: 'Davis',
+    phoneNumber: '+14155551003',
+  },
+  {
+    inviteCode: 'DEMO4',
+    firstName: 'David',
+    lastName: 'Wilson',
+    phoneNumber: '+14155551004',
   },
 ];
 

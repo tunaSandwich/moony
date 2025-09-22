@@ -5,6 +5,7 @@ import jobRoutes from './jobs.js';
 import inviteRoutes from './invite.js';
 import twilioRoutes from './twilio.js';
 import webhookRoutes from './webhooks.js';
+import userRoutes from './user.js';
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.use('/', healthRoutes);
 router.use('/api/plaid', plaidRoutes);
 router.use('/api/twilio', twilioRoutes);
 router.use('/api/webhooks', webhookRoutes);
+router.use('/api/user', userRoutes);
 router.use('/api', jobRoutes);
 router.use('/api/invite-codes', inviteRoutes);
 

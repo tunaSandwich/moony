@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { twilioApi } from '@/api';
+import { twilioApi, userApi } from '@/api';
+import type { User } from '@/api/types';
 
 interface VerificationState {
   smsConsentGiven: boolean;
@@ -11,6 +12,8 @@ interface VerificationState {
   isLoading: boolean;
   error: string | null;
   isVerified: boolean;
+  user: User | null;
+  loadingUser: boolean;
 }
 
 const PhoneVerificationPage = () => {
@@ -22,12 +25,40 @@ const PhoneVerificationPage = () => {
     verificationCode: '',
     isLoading: false,
     error: null,
-    isVerified: false
+    isVerified: false,
+    user: null,
+    loadingUser: true
   });
 
   const updateState = (updates: Partial<VerificationState>) => {
     setState(prev => ({ ...prev, ...updates }));
   };
+
+  // Fetch user data on mount and redirect if already verified
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await userApi.getCurrentUser();
+        updateState({ 
+          user, 
+          phoneNumber: user.phoneNumber || '',
+          loadingUser: false 
+        });
+
+        // Redirect if already verified
+        if (user.twilioStatus === 'verified') {
+          navigate('/welcome');
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        // If user fetch fails (e.g., not logged in), redirect to login
+        navigate('/');
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const validatePhoneNumber = (phone: string): boolean => {
     // US phone number validation (allows various formats)
@@ -101,6 +132,23 @@ const PhoneVerificationPage = () => {
     window.open('/privacy', '_blank');
   };
 
+  // Show loading while fetching user data
+  if (state.loadingUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+          <div className="text-center space-y-6">
+            <div className="text-4xl">📱</div>
+            <h1 className="text-2xl font-light text-white">
+              Loading your profile...
+            </h1>
+            <div className="animate-pulse bg-white/20 h-2 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (state.isVerified) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
@@ -127,20 +175,13 @@ const PhoneVerificationPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
-        {/* Header with Progress */}
+        {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-8 h-1 bg-white rounded"></div>
-            <div className="w-3 h-3 bg-white rounded-full"></div>
-            <div className="w-8 h-1 bg-white rounded"></div>
-            <div className="w-3 h-3 bg-white/50 rounded-full border-2 border-white"></div>
-          </div>
           <h1 className="text-3xl font-light text-white mb-2">
             <span className="font-semibold">Budget Pal</span> SMS Setup
           </h1>
           <p className="text-white/80 text-sm">
-            Step 3 of 3: Enable daily spending notifications
+            Enable daily spending notifications
           </p>
         </div>
 
@@ -153,8 +194,6 @@ const PhoneVerificationPage = () => {
 
           {/* SMS Consent Section */}
           <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-            <h2 className="text-lg font-semibold text-white mb-3">SMS Services Agreement</h2>
-            
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
                 <input
@@ -165,13 +204,11 @@ const PhoneVerificationPage = () => {
                   className="w-4 h-4 mt-1 rounded border-white/30 bg-white/20 text-blue-600 focus:ring-2 focus:ring-white/50"
                 />
                 <label htmlFor="smsConsent" className="text-white/90 text-sm leading-relaxed">
-                  <strong>By checking this box, I consent to receive daily spending notifications and monthly budget messages via SMS from Budget Pal.</strong>
-                  <br /><br />
-                  <strong>Message frequency:</strong> 1-2 messages per day
+                  <strong>I consent to receive daily spending notifications via SMS from Budget Pal.</strong>
                   <br />
-                  <strong>Message and data rates may apply.</strong>
+                  Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
                   <br />
-                  Reply <strong>STOP</strong> to opt out at any time. For help, reply <strong>HELP</strong>.
+                  Reply <strong>STOP</strong> to opt out. Reply <strong>HELP</strong> for help.
                 </label>
               </div>
             </div>
@@ -245,12 +282,13 @@ const PhoneVerificationPage = () => {
           {/* Legal Links */}
           <div className="pt-4 border-t border-white/20">
             <p className="text-white/70 text-xs text-center leading-relaxed">
-              By using Budget Pal SMS services, you agree to our{' '}
+              <strong>Mobile information will not be shared with third parties for marketing purposes.</strong><br />
+              By continuing, you agree to our{' '}
               <button 
                 onClick={handleTermsClick}
                 className="underline hover:text-white transition-colors"
               >
-                Terms of Service
+                Terms
               </button>{' '}
               and{' '}
               <button 
@@ -258,9 +296,7 @@ const PhoneVerificationPage = () => {
                 className="underline hover:text-white transition-colors"
               >
                 Privacy Policy
-              </button>
-              .<br />
-              <strong>Mobile information will not be shared with third parties for marketing purposes.</strong>
+              </button>.
             </p>
           </div>
         </div>
