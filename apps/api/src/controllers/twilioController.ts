@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
+import { MessagingService } from '../services/messagingService.js';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,7 @@ const isValidVerificationCode = (code: string): boolean => {
 
 export class TwilioController {
   private twilioClient: twilio.Twilio;
+  private messagingService: MessagingService;
 
   constructor() {
     // Validate required environment variables
@@ -65,6 +67,7 @@ export class TwilioController {
     }
     
     this.twilioClient = twilio(accountSid, authToken);
+    this.messagingService = new MessagingService();
   }
 
   public sendVerificationCode = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -312,12 +315,13 @@ export class TwilioController {
   });
 
   /**
-   * Send welcome SMS with analytics data after successful phone verification
+   * Send welcome message with analytics data after successful phone verification
+   * Uses dual-channel messaging (SMS/WhatsApp) with automatic fallback
    * Non-blocking operation with error handling
    */
   private sendWelcomeSMS = async (userId: string): Promise<void> => {
     try {
-      logger.info('Sending welcome SMS with analytics', { userId });
+      logger.info('Sending welcome message with analytics', { userId });
 
       // Get user data and analytics
       const user = await prisma.user.findUnique({
@@ -336,7 +340,7 @@ export class TwilioController {
       });
 
       if (!user || !user.phoneNumber) {
-        logger.error('User not found or missing phone number for welcome SMS', { userId });
+        logger.error('User not found or missing phone number for welcome message', { userId });
         return;
       }
 
@@ -354,25 +358,30 @@ export class TwilioController {
         message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
       }
 
-      // Get Twilio phone number from environment (same as verification)
-      const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-      if (!fromNumber) {
-        logger.error('TWILIO_PHONE_NUMBER not configured');
-        return;
-      }
-
-      // Send welcome SMS
-      await this.twilioClient.messages.create({
-        body: message,
-        from: fromNumber,
-        to: user.phoneNumber
+      // Use the messaging service with automatic channel selection and fallback
+      const result = await this.messagingService.sendMessage({
+        to: user.phoneNumber,
+        body: message
       });
 
-      logger.info('Welcome SMS sent successfully', { userId });
+      if (result.success) {
+        logger.info('Welcome message sent successfully', { 
+          userId,
+          channel: result.channel,
+          messageSid: result.messageSid,
+          fallbackUsed: result.fallbackUsed || false
+        });
+      } else {
+        logger.error('Welcome message failed to send', {
+          userId,
+          channel: result.channel,
+          error: result.error
+        });
+      }
 
     } catch (error: any) {
-      // Log error but don't throw - welcome SMS failure shouldn't break verification
-      logger.error('Failed to send welcome SMS', { 
+      // Log error but don't throw - welcome message failure shouldn't break verification
+      logger.error('Failed to send welcome message', { 
         userId, 
         error: error.message 
       });

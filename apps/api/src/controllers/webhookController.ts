@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { MessagingService } from '../services/messagingService.js';
 
 const prisma = new PrismaClient();
 
@@ -90,35 +91,35 @@ const calculatePeriodDates = (monthStartDay: number = 1): { periodStart: Date, p
   return { periodStart, periodEnd };
 };
 
-// Utility function to send SMS response
-const sendSMSResponse = async (to: string, message: string): Promise<void> => {
+// Utility function to send response message (SMS or WhatsApp)
+const sendResponse = async (to: string, message: string, preferredChannel?: 'sms' | 'whatsapp'): Promise<void> => {
   try {
-    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-    if (!twilioPhoneNumber) {
-      logger.error('TWILIO_PHONE_NUMBER not configured');
-      return;
-    }
-
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const messagingService = new MessagingService();
     
-    if (!accountSid || !authToken) {
-      logger.error('Twilio credentials not configured for SMS sending');
-      return;
-    }
-
-    const twilioClient = twilio(accountSid, authToken);
-    
-    await twilioClient.messages.create({
-      from: twilioPhoneNumber,
-      to: to,
-      body: message
+    const result = await messagingService.sendMessage({
+      to,
+      body: message,
+      forceChannel: preferredChannel
     });
 
-    logger.info('SMS response sent successfully', { to, messageLength: message.length });
+    if (result.success) {
+      logger.info('Response message sent successfully', { 
+        to: `${to.substring(0, 4)}...`,
+        channel: result.channel,
+        messageSid: result.messageSid,
+        messageLength: message.length,
+        fallbackUsed: result.fallbackUsed || false
+      });
+    } else {
+      logger.error('Failed to send response message', {
+        to: `${to.substring(0, 4)}...`,
+        channel: result.channel,
+        error: result.error
+      });
+    }
   } catch (error) {
-    logger.error('Failed to send SMS response', { 
-      to, 
+    logger.error('Failed to send response message', { 
+      to: `${to.substring(0, 4)}...`,
       error: (error as Error).message 
     });
     // Don't throw error - we still want to return TwiML
@@ -136,6 +137,12 @@ const formatCurrency = (amount: number): string => {
 };
 
 export class WebhookController {
+  private messagingService: MessagingService;
+
+  constructor() {
+    this.messagingService = new MessagingService();
+  }
+
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // Validate Twilio signature for security
     if (!validateTwilioSignature(req)) {
@@ -147,17 +154,20 @@ export class WebhookController {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    const { From: phoneNumber, Body: messageBody, MessageSid } = req.body;
+    // Parse incoming message using the messaging service
+    const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+    const { phoneNumber, messageBody, channel, messageSid } = messageInfo;
 
     // Validate required webhook data
-    if (!phoneNumber || !MessageSid) {
-      logger.warn('Missing required webhook data', { phoneNumber, MessageSid });
+    if (!phoneNumber || !messageSid) {
+      logger.warn('Missing required webhook data', { phoneNumber, messageSid });
       throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
     }
 
     logger.info('Processing incoming Twilio message', { 
       phoneNumber: phoneNumber ? `${phoneNumber.substring(0, 4)}...` : 'null',
-      MessageSid,
+      messageSid,
+      channel,
       bodyLength: messageBody?.length || 0
     });
 
@@ -177,17 +187,17 @@ export class WebhookController {
       });
 
       if (!user) {
-        logger.warn('Phone number not found in database', { phoneNumber });
+        logger.warn('Phone number not found in database', { phoneNumber, channel });
         
-        // Send error SMS to unknown number
-        await sendSMSResponse(phoneNumber, ERROR_MESSAGES.NOT_REGISTERED);
+        // Send error message using the same channel the user messaged from
+        await sendResponse(phoneNumber, ERROR_MESSAGES.NOT_REGISTERED, channel);
         
         throw new AppError(ERROR_MESSAGES.PHONE_NOT_FOUND, 404);
       }
 
       // Validate message body
       if (!messageBody || messageBody.trim().length === 0) {
-        await sendSMSResponse(phoneNumber, ERROR_MESSAGES.EMPTY_MESSAGE);
+        await sendResponse(phoneNumber, ERROR_MESSAGES.EMPTY_MESSAGE, channel);
         throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
       }
 
@@ -211,7 +221,7 @@ export class WebhookController {
           errorMessage = 'Please send a whole dollar amount between $100 and $50,000 (e.g., "3000")';
         }
         
-        await sendSMSResponse(phoneNumber, errorMessage);
+        await sendResponse(phoneNumber, errorMessage, channel);
         throw new AppError(ERROR_MESSAGES.INVALID_FORMAT, 400);
       }
 
@@ -249,9 +259,9 @@ export class WebhookController {
         periodEnd: format(periodEnd, 'yyyy-MM-dd')
       });
 
-      // Send confirmation SMS
+      // Send confirmation message using the same channel
       const confirmationMessage = `✅ Your spending goal of ${formatCurrency(goalAmount)} has been set for ${format(periodStart, 'MMM yyyy')}. You'll receive daily updates on your progress!`;
-      await sendSMSResponse(phoneNumber, confirmationMessage);
+      await sendResponse(phoneNumber, confirmationMessage, channel);
 
       // Return empty TwiML response as per Twilio webhook requirements
       res.set('Content-Type', 'application/xml');
@@ -261,7 +271,7 @@ export class WebhookController {
       // Log detailed error for debugging
       logger.error('Failed to process incoming message', {
         phoneNumber: phoneNumber ? `${phoneNumber.substring(0, 4)}...` : 'null',
-        MessageSid,
+        messageSid,
         error: error.message,
         stack: error.stack
       });
@@ -271,8 +281,9 @@ export class WebhookController {
         throw error;
       }
 
-      // For unexpected errors, send generic error SMS and return TwiML
-      await sendSMSResponse(phoneNumber, 'Sorry, there was an error processing your message. Please try again later.');
+      // For unexpected errors, send generic error message and return TwiML
+      const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+      await sendResponse(messageInfo.phoneNumber, 'Sorry, there was an error processing your message. Please try again later.', messageInfo.channel);
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
     }

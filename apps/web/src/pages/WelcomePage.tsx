@@ -167,6 +167,13 @@ const WelcomePage = () => {
           <p className="text-white/80 text-sm">
             Your spending analytics are ready.
           </p>
+          {import.meta.env.DEV && (
+            <div className="mt-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full inline-block">
+              <p className="text-yellow-200 text-xs">
+                🧪 Test Mode: Messages via WhatsApp
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -197,26 +204,31 @@ const WelcomePage = () => {
             </div>
           )}
 
-          {/* SMS Instructions */}
+          {/* Messaging Instructions */}
           {!state.showFallback ? (
             <div className="bg-white/10 rounded-lg p-4 border border-white/20">
               <h2 className="text-lg font-semibold text-white mb-3">📱 Check Your Phone</h2>
               <div className="space-y-2 text-white/90 text-sm">
-                <p>We've sent an SMS to your phone with:</p>
+                <p>We've sent a message to your phone with:</p>
                 <ul className="list-disc list-inside ml-2 space-y-1">
                   <li>Your spending summary</li>
                   <li>Instructions to set your goal</li>
                 </ul>
                 <p className="mt-3 font-medium">
-                  Simply reply to that message with your monthly spending goal (example: 3000).
+                  Simply reply to that message (SMS or WhatsApp) with your monthly spending goal (example: 3000).
                 </p>
+                <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
+                  <p className="text-white/70 text-xs">
+                    💡 The message may arrive via SMS or WhatsApp depending on availability. Check both!
+                  </p>
+                </div>
               </div>
             </div>
           ) : (
             /* Fallback Content */
             <div className="space-y-4">
               <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                <h2 className="text-lg font-semibold text-white mb-3">Haven't received the SMS yet?</h2>
+                <h2 className="text-lg font-semibold text-white mb-3">Haven't received the message yet?</h2>
                 <p className="text-white/90 text-sm mb-4">
                   📋 Set your goal here instead:
                 </p>
@@ -259,11 +271,12 @@ const WelcomePage = () => {
 
               {/* Troubleshooting Tips */}
               <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <h3 className="text-white/90 text-sm font-medium mb-2">💡 SMS Troubleshooting Tips:</h3>
+                <h3 className="text-white/90 text-sm font-medium mb-2">💡 Message Troubleshooting Tips:</h3>
                 <ul className="text-white/70 text-xs space-y-1">
-                  <li>• Check spam/blocked messages</li>
-                  <li>• Make sure you have cell service</li>
-                  <li>• The SMS may arrive in a few minutes</li>
+                  <li>• Check both SMS and WhatsApp messages</li>
+                  <li>• Look in spam/blocked message folders</li>
+                  <li>• Make sure you have cell or internet service</li>
+                  <li>• The message may take a few minutes to arrive</li>
                 </ul>
               </div>
             </div>
