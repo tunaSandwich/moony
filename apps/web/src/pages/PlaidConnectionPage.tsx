@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/Button';
@@ -33,7 +33,7 @@ const PlaidConnectionPage = () => {
         setIsConnecting(false);
       }
     }, [navigate]),
-    onExit: useCallback((error) => {
+    onExit: useCallback((error: unknown) => {
       console.log('Plaid Link exited');
       setIsConnecting(false);
       if (error) {
@@ -62,7 +62,7 @@ const PlaidConnectionPage = () => {
   }, []);
 
   // Auto-open Plaid Link when token is ready
-  const handleOpenPlaidLink = useCallback(() => {
+  useEffect(() => {
     if (ready && linkToken && !isConnecting) {
       console.log('Opening Plaid Link...');
       open();
@@ -119,17 +119,16 @@ const PlaidConnectionPage = () => {
           {linkToken && !isConnecting && (
             <div className="text-center space-y-4">
               <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
-                <p className="text-green-200 text-sm">Ready to connect! Click below to continue.</p>
+                <p className="text-green-200 text-sm">
+                  {ready ? 'Opening bank connection…' : 'Preparing bank connection…'}
+                </p>
               </div>
-              
-              <Button
-                onClick={handleOpenPlaidLink}
-                disabled={!ready}
-                className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
-                size="lg"
-              >
-                Open Bank Connection
-              </Button>
+              <div className="flex justify-center">
+                <svg className="animate-spin h-5 w-5 text-green-200" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
             </div>
           )}
 
