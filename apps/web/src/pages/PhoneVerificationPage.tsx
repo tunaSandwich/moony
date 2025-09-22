@@ -47,6 +47,7 @@ const PhoneVerificationPage = () => {
 
         // Redirect if already verified
         if (user.twilioStatus === 'verified') {
+          await new Promise(resolve => setTimeout(resolve, 2000));
           navigate('/welcome');
           return;
         }
@@ -62,7 +63,7 @@ const PhoneVerificationPage = () => {
 
   const validatePhoneNumber = (phone: string): boolean => {
     // US phone number validation (allows various formats)
-    const phoneRegex = /^[\+]?[1]?[\s\-\(\)]?[0-9]{3}[\s\-\(\)]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+    const phoneRegex = /^[+]?[1]?[\s\-()]?[0-9]{3}[\s\-()]?[0-9]{3}[\s-]?[0-9]{4}$/;
     return phoneRegex.test(phone.replace(/\D/g, ''));
   };
 
