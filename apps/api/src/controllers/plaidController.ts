@@ -5,6 +5,7 @@ import { PlaidApi, Configuration, PlaidEnvironments } from 'plaid';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
 import { PlaidService } from '@services/plaidService.js';
+import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 import { ApiResponse, ExchangeTokenRequest } from '../types/index.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -138,6 +139,9 @@ export class PlaidController {
 
       logger.info('Bank connected successfully', { userId });
 
+      // Trigger analytics processing in background (non-blocking)
+      this.triggerAnalyticsProcessing(userId);
+
       // Return success response
       res.status(200).json({
         message: ERROR_MESSAGES.SUCCESS,
@@ -194,5 +198,31 @@ export class PlaidController {
       logger.error('Failed to store access token', error);
       throw new AppError('Failed to store access token', 500);
     }
+  }
+
+  /**
+   * Trigger analytics processing in background after successful bank connection
+   * Non-blocking operation with error handling
+   */
+  private triggerAnalyticsProcessing(userId: string): void {
+    logger.info('Triggering analytics processing', { userId });
+
+    // Use setImmediate to ensure this runs asynchronously and doesn't block the response
+    setImmediate(async () => {
+      try {
+        const analyticsService = new PlaidAnalyticsService();
+        await analyticsService.processUserAnalytics(userId);
+        await analyticsService.disconnect();
+      } catch (error: any) {
+        // Error handling is done within the analytics service
+        // This is just an additional safety net
+        logger.error('Analytics processing trigger failed', { 
+          userId, 
+          error: error.message 
+        });
+      }
+    });
+
+    logger.info('Analytics processing initiated in background', { userId });
   }
 }
