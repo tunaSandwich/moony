@@ -1,8 +1,11 @@
 (First Time Setup:)
-👋 Welcome!
-Avg monthly spending: $3200
-Last month you spent: $3000
-What's your spending goal this month? Just reply with a number (ex: 3000). 
+👋 Welcome to Budget Pal 👋
+
+We'll text you a spending target every day based on your monthly spending goals.
+Your avg monthly spending: $3200
+Last month's spending: $3000
+
+What's your goal this month? Reply with number (ex: 3000)
 
 —————————
 (First Message after set up)
@@ -11,30 +14,49 @@ Today's target: $47
 
 —————————
 (daily text)
-☀️ Today's target: $47
+☀️ Budget Pal ☀️ 
+
+Today's target: $47
 Yesterday you spent: $23 
-Total this month: $850/$3000
+Total: $850/$3000
+
+Reply STOP to opt out
 
 —————————
 
 (Data Issue Fallback)
-☀️ We had some trouble getting data.
-We are looking into it.
+🛠️ Budget Pal 🛠️
+
+We had trouble getting data. We're looking into it.
 
 —————————
 
 (Under Budget)
-🎉 Nice work! You spent $2850 of your $3000 goal. 
-You saved $150 this month!
-Next month's goal? Reply with number (ex: 3500) 
+
+🎉 Budget Pal  🎉 
+
+Nice work! You spent $2850 of your $3000 goal. You saved $150!
+
+Next month's goal? Reply with number (ex: 3500)
 Ignore this message to stick with current goal
 
 —————————
 
-(Over Budget:)
-📊 You spent $3150 of your $3000 goal ($150 over).
-Next month's goal? 
-Reply with number (ex: 3500) 
+(Over Budget)
+
+📊 Budget Pal 📊
+
+You spent $3150 of your $3000 goal ($150 over).
+
+Next month's goal? Reply with number (ex: 3500)
 Ignore this message to stick with current goal
+
+—————————
+
+🙏 Budget Pal 🙏
+
+For support email gonzalezgarza.lucas@gmail.com.
+
+To opt out, reply STOP.
 
 —————————

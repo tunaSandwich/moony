@@ -209,6 +209,8 @@ const PhoneVerificationPage = () => {
                   <br />
                   Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
                   <br />
+                  Mobile information will not be shared with third parties for marketing purposes.
+                  <br />
                   Reply <strong>STOP</strong> to opt out. Reply <strong>HELP</strong> for help.
                 </label>
               </div>
@@ -283,7 +285,6 @@ const PhoneVerificationPage = () => {
           {/* Legal Links */}
           <div className="pt-4 border-t border-white/20">
             <p className="text-white/70 text-xs text-center leading-relaxed">
-              <strong>Mobile information will not be shared with third parties for marketing purposes.</strong><br />
               By continuing, you agree to our{' '}
               <button 
                 onClick={handleTermsClick}

@@ -100,7 +100,7 @@ const TermsOfServicePage = () => {
                 For questions about these Terms of Service or our SMS services:
               </p>
               <ul className="text-sm space-y-1 ml-4 mt-2">
-                <li>• Email: support@budgetpal.com</li>
+                <li>• Email: gonzalezgarza.lucas@gmail.com</li>
                 <li>• SMS: Reply HELP to any message</li>
                 <li>• Web: Visit our support page</li>
               </ul>

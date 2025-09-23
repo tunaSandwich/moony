@@ -155,7 +155,7 @@ const PrivacyPolicyPage = () => {
                 If you have questions about this Privacy Policy or how we handle your information:
               </p>
               <ul className="text-sm space-y-1 ml-4 mt-2">
-                <li>• Email: privacy@budgetpal.com</li>
+                <li>• Email: gonzalezgarza.lucas@gmail.com</li>
                 <li>• Mail: Budget Pal Privacy Team</li>
                 <li>• Phone: Reply HELP to any SMS message</li>
               </ul>

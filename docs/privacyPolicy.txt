@@ -1,0 +1,74 @@
+
+1. Information We Collect
+Budget Pal collects the following types of information to provide our services:
+
+• Contact Information: Name, phone number, email address
+• Financial Data: Bank account transactions, spending patterns, account balances
+• Usage Data: App interactions, notification preferences, SMS responses
+• Device Information: Device type, operating system, app version
+2. How We Use Your Information
+We use your information to:
+
+• Provide daily spending notifications and budget tracking
+• Calculate spending analytics and financial insights
+• Send SMS messages and notifications you've subscribed to
+• Improve our services and user experience
+• Comply with legal requirements and prevent fraud
+3. Mobile Information Protection
+Mobile information will not be shared with third parties for marketing or promotional purposes.
+
+Your mobile phone number and SMS preferences are strictly protected. We only use your mobile information to provide the Budget Pal services you have explicitly requested, such as spending notifications and budget alerts.
+
+4. Financial Data Security
+Your financial data is protected through multiple layers of security:
+
+• Bank connections secured through Plaid with bank-level encryption
+• Access tokens encrypted using industry-standard AES encryption
+• No storage of banking passwords or credentials
+• Regular security audits and monitoring
+• Compliance with financial data protection regulations
+5. Data Sharing and Disclosure
+We do not sell, rent, or trade your personal information. We may share your information only in these limited circumstances:
+
+• Service Providers: Plaid for bank connections, Twilio for SMS delivery
+• Legal Requirements: When required by law or to protect our rights
+• Business Transfers: In the event of a merger or acquisition
+• With Your Consent: When you explicitly authorize sharing
+All third-party service providers are bound by strict confidentiality agreements and data protection standards.
+
+6. SMS and Communication Privacy
+Regarding SMS and electronic communications:
+
+• SMS messages are sent only to numbers you provide and verify
+• Message content is limited to financial summaries and service notifications
+• You can opt out of SMS services at any time by replying STOP
+• We do not store or analyze the content of your SMS replies beyond service functionality
+• Message logs are kept for operational purposes and regulatory compliance only
+7. Data Retention
+We retain your information for as long as necessary to provide services:
+
+• Account data: Until you close your account plus 30 days
+• Financial transactions: 7 years for regulatory compliance
+• SMS logs: 90 days for operational purposes
+• Analytics data: Aggregated and anonymized data may be retained indefinitely
+8. Your Rights and Choices
+You have the right to:
+
+• Access and review your personal information
+• Correct inaccurate or incomplete data
+• Delete your account and associated data
+• Opt out of SMS notifications at any time
+• Export your data in a portable format
+• Withdraw consent for data processing where applicable
+9. Children's Privacy
+Budget Pal is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. If we become aware that we have collected such information, we will take steps to delete it promptly.
+
+10. Changes to This Policy
+We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of significant changes via email or SMS. Your continued use of Budget Pal after changes indicates acceptance of the updated policy.
+
+11. Contact Us
+If you have questions about this Privacy Policy or how we handle your information:
+
+• Email: gonzalezgarza.lucas@gmail.com
+• Mail: Budget Pal Privacy Team
+• Phone: Reply HELP to any SMS message

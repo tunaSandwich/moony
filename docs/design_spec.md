@@ -651,7 +651,7 @@ Footer
 **Support & Help Section:**
 - Contact information clearly displayed:
   - "Questions? Text us at (555) 123-4567"
-  - "Email: support@budgetpal.com"
+  - "Email: gonzalezgarza.lucas@gmail.com"
   - "Help center" link with FAQs
 - Response time expectations
 - Community support options

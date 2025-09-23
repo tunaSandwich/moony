@@ -1,0 +1,40 @@
+1. Service Description
+Budget Pal provides automated daily spending notifications and monthly budget tracking services via SMS messaging. Our service connects to your bank account through Plaid to analyze your spending patterns and provide personalized budget alerts.
+
+2. SMS Services Agreement
+By using Budget Pal's SMS services, you agree to receive:
+
+• Daily spending notifications and budget updates
+• Monthly budget summaries and goal reminders
+• Service-related messages and account notifications
+• Message frequency: 1-2 messages per day
+Message and data rates may apply. Your mobile carrier's messaging rates will apply to all SMS messages sent and received.
+
+3. Opt-Out Instructions
+You may opt out of SMS services at any time by:
+
+• Replying STOP to any SMS message
+• Contacting customer support
+• Updating your preferences in your account settings
+For help with SMS services, reply HELP to any message or visit our support page.
+
+4. Financial Data
+Budget Pal uses Plaid to securely connect to your bank account. We only access transaction data necessary to provide spending analysis and budget tracking. We do not store your banking credentials and cannot initiate transactions from your accounts.
+
+5. Privacy and Data Protection
+Your privacy is important to us. Please review our Privacy Policy for detailed information about how we collect, use, and protect your personal and financial information. We do not sell or share your personal data with third parties for marketing purposes.
+
+6. Service Availability
+Budget Pal is provided "as is" without warranties. We strive for 99% uptime but cannot guarantee uninterrupted service. SMS delivery depends on your carrier's network and may be delayed or fail to deliver.
+
+7. Account Termination
+You may terminate your Budget Pal account at any time. Upon termination, we will stop sending SMS messages and delete your financial data within 30 days, except as required by law or for legitimate business purposes.
+
+8. Contact Information
+For questions about these Terms of Service or our SMS services:
+
+• Email: gonzalezgarza.lucas@gmail.com
+• SMS: Reply HELP to any message
+• Web: Visit our support page
+9. Changes to Terms
+We may update these Terms of Service from time to time. We will notify you of significant changes via SMS or email. Continued use of Budget Pal after changes indicates acceptance of the updated terms.
