@@ -1,0 +1,145 @@
+# Budget Pal Project - Context Transfer Document
+
+## PROJECT OVERVIEW
+
+### Core Description
+Building a lightweight AI assistant (MVP) that helps users stay on track with monthly budgets through daily SMS guidance. The system analyzes bank transaction data via Plaid to calculate spending analytics and sends personalized daily spending recommendations.
+
+### Key Objectives
+- **Primary Goal**: Deliver daily spending recommendations based on remaining budget and time left in month
+- **User Experience**: SMS-only interface (160 character limit constraint)
+- **Financial Integration**: Plaid API for bank connections and transaction analysis
+- **Analytics Focus**: Calculate average monthly spending, current month totals, and daily targets
+
+### MVP Philosophy & Constraints
+- **Speed over perfection**: Cut corners for rapid delivery, prioritize working functionality
+- **Simple solutions preferred**: Avoid over-engineering, implement basic versions first
+- **Cost consciousness**: Optimize for subscription-based pricing model ($5-10/month)
+- **No manual user input**: System must infer everything from available data automatically
+
+### Target Users & Revenue Model
+- **Pricing**: $5-10/month subscription per user
+- **Target Scale**: 10k users initially
+- **Cost Structure**: Plaid (~$1/user/month), Twilio (~$2.50/user/month), Database (~minimal)
+- **Projected Margins**: 72-86% gross margin
+
+## TECHNICAL DECISIONS & ARCHITECTURE
+
+### Technology Stack
+- **Backend**: Node.js/Express with TypeScript
+- **Database**: PostgreSQL in Docker (port 5433) with Prisma ORM
+- **External APIs**: Plaid (bank integration), Twilio (SMS)
+- **Frontend**: React/Vite with TypeScript (basic onboarding flow only)
+- **Authentication**: JWT with 30-day expiration
+
+### Database Schema (Finalized)
+```sql
+-- Core tables implemented and tested:
+- users: Authentication, encrypted Plaid tokens, phone verification
+- spending_goals: Monthly limits with custom start dates (1-28th)
+- daily_messages: SMS delivery tracking with JSONB metadata
+- user_spending_analytics: Computed financial data (separate from messages)
+- recurring_expenses: Future enhancement for expense prediction
+```
+
+### Key Architecture Decisions
+- **Separation of Concerns**: Analytics table separate from messages for scaling
+- **Background Processing**: Analytics calculated asynchronously after bank connection
+- **No Local Transaction Storage**: Call Plaid API daily, leverage subscription pricing
+- **Modular Services**: PlaidAnalyticsService, dedicated controllers for each API
+
+### API Endpoints (Implemented & Tested)
+1. `POST /api/invite-codes/validate` - JWT authentication ✅
+2. `POST /api/plaid/connect` - Bank connection with background analytics ✅
+3. `POST /api/plaid/create_link_token` - Plaid Link initialization ✅
+4. `POST /api/twilio/send-code` - SMS verification ✅
+5. `POST /api/twilio/verify-number` - Code validation ✅
+6. `POST /api/webhooks/twilio/incoming-message` - Goal setting responses ✅
+
+## DESIGN CONSIDERATIONS & TRADE-OFFS
+
+### Established Design Principles
+- **Cost-Optimized Data Strategy**: Since Plaid charges monthly subscriptions (not per-call), make daily API calls rather than storing transaction data locally
+- **SMS-First Interface**: All user interaction via SMS, frontend only for onboarding
+- **Analytics-Only Storage**: Store calculated metrics, not raw transactions
+- **Background Processing**: Never block user-facing responses with heavy calculations
+
+### Key Trade-offs Resolved
+1. **Transaction Storage vs API Calls**: Chose API calls (leverages existing Plaid subscription)
+2. **Historical Data Range**: 6 months vs 20 months → Chose 6 months (sufficient for accuracy, faster processing)
+3. **Recurring Expense Complexity**: Decided to implement basic algorithm first, advanced recurring prediction later
+4. **Simple Daily Calculation**: `(Monthly budget - Amount spent) / Days remaining` - rejected complex recurring expense adjustments for MVP
+
+### Rejected Approaches
+- **Complex recurring transaction prediction**: Too complex for MVP, basic algorithm sufficient
+- **Local transaction storage**: Unnecessary given Plaid pricing model
+- **Advanced retry logic**: 3 attempts sufficient for MVP
+- **Frontend-heavy architecture**: SMS-only interface chosen for simplicity
+
+### Open Questions/Pending Decisions
+- **SMS Webhook Response Handling**: Currently broken - "3000" replies not processing correctly
+- **Scheduler Implementation**: Daily message sending system (next major milestone)
+- **Production Deployment**: Railway platform planned
+- **Real Data Transition**: Move from sandbox to production (Plaid + Twilio approval needed)
+
+## CURRENT STATE
+
+### Completed Milestones ✅
+1. **Database Migration**: All tables created, Prisma schema working
+2. **Plaid Integration**: 6-month transaction analytics calculated and stored automatically after bank connection
+3. **SMS Verification Flow**: Twilio 10DLC compliant phone verification implemented
+4. **Welcome Message System**: WhatsApp testing working (SMS pending 10DLC approval)
+5. **Frontend Onboarding**: Complete flow from invite → bank connection → SMS setup
+6. **Legal Compliance**: Terms/Privacy pages created for Twilio approval
+
+### Current Technical Status
+- **Analytics Calculation**: Working (tested with $3200 avg, $3000 last month)
+- **Welcome SMS**: Delivering via WhatsApp (`👋 Welcome to Budget Pal...`)
+- **SMS Response Processing**: **BROKEN** - "3000" replies not triggering goal setting
+
+### Active Blockers
+1. **SMS Webhook Issue**: Goal setting responses ("3000") not being processed
+2. **Twilio 10DLC Approval**: Waiting for campaign approval to switch from WhatsApp to SMS
+3. **Production SMS Testing**: Need real SMS capability to validate complete flow
+
+### Next Priority Steps
+1. **Fix SMS response webhook** - debug why "3000" isn't creating spending goals
+2. **Implement daily scheduler** - automated daily message system
+3. **Production deployment** - move to Railway platform
+4. **Real data integration** - transition from sandbox to production
+
+## COLLABORATION PREFERENCES
+
+### Communication Style
+- **Direct, no flattery**: Skip positive adjectives, get straight to the point
+- **Technical depth**: Appreciates detailed technical analysis and considerations
+- **Product mindset**: Balance user experience with technical implementation
+- **Cost consciousness**: Always consider financial implications and margins
+
+### Question Preferences
+- **Ask for clarification**: "Please ask me if you need further context"
+- **Technical validation**: Double-check complex technical decisions
+- **Implementation-focused**: Prefers actionable prompts for Claude Code implementation
+- **Business context**: Considers user experience, costs, and scalability together
+
+### Working Style
+- **Incremental approach**: Break large prompts into focused pieces
+- **MVP-first mentality**: Implement basic working versions before adding complexity
+- **Testing-oriented**: Validate functionality before moving to next steps
+- **Documentation-conscious**: Values clear architecture decisions and rationale
+
+### Prompt Engineering Approach
+- **Best practices prompting**: Requests well-structured prompts following established patterns
+- **Context-rich**: Includes relevant technical details and constraints in prompts
+- **Implementation-ready**: Prompts should be actionable for Claude Code
+- **Clear success criteria**: Defines what "done" looks like for each task
+
+### Technical Decision Making
+- **Evidence-based**: Research costs, technical constraints before making choices
+- **Pragmatic trade-offs**: Willing to cut corners for MVP speed while maintaining quality
+- **Scalability-aware**: Consider how decisions impact growth to 10k+ users
+- **Security-conscious**: Implement proper encryption, validation, and error handling
+
+---
+
+**Current Immediate Need**: Fix SMS webhook processing for goal setting responses. User receives welcome message but "3000" reply doesn't create spending_goal record or trigger confirmation SMS.

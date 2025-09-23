@@ -1,0 +1,33 @@
+I need you to create a comprehensive context transfer document that captures all the important progress, decisions, and context from our conversation. This will be passed to a new Claude conversation to maintain continuity.
+
+Please create a structured report that includes:
+
+**PROJECT OVERVIEW**
+- Core project description and objectives
+- Key requirements and constraints (especially MVP focus)
+- Target users and use cases
+
+**TECHNICAL DECISIONS & ARCHITECTURE**
+- API design decisions we've made
+- Database schema or data model decisions
+- Technology stack choices and rationale
+- Architecture patterns we've chosen
+
+**DESIGN CONSIDERATIONS & TRADE-OFFS**
+- Key design principles we've established
+- Trade-offs we've discussed and resolved
+- Rejected approaches and why
+- Open questions or decisions still pending
+
+**CURRENT STATE**
+- What we've completed or decided
+- Current blockers or challenges
+- Next steps or priorities identified
+
+**COLLABORATION PREFERENCES**
+- Types of questions or clarifications that have been most helpful
+- Communication style preferences I've expressed
+- Level of detail I prefer in responses
+- How I like to work through problems
+
+Format this as a clear, well-organized document that another Claude instance can quickly absorb to understand both the technical context and how to best collaborate with me going forward.
