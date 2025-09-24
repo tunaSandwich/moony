@@ -6,6 +6,7 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { MessagingService } from '../services/messagingService.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
+import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 
 const prisma = new PrismaClient();
 
@@ -87,15 +88,19 @@ const parseSpendingGoal = (body: string, previousGoalAmount?: number): number | 
 };
 
 // Utility function to calculate period dates
-const calculatePeriodDates = (monthStartDay: number = 1): { periodStart: Date, periodEnd: Date } => {
+const calculatePeriodDates = (monthStartDay?: number): { periodStart: Date, periodEnd: Date, actualMonthStartDay: number } => {
   const now = new Date();
   
-  // For simplicity, we'll use calendar months starting from day 1
-  // TODO: Implement custom month_start_day logic if needed
-  const periodStart = startOfMonth(now);
-  const periodEnd = endOfMonth(now);
+  // MVP: Period starts from goal creation date (today)
+  // This creates custom 30-day periods instead of calendar months
+  const periodStart = new Date(now); // Goal creation date
+  const periodEnd = new Date(now);
+  periodEnd.setDate(periodStart.getDate() + 29); // 30-day period (inclusive)
+  
+  // The actual start day for this period
+  const actualMonthStartDay = periodStart.getDate();
 
-  return { periodStart, periodEnd };
+  return { periodStart, periodEnd, actualMonthStartDay };
 };
 
 // Utility function to send response message (SMS or WhatsApp)
@@ -146,10 +151,12 @@ const formatCurrency = (amount: number): string => {
 export class WebhookController {
   private messagingService: MessagingService;
   private calculationService: CalculationService;
+  private plaidAnalyticsService: PlaidAnalyticsService;
 
   constructor() {
     this.messagingService = new MessagingService();
     this.calculationService = new CalculationService();
+    this.plaidAnalyticsService = new PlaidAnalyticsService();
   }
 
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -234,8 +241,8 @@ export class WebhookController {
         throw new AppError(ERROR_MESSAGES.INVALID_FORMAT, 400);
       }
 
-      // Calculate period dates
-      const { periodStart, periodEnd } = calculatePeriodDates();
+      // Calculate period dates based on goal creation date
+      const { periodStart, periodEnd, actualMonthStartDay } = calculatePeriodDates();
 
       // Create new spending goal and deactivate previous ones in a transaction
       await prisma.$transaction(async (tx) => {
@@ -253,7 +260,7 @@ export class WebhookController {
           data: {
             userId: user.id,
             monthlyLimit: goalAmount,
-            monthStartDay: 1, // Default to 1st of month
+            monthStartDay: actualMonthStartDay, // Actual day when period starts
             periodStart,
             periodEnd,
             isActive: true
@@ -268,15 +275,75 @@ export class WebhookController {
         periodEnd: format(periodEnd, 'yyyy-MM-dd')
       });
 
-      // Calculate today's daily target (assuming no current month spending for new goal)
-      const currentMonthSpending = 0; // New goal means starting fresh
-      const dailyTarget = this.calculationService.calculateDailyTarget(goalAmount, currentMonthSpending);
+      // Calculate today's daily target using real period spending data
+      let dailyTarget = 0;
+      let currentPeriodSpending = 0;
+      let calculationError: string | undefined;
+
+      try {
+        // Fetch real transaction data for the period
+        const { transactions, error } = await this.plaidAnalyticsService.fetchPeriodTransactions(
+          user.id, 
+          periodStart, 
+          periodEnd
+        );
+
+        if (error) {
+          calculationError = error;
+          logger.warn('Using fallback calculation due to Plaid error', { 
+            userId: user.id, 
+            error 
+          });
+        } else {
+          // Convert transactions and calculate period spending
+          const plaidTransactions = this.calculationService.convertToPlaidTransactions(transactions);
+          currentPeriodSpending = this.calculationService.calculatePeriodSpending(
+            plaidTransactions, 
+            periodStart, 
+            periodEnd
+          );
+        }
+
+        // Calculate period-aware daily target
+        dailyTarget = this.calculationService.calculatePeriodAwareDailyTarget(
+          goalAmount,
+          currentPeriodSpending,
+          periodStart,
+          periodEnd
+        );
+
+        logger.info('Daily target calculated', {
+          userId: user.id,
+          goalAmount,
+          currentPeriodSpending,
+          dailyTarget,
+          periodStart: format(periodStart, 'yyyy-MM-dd'),
+          periodEnd: format(periodEnd, 'yyyy-MM-dd'),
+          hasPlaidError: !!calculationError
+        });
+
+      } catch (targetCalculationError: any) {
+        logger.error('Failed to calculate daily target', {
+          userId: user.id,
+          error: targetCalculationError.message
+        });
+        
+        // Graceful fallback to basic calculation
+        dailyTarget = this.calculationService.calculateDailyTarget(goalAmount, 0);
+        calculationError = 'Unable to fetch current spending data';
+      }
+
       const formattedTarget = this.calculationService.formatDailyTargetMessage(dailyTarget);
 
       // Send confirmation message using the same channel
-      const confirmationMessage = `Budget Pal:
-        Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
-        Today's target: ${formattedTarget}`;
+      let confirmationMessage = `Budget Pal:
+Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
+Today's target: ${formattedTarget}`;
+
+      // Add note about spending data if there was an error
+      if (calculationError && currentPeriodSpending === 0) {
+        confirmationMessage += '\n\n(Target calculated without current spending data)';
+      }
 
       await sendResponse(phoneNumber, confirmationMessage, channel);
 

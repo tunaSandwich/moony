@@ -1,7 +1,17 @@
-import { startOfMonth, endOfMonth, subMonths, isAfter, isBefore, isEqual, differenceInCalendarDays, getDaysInMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, isAfter, isBefore, isEqual, differenceInCalendarDays, getDaysInMonth, differenceInDays } from 'date-fns';
 import { logger } from '../utils/logger.js';
 
 export type PlaidTransaction = { date: string; amount: number };
+
+// Type for processed transactions from Plaid service
+export interface ProcessedTransaction {
+  id: string;
+  amount: number;
+  date: Date;
+  merchantName: string | null;
+  category: string | null;
+  accountId: string;
+}
 
 export class CalculationService {
   private isWithinInclusive(date: Date, start: Date, end: Date): boolean {
@@ -58,7 +68,121 @@ export class CalculationService {
   }
 
   /**
-   * Calculate daily spending target based on remaining budget and days in month
+   * Convert ProcessedTransaction array to PlaidTransaction format
+   * @param processedTransactions - Array of processed transactions from Plaid service
+   * @returns Array of transactions in PlaidTransaction format
+   */
+  convertToPlaidTransactions(processedTransactions: ProcessedTransaction[]): PlaidTransaction[] {
+    return processedTransactions.map(tx => ({
+      date: tx.date.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
+      amount: tx.amount
+    }));
+  }
+
+  /**
+   * Calculate spending within a custom period from transaction data
+   * @param transactions - Array of transactions to filter (PlaidTransaction format)
+   * @param periodStart - Start date of the period (inclusive)
+   * @param periodEnd - End date of the period (inclusive)
+   * @returns Total spending amount within the period
+   */
+  calculatePeriodSpending(transactions: PlaidTransaction[], periodStart: Date, periodEnd: Date): number {
+    try {
+      let total = 0;
+      
+      for (const tx of transactions) {
+        const txDate = new Date(tx.date);
+        
+        // Check if transaction is within the period (inclusive)
+        if (Number.isFinite(tx.amount) && 
+            tx.amount > 0 && 
+            this.isWithinInclusive(txDate, periodStart, periodEnd)) {
+          total += tx.amount;
+        }
+      }
+      
+      return Number(total.toFixed(2));
+    } catch (err) {
+      logger.error('calculatePeriodSpending failed', { err, periodStart, periodEnd });
+      return 0; // Graceful fallback
+    }
+  }
+
+  /**
+   * Calculate daily spending target based on period budget and actual spending
+   * Formula: (Period budget - Current period spending) / Days remaining in period
+   * @param periodBudget - Total budget for the period
+   * @param currentPeriodSpending - Amount spent so far in the period
+   * @param periodStart - Start date of the period
+   * @param periodEnd - End date of the period  
+   * @param today - Current date (defaults to today)
+   */
+  calculatePeriodAwareDailyTarget(
+    periodBudget: number, 
+    currentPeriodSpending: number, 
+    periodStart: Date,
+    periodEnd: Date,
+    today: Date = new Date()
+  ): number {
+    try {
+      // Validate inputs
+      if (!Number.isFinite(periodBudget) || 
+          !Number.isFinite(currentPeriodSpending) || 
+          periodBudget < 0) {
+        logger.warn('Invalid inputs for period daily target calculation', { 
+          periodBudget, 
+          currentPeriodSpending,
+          periodStart,
+          periodEnd 
+        });
+        return 0;
+      }
+
+      // Calculate days remaining in period (including today)
+      const daysRemaining = differenceInDays(periodEnd, today) + 1;
+      
+      // If no days remaining or period has ended, return 0
+      if (daysRemaining <= 0) {
+        logger.info('Period has ended or no days remaining', { 
+          periodEnd, 
+          today, 
+          daysRemaining 
+        });
+        return 0;
+      }
+
+      const remainingBudget = periodBudget - currentPeriodSpending;
+      
+      // If budget is exceeded, return 0
+      if (remainingBudget <= 0) {
+        logger.info('Period budget exceeded', { 
+          periodBudget, 
+          currentPeriodSpending, 
+          remainingBudget 
+        });
+        return 0;
+      }
+
+      // Calculate and floor to whole dollars
+      const dailyTarget = Math.floor(remainingBudget / daysRemaining);
+      
+      return Math.max(0, dailyTarget); // Ensure non-negative
+    } catch (err) {
+      logger.error('calculatePeriodAwareDailyTarget failed', { 
+        err, 
+        periodBudget, 
+        currentPeriodSpending,
+        periodStart,
+        periodEnd,
+        today 
+      });
+      return 0; // Graceful fallback
+    }
+  }
+
+  /**
+   * DEPRECATED: Calculate daily spending target based on remaining budget and days in month
+   * Use calculatePeriodAwareDailyTarget for period-aware calculations
    * Formula: (Monthly budget - Current month spending) / Days remaining in month
    */
   calculateDailyTarget(monthlyBudget: number, currentMonthSpending: number, today: Date = new Date()): number {

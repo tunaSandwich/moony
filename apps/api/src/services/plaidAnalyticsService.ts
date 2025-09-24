@@ -385,6 +385,99 @@ export class PlaidAnalyticsService {
   }
 
   /**
+   * Fetch transactions for a specific period for daily spending calculations
+   * @param userId - User ID to fetch transactions for
+   * @param periodStart - Start date of the period (inclusive)
+   * @param periodEnd - End date of the period (inclusive, but limited to today)
+   * @returns Array of processed transactions within the period
+   */
+  public async fetchPeriodTransactions(
+    userId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<{ transactions: ProcessedTransaction[], error?: string }> {
+    try {
+      logger.info('Fetching period transactions', { 
+        userId, 
+        periodStart: format(periodStart, 'yyyy-MM-dd'),
+        periodEnd: format(periodEnd, 'yyyy-MM-dd')
+      });
+
+      // Get user's encrypted access token
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { plaidAccessToken: true }
+      });
+
+      if (!user || !user.plaidAccessToken) {
+        const error = 'User not found or no Plaid access token available';
+        logger.warn(error, { userId });
+        return { transactions: [], error };
+      }
+
+      // Decrypt access token
+      const accessToken = await this.decryptAccessToken(user.plaidAccessToken);
+
+      // Limit end date to today to avoid future dates
+      const today = new Date();
+      const effectiveEndDate = periodEnd > today ? today : periodEnd;
+
+      // Fetch transactions for the period
+      const response = await this.plaidClient.transactionsGet({
+        access_token: accessToken,
+        start_date: format(periodStart, 'yyyy-MM-dd'),
+        end_date: format(effectiveEndDate, 'yyyy-MM-dd'),
+        options: {
+          count: 500, // Maximum per request
+          offset: 0,
+        }
+      });
+
+      let allTransactions = response.data.transactions;
+      const totalTransactions = response.data.total_transactions;
+
+      // Handle pagination if there are more transactions
+      while (allTransactions.length < totalTransactions) {
+        const nextResponse = await this.plaidClient.transactionsGet({
+          access_token: accessToken,
+          start_date: format(periodStart, 'yyyy-MM-dd'),
+          end_date: format(effectiveEndDate, 'yyyy-MM-dd'),
+          options: {
+            count: 500,
+            offset: allTransactions.length,
+          }
+        });
+        allTransactions = allTransactions.concat(nextResponse.data.transactions);
+      }
+
+      // Process and filter transactions
+      const processedTransactions = this.processTransactions(allTransactions);
+
+      logger.info('Period transactions fetched successfully', { 
+        userId,
+        totalFetched: allTransactions.length,
+        spendingTransactions: processedTransactions.length,
+        periodStart: format(periodStart, 'yyyy-MM-dd'),
+        periodEnd: format(effectiveEndDate, 'yyyy-MM-dd')
+      });
+
+      return { transactions: processedTransactions };
+
+    } catch (error: any) {
+      const errorMessage = `Failed to fetch period transactions: ${error.message}`;
+      logger.error(errorMessage, { 
+        userId, 
+        periodStart, 
+        periodEnd,
+        error: error.message 
+      });
+      
+      // Return empty transactions array with error for graceful degradation
+      return { transactions: [], error: errorMessage };
+    }
+  }
+
+  /**
    * Cleanup method for closing connections
    */
   public async disconnect(): Promise<void> {

@@ -18,11 +18,11 @@ const seedOptions: SeedOptions = {
 // Helper function to create date ranges for spending goals
 function createMonthPeriod(monthsOffset: number = 0, startDay: number = 1) {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + monthsOffset;
   
-  const periodStart = new Date(year, month, startDay);
-  const periodEnd = new Date(year, month + 1, startDay - 1);
+  // For MVP: Create 30-day periods starting from today (when goal is created)
+  const periodStart = new Date(now);
+  const periodEnd = new Date(periodStart);
+  periodEnd.setDate(periodStart.getDate() + 29); // 30-day period (inclusive)
   
   return { periodStart, periodEnd };
 }

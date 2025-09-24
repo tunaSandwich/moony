@@ -9,8 +9,14 @@ What's your goal this month? Reply with number (ex: 3000)
 
 —————————
 (First Message after set up)
-Great! We'll text you a spending target every day
+
+Budget Pal:
+Great! Your spending goal of $2,000 has been set. You'll receive daily updates on your progress!
+
 Today's target: $47
+
+Yesterday you spent: $23 
+Total: $850/$3000
 
 —————————
 (daily text)
