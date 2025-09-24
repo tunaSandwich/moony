@@ -3,7 +3,7 @@ import twilio from 'twilio';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { startOfMonth, endOfMonth, format, subDays, isSameDay } from 'date-fns';
 import { MessagingService } from '../services/messagingService.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
@@ -278,6 +278,7 @@ export class WebhookController {
       // Calculate today's daily target using real period spending data
       let dailyTarget = 0;
       let currentPeriodSpending = 0;
+      let yesterdaySpent = 0;
       let calculationError: string | undefined;
 
       try {
@@ -302,6 +303,12 @@ export class WebhookController {
             periodStart, 
             periodEnd
           );
+
+          // Calculate yesterday's spending from processed transactions
+          const yesterday = subDays(new Date(), 1);
+          yesterdaySpent = transactions.reduce((sum, tx) => {
+            return isSameDay(tx.date, yesterday) ? sum + (Number.isFinite(tx.amount) ? tx.amount : 0) : sum;
+          }, 0);
         }
 
         // Calculate period-aware daily target
@@ -337,8 +344,20 @@ export class WebhookController {
 
       // Send confirmation message using the same channel
       let confirmationMessage = `Budget Pal:
+
 Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
-Today's target: ${formattedTarget}`;
+
+Today's target: ${formattedTarget}
+
+`;
+
+      if (yesterdaySpent > 0) {
+        confirmationMessage += `Yesterday you spent: ${formatCurrency(yesterdaySpent)} 
+`;
+      }
+
+      confirmationMessage += `Total: ${formatCurrency(currentPeriodSpending)}/${formatCurrency(goalAmount)}
+`;
 
       // Add note about spending data if there was an error
       if (calculationError && currentPeriodSpending === 0) {
