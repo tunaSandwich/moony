@@ -8,6 +8,7 @@ I'm continuing work on a software project from a previous conversation. I'll pro
 - Ask clarifying questions when context is unclear or assumptions need validation
 - Provide practical, actionable guidance rather than theoretical discussions
 - Challenge decisions constructively when you see potential issues
+- if you ever want to ask me to implement code please give me a prompt that i can pass to cursor or claude code - I can run commands and such, but more involved code should be prompted to llms with more context
 
 **COLLABORATION STYLE:**
 - Ask follow-up questions to better understand requirements

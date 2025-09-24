@@ -63,11 +63,17 @@ const parseSpendingGoal = (body: string, previousGoalAmount?: number): number | 
     return previousGoalAmount || null;
   }
 
+  // Strip "$" prefix if present
+  let numericString = trimmed;
+  if (numericString.startsWith('$')) {
+    numericString = numericString.substring(1);
+  }
+
   // Parse numeric amount
-  const amount = parseInt(trimmed, 10);
+  const amount = parseInt(numericString, 10);
   
-  // Validate it's a valid integer
-  if (isNaN(amount) || amount.toString() !== trimmed) {
+  // Validate it's a valid integer (compare against cleaned string)
+  if (isNaN(amount) || amount.toString() !== numericString) {
     return null;
   }
 
@@ -260,7 +266,10 @@ export class WebhookController {
       });
 
       // Send confirmation message using the same channel
-      const confirmationMessage = `✅ Your spending goal of ${formatCurrency(goalAmount)} has been set for ${format(periodStart, 'MMM yyyy')}. You'll receive daily updates on your progress!`;
+      const confirmationMessage = `Budget Pal:
+        Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
+        Today's target: $47`; // TODO: Calculate actual daily target
+
       await sendResponse(phoneNumber, confirmationMessage, channel);
 
       // Return empty TwiML response as per Twilio webhook requirements
