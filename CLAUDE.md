@@ -51,7 +51,7 @@ Budget Pal is a Node.js/TypeScript application that provides automated daily spe
 - `TZ` - Timezone for scheduler (defaults to system timezone)
 
 **Key Environment Variables:**
-- Plaid: `PLAID_ENV`, `PLAID_CLIENT_ID`, `PLAID_SECRET`
+- Plaid: `PLAID_ENV`, `PLAID_CLIENT_ID`, `PLAID_SANDBOX_SECRET`
 - Twilio WhatsApp: `TWILIO_WHATSAPP_FROM`, `YOUR_WHATSAPP_NUMBER`
 - Messaging: `YOUR_NAME`, `DAILY_SPENDING_LIMIT`
 

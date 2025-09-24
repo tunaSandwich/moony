@@ -14,7 +14,7 @@ import {
 import routes from '../routes/index.js';
 
 // Load environment-specific configuration
-const nodeEnv = process.env.NODE_ENV || 'development';
+const nodeEnv = process.env.NODE_ENV || 'local';
 dotenv.config({ path: `.env.${nodeEnv}` });
 dotenv.config({ path: '.env' }); // fallback for shared variables
 
@@ -63,7 +63,7 @@ export const createApp = (): express.Application => {
 export const getServerConfig = () => {
   const PORT = Number(process.env.PORT || 3000);
   const HOST = process.env.HOST || '0.0.0.0';
-  const NODE_ENV = process.env.NODE_ENV || 'development';
+  const NODE_ENV = process.env.NODE_ENV || 'local';
 
   // Validate configuration
   if (isNaN(PORT) || PORT < 1 || PORT > 65535) {
