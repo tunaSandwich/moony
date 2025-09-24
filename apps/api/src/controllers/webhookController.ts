@@ -5,6 +5,7 @@ import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { MessagingService } from '../services/messagingService.js';
+import { CalculationService } from '../../../../packages/services/calculationService.js';
 
 const prisma = new PrismaClient();
 
@@ -144,9 +145,11 @@ const formatCurrency = (amount: number): string => {
 
 export class WebhookController {
   private messagingService: MessagingService;
+  private calculationService: CalculationService;
 
   constructor() {
     this.messagingService = new MessagingService();
+    this.calculationService = new CalculationService();
   }
 
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -265,10 +268,15 @@ export class WebhookController {
         periodEnd: format(periodEnd, 'yyyy-MM-dd')
       });
 
+      // Calculate today's daily target (assuming no current month spending for new goal)
+      const currentMonthSpending = 0; // New goal means starting fresh
+      const dailyTarget = this.calculationService.calculateDailyTarget(goalAmount, currentMonthSpending);
+      const formattedTarget = this.calculationService.formatDailyTargetMessage(dailyTarget);
+
       // Send confirmation message using the same channel
       const confirmationMessage = `Budget Pal:
         Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
-        Today's target: $47`; // TODO: Calculate actual daily target
+        Today's target: ${formattedTarget}`;
 
       await sendResponse(phoneNumber, confirmationMessage, channel);
 

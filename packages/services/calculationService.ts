@@ -1,4 +1,4 @@
-import { startOfMonth, endOfMonth, subMonths, isAfter, isBefore, isEqual, differenceInCalendarDays } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, isAfter, isBefore, isEqual, differenceInCalendarDays, getDaysInMonth } from 'date-fns';
 import { logger } from '../utils/logger.js';
 
 export type PlaidTransaction = { date: string; amount: number };
@@ -55,6 +55,63 @@ export class CalculationService {
       lastMonthSpent,
       averageDaily,
     };
+  }
+
+  /**
+   * Calculate daily spending target based on remaining budget and days in month
+   * Formula: (Monthly budget - Current month spending) / Days remaining in month
+   */
+  calculateDailyTarget(monthlyBudget: number, currentMonthSpending: number, today: Date = new Date()): number {
+    try {
+      // Validate inputs
+      if (!Number.isFinite(monthlyBudget) || !Number.isFinite(currentMonthSpending) || monthlyBudget < 0) {
+        logger.warn('Invalid inputs for daily target calculation', { monthlyBudget, currentMonthSpending });
+        return 0;
+      }
+
+      // Calculate days remaining in month including today
+      const dayOfMonth = today.getDate();
+      const totalDaysInMonth = getDaysInMonth(today);
+      const daysRemaining = totalDaysInMonth - dayOfMonth + 1; // +1 to include today
+      
+      // If no days remaining or negative days, return 0
+      if (daysRemaining <= 0) {
+        return 0;
+      }
+
+      const remainingBudget = monthlyBudget - currentMonthSpending;
+      
+      // If budget is exceeded, return 0
+      if (remainingBudget <= 0) {
+        return 0;
+      }
+
+      // Calculate and floor to whole dollars
+      const dailyTarget = Math.floor(remainingBudget / daysRemaining);
+      
+      return Math.max(0, dailyTarget); // Ensure non-negative
+    } catch (err) {
+      logger.error('calculateDailyTarget failed', { err, monthlyBudget, currentMonthSpending, today });
+      return 0; // Graceful fallback
+    }
+  }
+
+  /**
+   * Format daily target as currency string
+   */
+  formatDailyTargetMessage(target: number): string {
+    try {
+      const amount = Math.max(0, Math.floor(target)); // Ensure non-negative whole number
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (err) {
+      logger.error('formatDailyTargetMessage failed', { err, target });
+      return '$0'; // Graceful fallback
+    }
   }
 }
 
