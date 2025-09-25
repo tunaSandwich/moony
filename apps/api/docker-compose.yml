@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:15
     container_name: budgeting_db
-    env_file: ../../.env.development  # Point to top level
+    env_file: ../../.env.local
     environment:
       POSTGRES_USER: lucas
       POSTGRES_PASSWORD: dev_password_123
@@ -13,5 +13,21 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  postgres_staging:
+    image: postgres:15
+    container_name: budgeting_db_staging
+    # make sure this path exists; see note below
+    env_file: ../../.env.staging
+    environment:
+      POSTGRES_USER: lucas_staging
+      POSTGRES_PASSWORD: staging_password_123
+      POSTGRES_DB: budgeting_staging
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
-  postgres_data:
+  postgres_data: {}
+  postgres_staging_data: {}

@@ -51,7 +51,7 @@ HEALTH_LOG_INTERVAL_MS=60000              # (optional) health log interval
 # Plaid
 PLAID_ENV=sandbox                         # sandbox | development | production
 PLAID_CLIENT_ID=your_plaid_client_id
-PLAID_SANDBOX_SECRET=your_PLAID_SANDBOX_SECRET
+PLAID_SECRET=your_PLAID_SANDBOX_SECRET
 PLAID_REDIRECT_URI=http://localhost:3000  # (optional) if using redirect flows
 # Either set PLAID_ACCESS_TOKEN or connect via the web UI to create src/temp_access_token.json
 PLAID_ACCESS_TOKEN=                       # (optional)

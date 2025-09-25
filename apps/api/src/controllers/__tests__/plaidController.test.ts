@@ -36,7 +36,7 @@ describe('POST /api/plaid/connect', () => {
     // Set environment variables for tests
     process.env.JWT_SECRET = 'test-secret-key';
     process.env.PLAID_CLIENT_ID = 'test-client-id';
-    process.env.PLAID_SANDBOX_SECRET = 'test-secret';
+    process.env.PLAID_SECRET = 'test-secret';
     process.env.PLAID_ENV = 'sandbox';
     process.env.ENCRYPTION_KEY = 'test-encryption-key-32-chars-long';
 
