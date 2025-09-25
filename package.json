@@ -37,6 +37,9 @@
     "db:seed:clear": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear",
     "db:seed:clearAndSeed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear && tsx apps/api/prisma/seed.ts",
 
+    "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/scripts/create-user.ts",
+    "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && tsx apps/api/scripts/create-user.ts",
+
     
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
