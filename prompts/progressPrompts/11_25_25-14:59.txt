@@ -1,0 +1,198 @@
+# Budget Pal Project - Context Transfer Document
+
+## PROJECT OVERVIEW
+
+### Core Description
+Budget Pal is a lightweight AI assistant MVP that helps users stay on track with monthly budgets through daily SMS guidance. The system analyzes bank transaction data via Plaid to calculate spending analytics and sends personalized daily spending recommendations.
+
+### Key Objectives
+- **Primary Goal**: Deliver daily spending recommendations based on remaining budget and days left in month
+- **User Experience**: SMS-only interface (160 character limit constraint) via Twilio
+- **Financial Integration**: Plaid API for bank connections and transaction analysis
+- **Analytics Focus**: Calculate monthly spending patterns and daily targets
+
+### MVP Philosophy & Constraints
+- **Speed over perfection**: Cut corners for rapid delivery, prioritize working functionality
+- **Simple solutions preferred**: Avoid over-engineering, implement basic versions first
+- **Cost consciousness**: Optimize for subscription-based pricing model ($5-10/month)
+- **No manual user input**: System must infer everything from available data automatically
+
+### Target Users & Revenue Model
+- **Pricing**: $5-10/month subscription per user
+- **Target Scale**: 10k users initially
+- **Cost Structure**: Plaid (~$1/user/month), Twilio (~$2.50/user/month), Database (~minimal)
+- **Projected Margins**: 72-86% gross margin
+
+## TECHNICAL DECISIONS & ARCHITECTURE
+
+### Technology Stack
+- **Backend**: Node.js/Express with TypeScript
+- **Database**: PostgreSQL in Docker (port 5433) with Prisma ORM
+- **External APIs**: Plaid (bank integration), Twilio (SMS)
+- **Frontend**: React/Vite with TypeScript (basic onboarding flow only)
+- **Authentication**: JWT with 30-day expiration
+
+### Database Schema (Finalized)
+```sql
+-- Core tables implemented and tested:
+- users: Authentication, encrypted Plaid tokens, phone verification
+- spending_goals: Monthly limits with calendar month periods
+- daily_messages: SMS delivery tracking with JSONB metadata
+- user_spending_analytics: Computed financial data (separate from messages)
+- recurring_expenses: Future enhancement for expense prediction
+```
+
+### Key Architecture Decisions
+- **Separation of Concerns**: Analytics table separate from messages for scaling
+- **Background Processing**: Analytics calculated asynchronously after bank connection
+- **No Local Transaction Storage**: Call Plaid API daily, leverage subscription pricing
+- **Modular Services**: PlaidAnalyticsService, CalculationService, MessagingService
+- **Environment Management**: .env.local (dev), .env.staging (testing), .env.production (prod)
+
+### API Endpoints (Implemented & Tested)
+1. `POST /api/invite-codes/validate` - JWT authentication ✅
+2. `POST /api/plaid/connect` - Bank connection with background analytics ✅
+3. `POST /api/plaid/create_link_token` - Plaid Link initialization ✅
+4. `POST /api/twilio/send-code` - SMS verification ✅
+5. `POST /api/twilio/verify-number` - Code validation ✅
+6. `POST /api/webhooks/twilio/incoming-message` - Goal setting responses ✅
+
+## DESIGN CONSIDERATIONS & TRADE-OFFS
+
+### Established Design Principles
+- **Cost-Optimized Data Strategy**: Since Plaid charges monthly subscriptions (not per-call), make daily API calls rather than storing transaction data locally
+- **SMS-First Interface**: All user interaction via SMS, frontend only for onboarding
+- **Analytics-Only Storage**: Store calculated metrics, not raw transactions
+- **Background Processing**: Never block user-facing responses with heavy calculations
+- **Calendar Month Periods**: Budget periods align with calendar months (Jan 1-31, Feb 1-28/29, etc.)
+
+### Key Trade-offs Resolved
+1. **Transaction Storage vs API Calls**: Chose API calls (leverages existing Plaid subscription)
+2. **Historical Data Range**: 6 months vs 20 months → Chose 6 months (sufficient for accuracy, faster processing)
+3. **Period Calculation**: Custom periods vs Calendar months → Chose calendar months for user intuition
+4. **Simple Daily Calculation**: `(Monthly budget - Amount spent) / Days remaining` - rejected complex recurring expense adjustments for MVP
+5. **Environment Strategy**: Local staging vs deployed staging → Chose local staging for MVP (single developer)
+
+### Rejected Approaches
+- **Complex recurring transaction prediction**: Too complex for MVP, basic algorithm sufficient
+- **Local transaction storage**: Unnecessary given Plaid pricing model
+- **Custom 30-day periods**: Reverted to calendar months for user experience
+- **Advanced retry logic**: 3 attempts sufficient for MVP
+- **Frontend-heavy architecture**: SMS-only interface chosen for simplicity
+
+### Open Questions/Pending Decisions
+- **Plaid Access Token Storage**: Currently debugging token storage in staging environment
+- **Daily Scheduler Implementation**: Daily message sending system (next major milestone)
+- **Production Deployment**: Railway platform planned
+- **Real Data Integration**: Testing with US Bank via Limited Production access
+
+## CURRENT STATE
+
+### Completed Milestones ✅
+1. **Database Migration**: All tables created, Prisma schema working
+2. **Period-Aware Calculations**: Implemented calendar month periods with real Plaid data integration
+3. **SMS Verification Flow**: Twilio 10DLC compliant phone verification implemented
+4. **Welcome Message System**: WhatsApp testing working (SMS pending 10DLC approval)
+5. **Frontend Onboarding**: Complete flow from invite → bank connection → SMS setup
+6. **Legal Compliance**: Terms/Privacy pages created for Twilio approval
+7. **Environment Configuration**: Multi-environment setup with .env.local, .env.staging, .env.production
+8. **Plaid Limited Production**: Approved for real data testing with US Bank
+
+### Current Technical Status
+- **Period Calculation**: Working with calendar months (Oct 1-31, not custom periods)
+- **Analytics Integration**: Plaid queries fetch real transaction data within calendar month boundaries
+- **Message Templates**: Updated welcome and confirmation messages with spending analytics
+- **Environment Setup**: Staging environment configured for Limited Production testing
+
+### Active Blockers
+1. **Plaid Access Token Storage**: Token exchange succeeds but access_token not being stored in database
+2. **Staging Environment**: Debugging why plaid_access_token field remains NULL after successful connection
+3. **Daily Scheduler**: Not yet implemented for automated morning messages
+
+### Next Priority Steps
+1. **Fix Plaid token storage** - debug why access token isn't saved to database in staging
+2. **Test real US Bank data** - validate calculations work with actual transaction data
+3. **Implement daily scheduler** - automated 8am message system
+4. **Production deployment** - move to Railway platform
+
+## MESSAGE TEMPLATES (CURRENT)
+
+### Welcome Message (First Contact)
+```
+Budget Pal
+
+👋 Hi {name}! Welcome to Budget Pal.
+
+I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
+
+📊 Monthly average: ${averageMonthlySpending}
+📅 Last month: ${lastMonthSpending}  
+💰 This month so far: ${currentMonthSpending}
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
+```
+
+### Confirmation Message (After Goal Set)
+```
+Budget Pal
+
+✅ Perfect! Your ${monthlyLimit} monthly budget is all set.
+
+🎯 Today's spending target: ${dailyTarget}
+Progress: ${currentMonthSpending} spent of ${monthlyLimit}
+
+You'll get a daily text like this each morning to help you stay on track. Your budget resets on the 1st of every month.
+
+Reply STOP to opt out anytime.
+```
+
+## COLLABORATION PREFERENCES
+
+### Communication Style
+- **Direct, no flattery**: Skip positive adjectives, get straight to the point
+- **Technical depth**: Appreciates detailed technical analysis and considerations
+- **Product mindset**: Balance user experience with technical implementation
+- **Cost consciousness**: Always consider financial implications and margins
+
+### Question Preferences
+- **Ask for clarification**: "Please ask me if you need further context"
+- **Technical validation**: Double-check complex technical decisions
+- **Implementation-focused**: Prefers actionable prompts for Claude Code implementation
+- **Business context**: Considers user experience, costs, and scalability together
+
+### Working Style
+- **Incremental approach**: Break large prompts into focused pieces
+- **MVP-first mentality**: Implement basic working versions before adding complexity
+- **Testing-oriented**: Validate functionality before moving to next steps
+- **Documentation-conscious**: Values clear architecture decisions and rationale
+
+### Prompt Engineering Approach
+- **Best practices prompting**: Requests well-structured prompts following established patterns
+- **Context-rich**: Includes relevant technical details and constraints in prompts
+- **Implementation-ready**: Prompts should be actionable for Claude Code
+- **Clear success criteria**: Defines what "done" looks like for each task
+- **Comprehensive for complex tasks**: Detailed prompts for critical functionality, concise for simple fixes
+
+### Technical Decision Making
+- **Evidence-based**: Research costs, technical constraints before making choices
+- **Pragmatic trade-offs**: Willing to cut corners for MVP speed while maintaining quality
+- **Scalability-aware**: Consider how decisions impact growth to 10k+ users
+- **Security-conscious**: Implement proper encryption, validation, and error handling
+
+## DEVELOPMENT WORKFLOW
+
+### Environment Management
+- **Local Development**: .env.local with Plaid sandbox, local PostgreSQL
+- **Staging Testing**: .env.staging with Plaid Limited Production, same local database
+- **Environment Switching**: `npm run dev` (local) vs `npm run dev:staging` (staging)
+- **Database Strategy**: Separate database names per environment on same local instance
+
+### Testing Strategy
+- **Sandbox First**: Develop and test with Plaid sandbox data
+- **Staging Validation**: Test critical flows with real bank data (US Bank)
+- **TDD Approach**: Write tests first for complex calculations
+- **End-to-End Testing**: Full webhook flow testing via ngrok and WhatsApp
+
+---
+
+**Current Immediate Need**: Debug and fix Plaid access token storage in staging environment. User successfully connects bank via Plaid Link, but the access_token isn't being encrypted and stored in the database's plaid_access_token field.
