@@ -345,13 +345,14 @@ export class TwilioController {
       }
 
       const analytics = user.spendingAnalytics;
-      let message = `👋 Welcome to Budget Pal, ${user.firstName}!\n\n`;
+      let message = `Budget Pal`;
+      message += `👋 Hi ${user.firstName}! Welcom to Budget Pal, !\n\n`;
 
       if (analytics) {
-        message += `Here's your spending overview:\n`;
+        message += `I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:\n`;
         message += `📊 Avg monthly: $${analytics.averageMonthlySpending || 0}\n`;
         message += `📅 Last month: $${analytics.lastMonthSpending || 0}\n`;
-        message += `💰 This month: $${analytics.currentMonthSpending || 0}\n\n`;
+        message += `💰 This month so far: $${analytics.currentMonthSpending || 0}\n\n`;
         message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
       } else {
         message += `We're analyzing your spending patterns and will send you your first budget insights soon!\n\n`;

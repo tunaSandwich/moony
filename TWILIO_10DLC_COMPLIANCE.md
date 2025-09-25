@@ -70,16 +70,7 @@ Reply STOP to opt out at any time. For help, reply HELP."
 ### Welcome SMS Implementation
 **Trigger**: Automatically sent after successful phone verification
 **Content**: Personalized with calculated spending analytics
-```
-👋 Welcome to Budget Pal, [FirstName]!
-
-Here's your spending overview:
-📊 Avg monthly: $[calculated_average]
-📅 Last month: $[last_month_total]
-💰 This month: $[current_month_total]
-
-What's your spending goal this month? Just reply with a number (ex: 3000).
-```
+see @docs/sms_templates
 
 ### Goal Setting via SMS Response ✅
 **Functionality**: Already implemented in webhook controller

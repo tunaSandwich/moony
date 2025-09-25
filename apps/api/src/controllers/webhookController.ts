@@ -3,7 +3,7 @@ import twilio from 'twilio';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { startOfMonth, endOfMonth, format, subDays, isSameDay } from 'date-fns';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { MessagingService } from '../services/messagingService.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
@@ -91,14 +91,12 @@ const parseSpendingGoal = (body: string, previousGoalAmount?: number): number | 
 const calculatePeriodDates = (monthStartDay?: number): { periodStart: Date, periodEnd: Date, actualMonthStartDay: number } => {
   const now = new Date();
   
-  // MVP: Period starts from goal creation date (today)
-  // This creates custom 30-day periods instead of calendar months
-  const periodStart = new Date(now); // Goal creation date
-  const periodEnd = new Date(now);
-  periodEnd.setDate(periodStart.getDate() + 29); // 30-day period (inclusive)
+  // Use calendar month periods (1st to last day of month)
+  const periodStart = startOfMonth(now);
+  const periodEnd = endOfMonth(now);
   
-  // The actual start day for this period
-  const actualMonthStartDay = periodStart.getDate();
+  // Always use 1st of month as start day
+  const actualMonthStartDay = 1;
 
   return { periodStart, periodEnd, actualMonthStartDay };
 };
@@ -146,6 +144,38 @@ const formatCurrency = (amount: number): string => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+};
+
+// Utility function to get user spending analytics for welcome message
+const getUserSpendingAnalytics = async (userId: string): Promise<{
+  averageMonthlySpending: number;
+  lastMonthSpending: number;
+  currentMonthSpending: number;
+} | null> => {
+  try {
+    const analytics = await prisma.userSpendingAnalytics.findUnique({
+      where: { userId },
+      select: {
+        averageMonthlySpending: true,
+        lastMonthSpending: true,
+        currentMonthSpending: true,
+        lastCalculatedAt: true
+      }
+    });
+
+    if (!analytics) {
+      return null;
+    }
+
+    return {
+      averageMonthlySpending: Number(analytics.averageMonthlySpending),
+      lastMonthSpending: Number(analytics.lastMonthSpending),
+      currentMonthSpending: Number(analytics.currentMonthSpending)
+    };
+  } catch (error) {
+    logger.error('Failed to fetch user spending analytics', { userId, error: (error as Error).message });
+    return null;
+  }
 };
 
 export class WebhookController {
@@ -217,10 +247,39 @@ export class WebhookController {
         throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
       }
 
+      // Check if this is a new user (no previous spending goals)
+      const isNewUser = user.spendingGoals.length === 0;
+      
       // Get previous goal amount if exists
       const previousGoalAmount = user.spendingGoals[0] 
         ? Number(user.spendingGoals[0].monthlyLimit) 
         : undefined;
+
+      // If new user, send welcome message with spending analytics
+      if (isNewUser) {
+        const analytics = await getUserSpendingAnalytics(user.id);
+        
+        if (analytics) {
+          const welcomeMessage = `Budget Pal
+
+👋 Hi ${user.firstName}! Welcome to Budget Pal.
+
+I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
+
+📊 Monthly average: ${formatCurrency(analytics.averageMonthlySpending)}
+📅 Last month: ${formatCurrency(analytics.lastMonthSpending)}  
+💰 This month so far: ${formatCurrency(analytics.currentMonthSpending)}
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).`;
+          
+          await sendResponse(phoneNumber, welcomeMessage, channel);
+          
+          // Return early - wait for user to respond with their goal
+          res.set('Content-Type', 'application/xml');
+          res.status(200).send('<?xml version="1.0" encoding=\"UTF-8\"?><Response></Response>');
+          return;
+        }
+      }
 
       // Parse spending goal from message
       const goalAmount = parseSpendingGoal(messageBody, previousGoalAmount);
@@ -278,7 +337,6 @@ export class WebhookController {
       // Calculate today's daily target using real period spending data
       let dailyTarget = 0;
       let currentPeriodSpending = 0;
-      let yesterdaySpent = 0;
       let calculationError: string | undefined;
 
       try {
@@ -303,12 +361,6 @@ export class WebhookController {
             periodStart, 
             periodEnd
           );
-
-          // Calculate yesterday's spending from processed transactions
-          const yesterday = subDays(new Date(), 1);
-          yesterdaySpent = transactions.reduce((sum, tx) => {
-            return isSameDay(tx.date, yesterday) ? sum + (Number.isFinite(tx.amount) ? tx.amount : 0) : sum;
-          }, 0);
         }
 
         // Calculate period-aware daily target
@@ -342,22 +394,17 @@ export class WebhookController {
 
       const formattedTarget = this.calculationService.formatDailyTargetMessage(dailyTarget);
 
-      // Send confirmation message using the same channel
-      let confirmationMessage = `Budget Pal:
+      // Send confirmation message using the exact new template
+      let confirmationMessage = `Budget Pal
 
-Great! Your spending goal of ${formatCurrency(goalAmount)} has been set. You'll receive daily updates on your progress!
+✅ Perfect! Your ${formatCurrency(goalAmount)} monthly budget is all set.
 
-Today's target: ${formattedTarget}
+🎯 Today's spending target: ${formattedTarget}
+Progress: ${formatCurrency(currentPeriodSpending)} spent of ${formatCurrency(goalAmount)}
 
-`;
+You'll get a daily text like this each morning to help you stay on track. Your budget resets on the 1st of every month.
 
-      if (yesterdaySpent > 0) {
-        confirmationMessage += `Yesterday you spent: ${formatCurrency(yesterdaySpent)} 
-`;
-      }
-
-      confirmationMessage += `Total: ${formatCurrency(currentPeriodSpending)}/${formatCurrency(goalAmount)}
-`;
+Reply STOP to opt out anytime.`;
 
       // Add note about spending data if there was an error
       if (calculationError && currentPeriodSpending === 0) {

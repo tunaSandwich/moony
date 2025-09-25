@@ -1,33 +1,71 @@
 (First Time Setup:)
-👋 Welcome to Budget Pal 👋
+Budget Pal
 
-We'll text you a spending target every day based on your monthly spending goals.
-Your avg monthly spending: $3200
-Last month's spending: $3000
+👋 Hi {name}! Welcome to Budget Pal.
 
-What's your goal this month? Reply with number (ex: 3000)
+I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
+
+📊 Monthly average: $117
+📅 Last month: $117
+💰 This month so far: $111
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
 
 —————————
 (First Message after set up)
 
-Budget Pal:
-Great! Your spending goal of $2,000 has been set. You'll receive daily updates on your progress!
+Budget Pal
 
-Today's target: $47
+✅ Perfect! Your $2,000 monthly budget is all set.
 
-Yesterday you spent: $23 
-Total: $850/$3000
+🎯 Today's spending target: $67
+Progress: $0 spent of $2,000
+
+You'll get a daily text like this each morning to help you stay on track. Your budget resets on the 1st of every month.
+
+Reply STOP to opt out anytime.
 
 —————————
 (daily text)
-☀️ Budget Pal ☀️ 
+Budget Pal
 
-Today's target: $47
-Yesterday you spent: $23 
-Total: $850/$3000
+☀️ Good Morning {name}!
+🎯 Today's spending target: $x
+
+Yesterday you spent: $y ✅
+Progress: $z of $t used
 
 Reply STOP to opt out
 
+—————————
+(Fridays)
+Budget Pal
+
+☀️ Good morning Lucas!
+🎯 Today's spending target: $67
+
+This week so far: $234 spent
+Weekend plan: Keep it under $130 total ✨
+
+Yesterday: $45 spent ✅
+Progress: $1,245 of $3,000 used
+
+Reply STOP to opt out
+
+—————————
+(Sunday)
+Budget Pal
+
+☀️ Good morning Lucas!
+🎯 Today's spending target: $52
+
+Week recap: $291 spent (target was $322)
+Nice work - you're $31 ahead! 🎉
+
+Yesterday: $38 spent ✅  
+Progress: $1,456 of $3,000 used
+
+Reply STOP to opt out
 —————————
 
 (Data Issue Fallback)
@@ -39,23 +77,25 @@ We had trouble getting data. We're looking into it.
 
 (Under Budget)
 
-🎉 Budget Pal  🎉 
+Budget Pal
 
-Nice work! You spent $2850 of your $3000 goal. You saved $150!
+🎉 Amazing work, Lucas! You crushed it this month.
 
-Next month's goal? Reply with number (ex: 3500)
-Ignore this message to stick with current goal
+You spent $2,850 of your $3,000 goal - that's $150 saved! 💰
+
+Ready to set next month's goal? Just reply with a number (ex: 3000) or ignore this to keep your current goal.
 
 —————————
 
 (Over Budget)
 
-📊 Budget Pal 📊
+Budget Pal
 
-You spent $3150 of your $3000 goal ($150 over).
+📊 Hey Lucas, here's your month wrap-up:
 
-Next month's goal? Reply with number (ex: 3500)
-Ignore this message to stick with current goal
+You spent $3,150 against your $3,000 goal ($150 over). No worries - every month is a fresh start! 
+
+What's your goal for next month? Reply with a number (ex: 3000) or ignore this to stick with $3,000.
 
 —————————
 
