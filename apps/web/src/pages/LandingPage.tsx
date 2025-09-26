@@ -7,15 +7,17 @@ import logo from '@/assets/icons/logo.png';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  // const [isLoaded, setIsLoaded] = useState(false); // Will be used in later phases
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const headerRef = useRef<HTMLDivElement>(null);
   
-  // Phase 1: Refs for distance tracking
+  // Page load animation state
+  const [animationsComplete, setAnimationsComplete] = useState(false);
+  
+  const headerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const rafRef = useRef<number>();
+  const phoneRef = useRef<HTMLImageElement>(null);
+  const rafRef = useRef<number | undefined>(null);
   
   const handleGetStarted = () => {
     navigate('/invite');
@@ -34,16 +36,78 @@ const LandingPage = () => {
     return () => mediaQuery.removeEventListener('change', handleMediaChange);
   }, []);
 
-  // Page load animations disabled for Phase 1 - will be re-enabled later
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setIsLoaded(true), 100);
-  //   return () => clearTimeout(timer);
-  // }, []);
+  // Set initial styles immediately on mount
+  useEffect(() => {
+    if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !phoneRef.current) return;
+
+    // Set initial styles immediately to prevent flash
+    const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
+    elements.forEach(el => {
+      el.style.opacity = '0.1';
+      el.style.transform = 'translateY(20px) scale(0.95)';
+    });
+
+    phoneRef.current.style.opacity = '0';
+    phoneRef.current.style.transform = 'translateY(40px)';
+  }, []);
+
+  // Page load animations
+  useEffect(() => {
+    const executeAnimation = () => {
+      if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !phoneRef.current) return;
+
+      const duration = prefersReducedMotion ? 100 : 1500; // 1.5s total or instant for reduced motion
+      
+      // Set transition properties
+      const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
+      elements.forEach(el => {
+        el.style.transition = prefersReducedMotion ? 'none' : 'all 0.6s ease-out';
+      });
+
+      phoneRef.current.style.transition = prefersReducedMotion ? 'none' : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'; // Spring
+
+      if (prefersReducedMotion) {
+        // Instant appearance for reduced motion
+        elements.forEach(el => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0px) scale(1)';
+        });
+        phoneRef.current.style.opacity = '1';
+        phoneRef.current.style.transform = 'translateY(0px)';
+        setAnimationsComplete(true);
+        return;
+      }
+
+      // Phase 1: Text elements appear (0.6s, simultaneous)
+      setTimeout(() => {
+        elements.forEach(el => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0px) scale(1)';
+        });
+      }, 100);
+
+      // Phase 2: Phone spring animation (starts after 0.5s delay)
+      setTimeout(() => {
+        if (phoneRef.current) {
+          phoneRef.current.style.opacity = '1';
+          phoneRef.current.style.transform = 'translateY(0px)';
+        }
+      }, 1100); // 600ms text + 500ms delay
+
+      // Mark animations complete
+      setTimeout(() => {
+        setAnimationsComplete(true);
+      }, duration);
+    };
+
+    const timer = setTimeout(executeAnimation, 100); // Small delay for initial styles to apply
+    return () => clearTimeout(timer);
+  }, [prefersReducedMotion]);
 
   // Phase 4: Performance & UX Optimized Fade Animation
   useEffect(() => {
-    // Skip animations if user prefers reduced motion
-    if (prefersReducedMotion) return;
+    // Skip animations if user prefers reduced motion or page load animations still running
+    if (prefersReducedMotion || !animationsComplete) return;
 
     // Detect CSS mask support for fallback
     const supportsCSSMask = typeof CSS !== 'undefined' && CSS.supports && 
@@ -106,7 +170,7 @@ const LandingPage = () => {
       }
       
       // Enhanced debug logging for Phase 4
-      const logData: any = {
+      const logData: Record<string, string | number> = {
         buttonTop: Math.round(buttonTop),
         subtitleBottom: Math.round(subtitleRect.bottom),
         titleBottom: Math.round(titleRect.bottom),
@@ -183,7 +247,7 @@ const LandingPage = () => {
         rafRef.current = undefined;
       }
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, animationsComplete]);
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FCE7F3'}}>
@@ -277,12 +341,14 @@ const LandingPage = () => {
           {/* iPhone Mockup - Exactly 40px below button */}
           <div className="flex justify-center">
             <img
+              ref={phoneRef}
               src={phoneImage}
               alt="Budget tracking on mobile"
               className="w-full max-w-4xl h-auto mx-auto relative z-10 phone-fade-mask"
               style={{ 
                 maxWidth: '1472px',
-                width: 'min(90vw, 1472px)'
+                width: 'min(90vw, 1472px)',
+                opacity: 0,
               }}
               loading="lazy"
             />
