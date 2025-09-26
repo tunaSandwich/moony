@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/Button/Button';
 import phoneImage from '@/assets/images/hand_and_phone.png';
 import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
+import Lenis from 'lenis';
+
+// Professional-grade easing utility functions
+const lerp = (start: number, end: number, factor: number): number => start + (end - start) * factor;
+const easeOutExpo = (t: number): number => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -12,12 +18,19 @@ const LandingPage = () => {
   // Page load animation state
   const [animationsComplete, setAnimationsComplete] = useState(false);
   
+  // Professional animation direct variables (no async state issues)
+  const smoothOpacityRef = useRef({
+    currentSubtitleOpacity: 1,
+    currentTitleOpacity: 1
+  });
+  
   const headerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const phoneRef = useRef<HTMLImageElement>(null);
   const rafRef = useRef<number | undefined>(null);
+  const lenisRef = useRef<Lenis | null>(null);
   
   const handleGetStarted = () => {
     navigate('/invite');
@@ -35,6 +48,30 @@ const LandingPage = () => {
     mediaQuery.addEventListener('change', handleMediaChange);
     return () => mediaQuery.removeEventListener('change', handleMediaChange);
   }, []);
+
+  // Professional smooth scroll initialization
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    // Initialize Lenis smooth scroll
+    lenisRef.current = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Custom easeOutExpo
+      smooth: true,
+      direction: 'vertical'
+    });
+
+    // Lenis animation loop
+    const raf = (time: number) => {
+      lenisRef.current?.raf(time);
+      requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenisRef.current?.destroy();
+    };
+  }, [prefersReducedMotion]);
 
   // Set initial styles immediately on mount
   useEffect(() => {
@@ -131,11 +168,29 @@ const LandingPage = () => {
       const distanceToSubtitleBottom = buttonTop - subtitleRect.bottom;
       const distanceToTitleBottom = buttonTop - titleRect.bottom;
       
-      // Subtitle fade: starts when button is 30px below subtitle bottom, gone when 20px below subtitle bottom
-      const subtitleOpacity = distanceToSubtitleBottom <= 30 ? Math.max(0, (distanceToSubtitleBottom - 20) / 10) : 1;
+      // Professional eased opacity calculations (maintaining existing trigger distances)
+      const rawSubtitleOpacity = distanceToSubtitleBottom <= 30 ? Math.max(0, (distanceToSubtitleBottom - 20) / 10) : 1;
+      const rawTitleOpacity = distanceToTitleBottom <= 30 ? Math.max(0, (distanceToTitleBottom - 20) / 10) : 1;
       
-      // Title fade: starts when button is 30px below title bottom, gone when 20px below title bottom  
-      const titleOpacity = distanceToTitleBottom <= 30 ? Math.max(0, (distanceToTitleBottom - 20) / 10) : 1;
+      // Apply easing for organic feel
+      const targetSubtitleOpacity = rawSubtitleOpacity < 1 ? easeOutCubic(rawSubtitleOpacity) : 1;
+      const targetTitleOpacity = rawTitleOpacity < 1 ? easeOutCubic(rawTitleOpacity) : 1;
+      
+      // Direct interpolation (fixes async state issue)
+      smoothOpacityRef.current.currentSubtitleOpacity = lerp(
+        smoothOpacityRef.current.currentSubtitleOpacity, 
+        targetSubtitleOpacity, 
+        0.1
+      );
+      smoothOpacityRef.current.currentTitleOpacity = lerp(
+        smoothOpacityRef.current.currentTitleOpacity, 
+        targetTitleOpacity, 
+        0.1
+      );
+      
+      // Use interpolated values immediately (no async delay)
+      const subtitleOpacity = smoothOpacityRef.current.currentSubtitleOpacity;
+      const titleOpacity = smoothOpacityRef.current.currentTitleOpacity;
       
       // Phase 4: Optimized fade with accessibility and browser support
       if (useSimpleFade) {
@@ -148,7 +203,7 @@ const LandingPage = () => {
         titleRef.current.style.mask = '';
         titleRef.current.style.webkitMask = '';
       } else {
-        // Enhanced: CSS mask gradient for bottom-to-top wipe
+        // Enhanced: CSS mask gradient for bottom-to-top wipe with smooth interpolation
         // Calculate gradient positions (covering 35% of text height for smooth transition)
         const subtitleFadeStart = 100 - (subtitleOpacity * 100);
         const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
@@ -169,7 +224,7 @@ const LandingPage = () => {
         titleRef.current.style.opacity = '1';
       }
       
-      // Enhanced debug logging for Phase 4
+      // Enhanced debug logging for professional animation system
       const logData: Record<string, string | number> = {
         buttonTop: Math.round(buttonTop),
         subtitleBottom: Math.round(subtitleRect.bottom),
@@ -178,13 +233,17 @@ const LandingPage = () => {
         distanceToTitleBottom: Math.round(distanceToTitleBottom),
         subtitleOpacity: Math.round(subtitleOpacity * 100) / 100,
         titleOpacity: Math.round(titleOpacity * 100) / 100,
-        renderMode: useSimpleFade ? '🔄 OPACITY FALLBACK' : '🎭 CSS MASK',
+        targetSubtitle: Math.round(targetSubtitleOpacity * 100) / 100,
+        targetTitle: Math.round(targetTitleOpacity * 100) / 100,
+        interpolationFix: '🔧 DIRECT VARS (no async)',
+        renderMode: useSimpleFade ? '🔄 OPACITY FALLBACK' : '🎭 BUTTERY SMOOTH',
+        smoothScrollActive: lenisRef.current ? '✨ LENIS ACTIVE' : '❌ Disabled',
         maskSupport: supportsCSSMask ? '✅ Supported' : '❌ Fallback',
         subtitleState: subtitleOpacity < 1 ? 
-          (useSimpleFade ? `🔄 OPACITY (${Math.round(subtitleOpacity * 100)}%)` : `🎭 MASK WIPING (${Math.round(subtitleOpacity * 100)}%)`) 
+          (useSimpleFade ? `🔄 SMOOTH OPACITY (${Math.round(subtitleOpacity * 100)}%)` : `🎭 SMOOTH MASK (${Math.round(subtitleOpacity * 100)}%)`) 
           : '⚪ Visible',
         titleState: titleOpacity < 1 ? 
-          (useSimpleFade ? `🔄 OPACITY (${Math.round(titleOpacity * 100)}%)` : `🎭 MASK WIPING (${Math.round(titleOpacity * 100)}%)`) 
+          (useSimpleFade ? `🔄 SMOOTH OPACITY (${Math.round(titleOpacity * 100)}%)` : `🎭 SMOOTH MASK (${Math.round(titleOpacity * 100)}%)`) 
           : '⚪ Visible'
       };
       
