@@ -7,9 +7,15 @@ import logo from '@/assets/icons/logo.png';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [isLoaded, setIsLoaded] = useState(false);
+  // const [isLoaded, setIsLoaded] = useState(false); // Will be used in later phases
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
+  
+  // Phase 1: Refs for distance tracking
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const rafRef = useRef<number>();
   
   const handleGetStarted = () => {
     navigate('/invite');
@@ -28,11 +34,78 @@ const LandingPage = () => {
     return () => mediaQuery.removeEventListener('change', handleMediaChange);
   }, []);
 
+  // Page load animations disabled for Phase 1 - will be re-enabled later
+  // useEffect(() => {
+  //   const timer = setTimeout(() => setIsLoaded(true), 100);
+  //   return () => clearTimeout(timer);
+  // }, []);
+
+  // Phase 1: Distance tracking with RAF throttling
   useEffect(() => {
-    // Trigger page load animations only
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+    // Skip animations if user prefers reduced motion (Phase 4 consideration)
+    if (prefersReducedMotion) return;
+    
+    const FIXED_TEXT_TOP = 280; // Fixed text position from top
+    
+    const calculateDistance = () => {
+      if (!buttonRef.current || !titleRef.current || !subtitleRef.current) return;
+      
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const buttonTop = buttonRect.top;
+      
+      // Get actual text element positions
+      const titleRect = titleRef.current.getBoundingClientRect();
+      const subtitleRect = subtitleRef.current.getBoundingClientRect();
+      
+      // Distance from button top to bottom of each text element
+      const distanceToSubtitleBottom = buttonTop - subtitleRect.bottom;
+      const distanceToTitleBottom = buttonTop - titleRect.bottom;
+      
+      // Subtitle fade: starts when button is 30px below subtitle bottom, gone when 20px below subtitle bottom
+      const subtitleOpacity = distanceToSubtitleBottom <= 30 ? Math.max(0, (distanceToSubtitleBottom - 20) / 10) : 1;
+      
+      // Title fade: starts when button is 30px below title bottom, gone when 20px below title bottom  
+      const titleOpacity = distanceToTitleBottom <= 30 ? Math.max(0, (distanceToTitleBottom - 20) / 10) : 1;
+      
+      // Apply opacity
+      subtitleRef.current.style.opacity = subtitleOpacity.toString();
+      titleRef.current.style.opacity = titleOpacity.toString();
+      
+      // Debug logging
+      console.log({
+        buttonTop: Math.round(buttonTop),
+        subtitleBottom: Math.round(subtitleRect.bottom),
+        titleBottom: Math.round(titleRect.bottom),
+        distanceToSubtitleBottom: Math.round(distanceToSubtitleBottom),
+        distanceToTitleBottom: Math.round(distanceToTitleBottom),
+        subtitleOpacity: Math.round(subtitleOpacity * 100) / 100,
+        titleOpacity: Math.round(titleOpacity * 100) / 100
+      });
+    };
+
+    const handleScroll = () => {
+      // Cancel previous frame if pending
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      
+      // Schedule new frame
+      rafRef.current = requestAnimationFrame(calculateDistance);
+    };
+
+    // Initial calculation
+    calculateDistance();
+    
+    // Add scroll listener with passive option for performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [prefersReducedMotion]);
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FCE7F3'}}>
@@ -69,6 +142,7 @@ const LandingPage = () => {
           {/* Main Heading - Exactly 20px margin to subtitle */}
           <div className="pointer-events-auto">
           <h1 
+            ref={titleRef}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient leading-tight whitespace-nowrap"
             style={{ marginBottom: '20px' }}
           >
@@ -79,6 +153,7 @@ const LandingPage = () => {
           {/* Subtitle - Exactly 40px margin to button */}
           <div className="pointer-events-auto">
             <p 
+              ref={subtitleRef}
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gradient font-light leading-relaxed whitespace-nowrap"
               style={{ marginBottom: '40px' }}
             >
@@ -111,6 +186,7 @@ const LandingPage = () => {
           {/* CTA Button - Exactly 40px below subtitle */}
           <div className="flex justify-center" style={{ marginBottom: '40px' }}>
             <Button
+              ref={buttonRef}
               onClick={handleGetStarted}
               variant="primary"
               size="xl"
