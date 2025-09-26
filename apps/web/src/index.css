@@ -1,8 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* CSS Custom Properties */
+:root {
+  --animation-duration-fast: 0.2s;
+  --animation-duration-normal: 0.3s;
+  --animation-duration-slow: 0.7s;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --scroll-threshold: 50px;
+}
+
 /* Base styles */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
+  background-color: #FCE7F3;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Smooth scrolling for supported browsers */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom animation classes */
+.animate-fade-in-up {
+  opacity: 0;
+  transform: translateY(2rem);
+  animation: fadeInUp var(--animation-duration-slow) var(--animation-easing) forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Phone image fade effect */
+.phone-fade-mask {
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+}
+
+/* Text gradient effect */
+.text-gradient {
+  background: linear-gradient(90deg, #848484 0%, #1E1E1E 50%, #848484 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
