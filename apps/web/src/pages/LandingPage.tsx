@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import phoneImage from '@/assets/images/hand_and_phone.png';
 import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
@@ -9,66 +8,104 @@ import logo from '@/assets/icons/logo.png';
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
-  const { getTextAnimationProps, getHeaderBlurProps } = useScrollAnimation();
-
+  
   const handleGetStarted = () => {
     navigate('/invite');
   };
 
   useEffect(() => {
-    // Trigger page load animations
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleMediaChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => mediaQuery.removeEventListener('change', handleMediaChange);
+  }, []);
+
+  useEffect(() => {
+    // Trigger page load animations only
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FCE7F3'}}>
-      {/* Logo in top-left corner */}
-      <div className="absolute top-6 left-20 z-20">
-        <img 
-          src={logoText} 
-          alt="Budget Pal Logo" 
-          className="w-20 h-auto"
-        />
-      </div>
-
-      {/* Progressive Blur Header */}
+      {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
       <header 
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-10 h-20"
-        style={getHeaderBlurProps()}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[50px] bg-[#FCE7F3]/90"
+        style={{ height: '120px' }}
       >
-
+        {/* Logo in header */}
+        <div className="absolute top-4 left-20 z-10">
+          <img 
+            src={logoText} 
+            alt="Budget Pal Logo" 
+            className="w-20 h-auto"
+          />
+        </div>
+        
       </header>
 
-      {/* Main Content */}
-      <div className="flex flex-col items-center justify-start min-h-screen px-4 sm:px-6 pt-24 pb-8">
-        <div className="text-center max-w-5xl mx-auto">
-          {/* Main Heading */}
+      {/* Fixed Text Section - Exactly 280px from top */}
+      <div 
+        className="fixed left-1/2 z-10 pointer-events-none"
+        style={{
+          top: '280px', // Exactly 160px below 120px header
+          transform: 'translateX(-50%)'
+        }}
+      >
+        <div className="text-center max-w-6xl px-4 sm:px-6">
+          {/* Main Heading - Exactly 20px margin to subtitle */}
+          <div className="pointer-events-auto">
           <h1 
-            className={`text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-gradient mb-4 sm:mb-6 leading-tight transition-all duration-700 ease-out ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={getTextAnimationProps(0.8)}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient leading-tight whitespace-nowrap"
+            style={{ marginBottom: '20px' }}
           >
             Fix your spending habits.
           </h1>
+          </div>
           
-          {/* Subtitle */}
+          {/* Subtitle - Exactly 40px margin to button */}
+          <div className="pointer-events-auto">
+            <p 
+              className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gradient font-light leading-relaxed whitespace-nowrap"
+              style={{ marginBottom: '40px' }}
+            >
+              Simple daily texts keeps you on budget.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrolling Content - Button and Phone with exact positioning */}
+      <div className="relative z-20 px-4 sm:px-6" style={{ paddingTop: '120px' }}>
+        {/* Invisible spacer to match fixed text positioning */}
+        <div style={{ height: '160px' }}></div>
+        
+        {/* Invisible text elements to maintain layout spacing */}
+        <div className="text-center max-w-6xl mx-auto">
+          <h1 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight opacity-0 pointer-events-none whitespace-nowrap"
+            style={{ marginBottom: '20px' }}
+          >
+            Fix your spending habits.
+          </h1>
           <p 
-            className={`text-lg sm:text-xl md:text-2xl lg:text-3xl text-gradient mb-8 sm:mb-12 font-light leading-relaxed transition-all duration-700 ease-out delay-100 ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={getTextAnimationProps(0.6)}
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light leading-relaxed opacity-0 pointer-events-none whitespace-nowrap"
+            style={{ marginBottom: '40px' }}
           >
             Simple daily texts keeps you on budget.
           </p>
           
-          {/* CTA Button - No scroll effects */}
-          <div className={`mb-12 sm:mb-16 md:mb-20 transition-all duration-700 ease-out delay-200 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
+          {/* CTA Button - Exactly 40px below subtitle */}
+          <div className="flex justify-center" style={{ marginBottom: '40px' }}>
             <Button
               onClick={handleGetStarted}
               variant="primary"
@@ -78,35 +115,25 @@ const LandingPage = () => {
               Try it free
             </Button>
           </div>
-        </div>
 
-        {/* iPhone Mockup - positioned strategically below button with 80px gap */}
-        <div className="relative mt-20">
-          <div 
-            className={`transition-all duration-1000 ease-out delay-600 ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
-            }`}
-          >
-            <div className="relative flex justify-center">
-              <img
-                src={phoneImage}
-                alt="Budget tracking on mobile"
-                className="w-full max-w-4xl h-auto mx-auto relative z-10 phone-fade-mask"
-                style={{ 
-                  maxWidth: '1472px',
-                  width: 'min(90vw, 1472px)'
-                }}
-                loading="lazy"
-              />
-              {/* Subtle glow effect behind phone */}
-              <div className="absolute inset-0 bg-coral-300 opacity-20 blur-3xl scale-110 -z-10"></div>
-            </div>
+          {/* iPhone Mockup - Exactly 40px below button */}
+          <div className="flex justify-center">
+            <img
+              src={phoneImage}
+              alt="Budget tracking on mobile"
+              className="w-full max-w-4xl h-auto mx-auto relative z-10 phone-fade-mask"
+              style={{ 
+                maxWidth: '1472px',
+                width: 'min(90vw, 1472px)'
+              }}
+              loading="lazy"
+            />
           </div>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <footer className="relative z-10 py-16 px-4">
+      {/* Bottom Section - Extended for Testing */}
+      <footer className="relative z-20 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           {/* Description */}
           <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed">
@@ -123,12 +150,24 @@ const LandingPage = () => {
           </div>
           
           {/* Privacy Links */}
-          <div className="flex justify-center items-center space-x-4 text-sm text-gray-600">
+          <div className="flex justify-center items-center space-x-4 text-sm text-gray-600 mb-16">
             <a href="#" className="hover:text-gray-800 transition-colors">PRIVACY POLICY</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-800 transition-colors">TERMS OF SERVICE</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-800 transition-colors">LICENSE AGREEMENT</a>
+          </div>
+          
+          {/* Extra content for scroll testing */}
+          <div className="space-y-8 text-gray-500">
+            <p>Scroll to test the layered fade effects...</p>
+            <p>• Subtitle fade: 160px - 280px</p>
+            <p>• Title fade: 240px - 360px</p>
+            <div className="h-32"></div>
+            <p>Continue scrolling to see full effect...</p>
+            <div className="h-32"></div>
+            <p>Layered fade testing complete at 400px</p>
+            <div className="h-64"></div>
           </div>
         </div>
       </footer>

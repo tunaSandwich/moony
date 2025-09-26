@@ -62,3 +62,42 @@ html {
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
+
+/* Text positioning - fixed to viewport */
+.text-wrapper {
+  position: relative;
+  /* Text is now in fixed container, no additional positioning needed */
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Text elements inside wrapper should never move */
+.text-wrapper h1,
+.text-wrapper p {
+  position: relative;
+  /* Explicitly prevent any transforms on text elements */
+  transform: none !important;
+  /* Maintain original positioning */
+  top: 0;
+  left: 0;
+}
+
+/* Performance optimizations for animations */
+.text-wrapper.animating {
+  will-change: auto;
+  /* Smooth transitions for real-time scroll tracking */
+  transition: none;
+}
+
+/* Ensure smooth reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .text-wrapper {
+    will-change: auto;
+    transform: translate3d(0, 0, 0) !important;
+  }
+  
+  .text-wrapper.animating {
+    will-change: auto;
+    opacity: 1 !important;
+  }
+}
