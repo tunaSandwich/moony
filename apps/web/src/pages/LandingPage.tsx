@@ -39,8 +39,12 @@ const LandingPage = () => {
       {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
       <header 
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[50px] bg-[#FCE7F3]/90"
-        style={{ height: '120px' }}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
+        style={{
+          height: '60px',
+          background: 'linear-gradient(to bottom, rgba(252, 231, 243, 0.9) 0%, rgba(252, 231, 243, 0.5) 50%, rgba(252, 231, 243, 0) 100%)',
+        }}
+        
       >
         {/* Logo in header */}
         <div className="absolute top-4 left-20 z-10">
