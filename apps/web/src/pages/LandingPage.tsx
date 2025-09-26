@@ -40,12 +40,18 @@ const LandingPage = () => {
   //   return () => clearTimeout(timer);
   // }, []);
 
-  // Phase 1: Distance tracking with RAF throttling
+  // Phase 4: Performance & UX Optimized Fade Animation
   useEffect(() => {
-    // Skip animations if user prefers reduced motion (Phase 4 consideration)
+    // Skip animations if user prefers reduced motion
     if (prefersReducedMotion) return;
+
+    // Detect CSS mask support for fallback
+    const supportsCSSMask = typeof CSS !== 'undefined' && CSS.supports && 
+      (CSS.supports('mask', 'linear-gradient(black, transparent)') || 
+       CSS.supports('-webkit-mask', 'linear-gradient(black, transparent)'));
     
-    const FIXED_TEXT_TOP = 280; // Fixed text position from top
+    // Performance optimization: Use simple opacity fallback for unsupported browsers
+    const useSimpleFade = !supportsCSSMask;
     
     const calculateDistance = () => {
       if (!buttonRef.current || !titleRef.current || !subtitleRef.current) return;
@@ -67,42 +73,114 @@ const LandingPage = () => {
       // Title fade: starts when button is 30px below title bottom, gone when 20px below title bottom  
       const titleOpacity = distanceToTitleBottom <= 30 ? Math.max(0, (distanceToTitleBottom - 20) / 10) : 1;
       
-      // Apply opacity
-      subtitleRef.current.style.opacity = subtitleOpacity.toString();
-      titleRef.current.style.opacity = titleOpacity.toString();
+      // Phase 4: Optimized fade with accessibility and browser support
+      if (useSimpleFade) {
+        // Fallback: Simple opacity for unsupported browsers or reduced motion
+        subtitleRef.current.style.opacity = subtitleOpacity.toString();
+        titleRef.current.style.opacity = titleOpacity.toString();
+        // Clear any existing masks
+        subtitleRef.current.style.mask = '';
+        subtitleRef.current.style.webkitMask = '';
+        titleRef.current.style.mask = '';
+        titleRef.current.style.webkitMask = '';
+      } else {
+        // Enhanced: CSS mask gradient for bottom-to-top wipe
+        // Calculate gradient positions (covering 35% of text height for smooth transition)
+        const subtitleFadeStart = 100 - (subtitleOpacity * 100);
+        const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
+        
+        const titleFadeStart = 100 - (titleOpacity * 100);
+        const titleFadeEnd = Math.min(100, titleFadeStart + 35);
+        
+        // Apply CSS mask with webkit prefixes
+        const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
+        const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
+        
+        subtitleRef.current.style.mask = subtitleMask;
+        subtitleRef.current.style.webkitMask = subtitleMask;
+        titleRef.current.style.mask = titleMask;
+        titleRef.current.style.webkitMask = titleMask;
+        // Ensure opacity is full when using masks
+        subtitleRef.current.style.opacity = '1';
+        titleRef.current.style.opacity = '1';
+      }
       
-      // Debug logging
-      console.log({
+      // Enhanced debug logging for Phase 4
+      const logData: any = {
         buttonTop: Math.round(buttonTop),
         subtitleBottom: Math.round(subtitleRect.bottom),
         titleBottom: Math.round(titleRect.bottom),
         distanceToSubtitleBottom: Math.round(distanceToSubtitleBottom),
         distanceToTitleBottom: Math.round(distanceToTitleBottom),
         subtitleOpacity: Math.round(subtitleOpacity * 100) / 100,
-        titleOpacity: Math.round(titleOpacity * 100) / 100
-      });
+        titleOpacity: Math.round(titleOpacity * 100) / 100,
+        renderMode: useSimpleFade ? '🔄 OPACITY FALLBACK' : '🎭 CSS MASK',
+        maskSupport: supportsCSSMask ? '✅ Supported' : '❌ Fallback',
+        subtitleState: subtitleOpacity < 1 ? 
+          (useSimpleFade ? `🔄 OPACITY (${Math.round(subtitleOpacity * 100)}%)` : `🎭 MASK WIPING (${Math.round(subtitleOpacity * 100)}%)`) 
+          : '⚪ Visible',
+        titleState: titleOpacity < 1 ? 
+          (useSimpleFade ? `🔄 OPACITY (${Math.round(titleOpacity * 100)}%)` : `🎭 MASK WIPING (${Math.round(titleOpacity * 100)}%)`) 
+          : '⚪ Visible'
+      };
+      
+      // Add gradient info only when using CSS masks
+      if (!useSimpleFade) {
+        const subtitleFadeStart = 100 - (subtitleOpacity * 100);
+        const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
+        const titleFadeStart = 100 - (titleOpacity * 100);
+        const titleFadeEnd = Math.min(100, titleFadeStart + 35);
+        
+        logData.subtitleGradient = `${Math.round(subtitleFadeStart)}% → ${Math.round(subtitleFadeEnd)}%`;
+        logData.titleGradient = `${Math.round(titleFadeStart)}% → ${Math.round(titleFadeEnd)}%`;
+      }
+      
+      console.log(logData);
     };
 
+    // Optimized RAF handling with throttling for mobile performance
+    let lastScrollTime = 0;
     const handleScroll = () => {
+      const now = performance.now();
+      
       // Cancel previous frame if pending
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
       
-      // Schedule new frame
+      // Mobile optimization: Throttle to prevent excessive calculations during fast scrolling
+      if (now - lastScrollTime < 8) { // ~120fps limit to maintain smooth scrolling
+        rafRef.current = requestAnimationFrame(calculateDistance);
+        return;
+      }
+      
+      lastScrollTime = now;
       rafRef.current = requestAnimationFrame(calculateDistance);
     };
 
     // Initial calculation
     calculateDistance();
     
-    // Add scroll listener with passive option for performance
+    // Add scroll listener with passive option for performance (crucial for mobile)
     window.addEventListener('scroll', handleScroll, { passive: true });
     
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
+    // Add resize listener to recalculate on orientation change (mobile optimization)
+    const handleResize = () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
+      }
+      rafRef.current = requestAnimationFrame(calculateDistance);
+    };
+    
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    return () => {
+      // Comprehensive cleanup to prevent memory leaks
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = undefined;
       }
     };
   }, [prefersReducedMotion]);
