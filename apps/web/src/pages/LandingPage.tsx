@@ -8,7 +8,6 @@ import Lenis from 'lenis';
 
 // Professional-grade easing utility functions
 const lerp = (start: number, end: number, factor: number): number => start + (end - start) * factor;
-const easeOutExpo = (t: number): number => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
 const LandingPage = () => {
@@ -57,8 +56,6 @@ const LandingPage = () => {
     lenisRef.current = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Custom easeOutExpo
-      smooth: true,
-      direction: 'vertical'
     });
 
     // Lenis animation loop
@@ -141,7 +138,6 @@ const LandingPage = () => {
     return () => clearTimeout(timer);
   }, [prefersReducedMotion]);
 
-  // Phase 4: Performance & UX Optimized Fade Animation
   useEffect(() => {
     // Skip animations if user prefers reduced motion or page load animations still running
     if (prefersReducedMotion || !animationsComplete) return;
@@ -175,7 +171,7 @@ const LandingPage = () => {
       // Apply easing for organic feel
       const targetSubtitleOpacity = rawSubtitleOpacity < 1 ? easeOutCubic(rawSubtitleOpacity) : 1;
       const targetTitleOpacity = rawTitleOpacity < 1 ? easeOutCubic(rawTitleOpacity) : 1;
-      
+
       // Direct interpolation (fixes async state issue)
       smoothOpacityRef.current.currentSubtitleOpacity = lerp(
         smoothOpacityRef.current.currentSubtitleOpacity, 
@@ -191,8 +187,8 @@ const LandingPage = () => {
       // Use interpolated values immediately (no async delay)
       const subtitleOpacity = smoothOpacityRef.current.currentSubtitleOpacity;
       const titleOpacity = smoothOpacityRef.current.currentTitleOpacity;
-      
-      // Phase 4: Optimized fade with accessibility and browser support
+
+      // Optimized fade with accessibility and browser support
       if (useSimpleFade) {
         // Fallback: Simple opacity for unsupported browsers or reduced motion
         subtitleRef.current.style.opacity = subtitleOpacity.toString();
@@ -205,36 +201,50 @@ const LandingPage = () => {
       } else {
         // Enhanced: Wrapper-based masking to preserve text gradients
         // Create wrapper elements to apply vertical fade without interfering with text gradient
-        
+
         // Get or create wrapper elements
-        let subtitleWrapper = subtitleRef.current.parentElement;
-        let titleWrapper = titleRef.current.parentElement;
-        
+        const subtitleWrapper = subtitleRef.current.parentElement;
+        const titleWrapper = titleRef.current.parentElement;
+
         // Apply fade through wrapper opacity rather than direct text masking
         // This preserves the background-clip text gradient while still achieving vertical fade
         if (subtitleWrapper) {
-          const subtitleFadeStart = 100 - (subtitleOpacity * 100);
-          const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
-          
-          // Apply CSS mask to wrapper, preserving text gradient on inner element
-          const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
-          subtitleWrapper.style.mask = subtitleMask;
-          subtitleWrapper.style.webkitMask = subtitleMask;
+          if (subtitleOpacity >= 0.99) {
+            // Remove mask when fully visible
+            subtitleWrapper.style.mask = '';
+            subtitleWrapper.style.webkitMask = '';
+          } else {
+            // Apply mask only when fading
+            const subtitleFadeStart = 100 - (subtitleOpacity * 100);
+            const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
+
+            // Apply CSS mask to wrapper, preserving text gradient on inner element
+            const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
+            subtitleWrapper.style.mask = subtitleMask;
+            subtitleWrapper.style.webkitMask = subtitleMask;
+          }
           
           // Ensure text element maintains its gradient
           subtitleRef.current.style.opacity = '1';
           subtitleRef.current.style.mask = '';
           subtitleRef.current.style.webkitMask = '';
         }
-        
+
         if (titleWrapper) {
-          const titleFadeStart = 100 - (titleOpacity * 100);
-          const titleFadeEnd = Math.min(100, titleFadeStart + 35);
-          
-          // Apply CSS mask to wrapper, preserving text gradient on inner element  
-          const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
-          titleWrapper.style.mask = titleMask;
-          titleWrapper.style.webkitMask = titleMask;
+          if (titleOpacity >= 0.99) {
+            // Remove mask when fully visible
+            titleWrapper.style.mask = '';
+            titleWrapper.style.webkitMask = '';
+          } else {
+            // Apply mask only when fading
+            const titleFadeStart = 100 - (titleOpacity * 100);
+            const titleFadeEnd = Math.min(100, titleFadeStart + 35);
+            
+            // Apply CSS mask to wrapper, preserving text gradient on inner element  
+            const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
+            titleWrapper.style.mask = titleMask;
+            titleWrapper.style.webkitMask = titleMask;
+          }
           
           // Ensure text element maintains its gradient
           titleRef.current.style.opacity = '1';
