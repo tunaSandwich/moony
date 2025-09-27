@@ -203,25 +203,44 @@ const LandingPage = () => {
         titleRef.current.style.mask = '';
         titleRef.current.style.webkitMask = '';
       } else {
-        // Enhanced: CSS mask gradient for bottom-to-top wipe with smooth interpolation
-        // Calculate gradient positions (covering 35% of text height for smooth transition)
-        const subtitleFadeStart = 100 - (subtitleOpacity * 100);
-        const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
+        // Enhanced: Wrapper-based masking to preserve text gradients
+        // Create wrapper elements to apply vertical fade without interfering with text gradient
         
-        const titleFadeStart = 100 - (titleOpacity * 100);
-        const titleFadeEnd = Math.min(100, titleFadeStart + 35);
+        // Get or create wrapper elements
+        let subtitleWrapper = subtitleRef.current.parentElement;
+        let titleWrapper = titleRef.current.parentElement;
         
-        // Apply CSS mask with webkit prefixes
-        const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
-        const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
+        // Apply fade through wrapper opacity rather than direct text masking
+        // This preserves the background-clip text gradient while still achieving vertical fade
+        if (subtitleWrapper) {
+          const subtitleFadeStart = 100 - (subtitleOpacity * 100);
+          const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
+          
+          // Apply CSS mask to wrapper, preserving text gradient on inner element
+          const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
+          subtitleWrapper.style.mask = subtitleMask;
+          subtitleWrapper.style.webkitMask = subtitleMask;
+          
+          // Ensure text element maintains its gradient
+          subtitleRef.current.style.opacity = '1';
+          subtitleRef.current.style.mask = '';
+          subtitleRef.current.style.webkitMask = '';
+        }
         
-        subtitleRef.current.style.mask = subtitleMask;
-        subtitleRef.current.style.webkitMask = subtitleMask;
-        titleRef.current.style.mask = titleMask;
-        titleRef.current.style.webkitMask = titleMask;
-        // Ensure opacity is full when using masks
-        subtitleRef.current.style.opacity = '1';
-        titleRef.current.style.opacity = '1';
+        if (titleWrapper) {
+          const titleFadeStart = 100 - (titleOpacity * 100);
+          const titleFadeEnd = Math.min(100, titleFadeStart + 35);
+          
+          // Apply CSS mask to wrapper, preserving text gradient on inner element  
+          const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
+          titleWrapper.style.mask = titleMask;
+          titleWrapper.style.webkitMask = titleMask;
+          
+          // Ensure text element maintains its gradient
+          titleRef.current.style.opacity = '1';
+          titleRef.current.style.mask = '';
+          titleRef.current.style.webkitMask = '';
+        }
       }
       
       // Enhanced debug logging for professional animation system
@@ -441,17 +460,6 @@ const LandingPage = () => {
             <a href="#" className="hover:text-gray-800 transition-colors">LICENSE AGREEMENT</a>
           </div>
           
-          {/* Extra content for scroll testing */}
-          <div className="space-y-8 text-gray-500">
-            <p>Scroll to test the layered fade effects...</p>
-            <p>• Subtitle fade: 160px - 280px</p>
-            <p>• Title fade: 240px - 360px</p>
-            <div className="h-32"></div>
-            <p>Continue scrolling to see full effect...</p>
-            <div className="h-32"></div>
-            <p>Layered fade testing complete at 400px</p>
-            <div className="h-64"></div>
-          </div>
         </div>
       </footer>
 
