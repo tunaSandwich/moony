@@ -338,14 +338,14 @@ const LandingPage = () => {
   }, [prefersReducedMotion, animationsComplete]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FCE7F3'}}>
+    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
       {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
       <header 
         ref={headerRef}
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
         style={{
           height: '60px',
-          background: 'linear-gradient(to bottom, rgba(252, 231, 243, 0.9) 0%, rgba(252, 231, 243, 0.5) 50%, rgba(252, 231, 243, 0) 100%)',
+          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
         }}
         
       >

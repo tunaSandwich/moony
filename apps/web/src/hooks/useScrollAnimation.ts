@@ -77,7 +77,7 @@ export const useScrollAnimation = (_options: ScrollAnimationOptions = {}) => {
 
     return {
       backdropFilter: `blur(${blur}px)`,
-      backgroundColor: `rgba(252, 231, 243, ${0.9})`,
+      backgroundColor: `rgba(255, 248, 252, ${0.9})`,
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     };
   }, [scrollY]);

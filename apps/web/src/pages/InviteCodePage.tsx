@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { authApi } from '@/api';
+import logoText from '@/assets/icons/logo_text.png';
 
 const InviteCodePage = () => {
   const [inviteCode, setInviteCode] = useState('');
@@ -40,13 +41,32 @@ const InviteCodePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+      {/* Fixed Header with Logo - Consistent with Landing Page */}
+      <header 
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
+        style={{
+          height: '60px',
+          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
+        }}
+      >
+        <div className="absolute top-4 left-20 z-10">
+          <img 
+            src={logoText} 
+            alt="Budget Pal Logo" 
+            className="w-20 h-auto"
+          />
+        </div>
+      </header>
+
+      {/* Main Content with Padding for Header */}
+      <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-white mb-2">
+          <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
             Enter Invite Code
           </h1>
-          <p className="text-white/80 text-sm">
+          <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
             Enter your invitation code to get started with Budget Pal
           </p>
         </div>
@@ -54,7 +74,7 @@ const InviteCodePage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-              <p className="text-red-200 text-sm">{error}</p>
+              <p className="text-red-700 text-sm font-medium">{error}</p>
             </div>
           )}
           
@@ -68,7 +88,8 @@ const InviteCodePage = () => {
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
               placeholder="Enter invite code"
-              className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
+              style={{ color: '#1E1E1E' }}
               required
             />
           </div>
@@ -83,7 +104,8 @@ const InviteCodePage = () => {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="Enter phone number (e.g., +15551234567)"
-              className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
+              style={{ color: '#1E1E1E' }}
               required
             />
           </div>
@@ -93,7 +115,8 @@ const InviteCodePage = () => {
               type="submit"
               disabled={!inviteCode.trim() || !phoneNumber.trim() || isLoading}
               isLoading={isLoading}
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
+              className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+              style={{ color: '#1E1E1E' }}
               size="lg"
             >
               Continue
@@ -103,13 +126,15 @@ const InviteCodePage = () => {
               type="button"
               onClick={handleBack}
               variant="ghost"
-              className="w-full text-white/80 hover:text-white hover:bg-white/10 rounded-lg"
+              className="w-full hover:bg-white/20 rounded-lg"
+              style={{ color: '#1E1E1E' }}
               size="lg"
             >
               Back to Home
             </Button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { twilioApi, userApi } from '@/api';
 import type { User } from '@/api/types';
+import logoText from '@/assets/icons/logo_text.png';
 
 interface VerificationState {
   smsConsentGiven: boolean;
@@ -174,8 +175,27 @@ const PhoneVerificationPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+      {/* Fixed Header with Logo - Consistent with Landing Page */}
+      <header 
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
+        style={{
+          height: '60px',
+          background: 'linear-gradient(to bottom, hsla(326, 77.80%, 94.70%, 0.90) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
+        }}
+      >
+        <div className="absolute top-4 left-20 z-10">
+          <img 
+            src={logoText} 
+            alt="Budget Pal Logo" 
+            className="w-20 h-auto"
+          />
+        </div>
+      </header>
+
+      {/* Main Content with Padding for Header */}
+      <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light text-white mb-2">
@@ -302,6 +322,7 @@ const PhoneVerificationPage = () => {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
