@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { TopBar } from '@/components/ui/TopBar';
 import { authApi } from '@/api';
 import logoText from '@/assets/icons/logo_text.png';
 
@@ -61,7 +62,8 @@ const InviteCodePage = () => {
 
       {/* Main Content with Padding for Header */}
       <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+        <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+          <TopBar radiusMode="inherit" />
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
             Enter Invite Code
