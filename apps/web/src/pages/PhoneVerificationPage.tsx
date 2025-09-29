@@ -158,7 +158,7 @@ const PhoneVerificationPage = () => {
           <div className="text-center space-y-6">
             <div className="text-6xl">🎉</div>
             <h1 className="text-3xl font-light text-white">
-              Welcome to Budget Pal!
+              Welcome to Moony!
             </h1>
             <p className="text-white/90 text-sm">
               Your phone number has been verified successfully. You'll receive a welcome message with your spending analytics shortly.
@@ -187,7 +187,7 @@ const PhoneVerificationPage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Budget Pal Logo" 
+            alt="Moony Logo" 
             className="w-20 h-auto"
           />
         </div>
@@ -199,7 +199,7 @@ const PhoneVerificationPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light text-white mb-2">
-            <span className="font-semibold">Budget Pal</span> SMS Setup
+            <span className="font-semibold">Moony</span> SMS Setup
           </h1>
           <p className="text-white/80 text-sm">
             Enable daily spending notifications
@@ -225,7 +225,7 @@ const PhoneVerificationPage = () => {
                   className="w-4 h-4 mt-1 rounded border-white/30 bg-white/20 text-blue-600 focus:ring-2 focus:ring-white/50"
                 />
                 <label htmlFor="smsConsent" className="text-white/90 text-sm leading-relaxed">
-                  <strong>I consent to receive daily spending notifications via SMS from Budget Pal.</strong>
+                  <strong>I consent to receive daily spending notifications via SMS from Moony.</strong>
                   <br />
                   Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
                   <br />

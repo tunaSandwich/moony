@@ -1,12 +1,12 @@
 # Twilio 10DLC Compliance Implementation
 
 ## Overview ✅
-Fully compliant SMS opt-in experience that meets all Twilio 10DLC campaign verification requirements for Budget Pal messaging services.
+Fully compliant SMS opt-in experience that meets all Twilio 10DLC campaign verification requirements for Moony messaging services.
 
 ## Compliance Elements Implemented
 
 ### ✅ Required Disclosure Elements
-- **Brand Name**: "Budget Pal" prominently displayed
+- **Brand Name**: "Moony" prominently displayed
 - **Clear Consent Language**: Explicit SMS services description
 - **Frequency Disclosure**: "1-2 messages per day" specified
 - **Rate Notice**: "Message and data rates may apply"
@@ -16,7 +16,7 @@ Fully compliant SMS opt-in experience that meets all Twilio 10DLC campaign verif
 
 ### ✅ Exact Compliance Text
 ```
-"By checking this box, I consent to receive daily spending notifications and monthly budget messages via SMS from Budget Pal.
+"By checking this box, I consent to receive daily spending notifications and monthly budget messages via SMS from Moony.
 
 Message frequency: 1-2 messages per day
 Message and data rates may apply.
@@ -84,12 +84,12 @@ see @docs/sms_templates
 
 **Daily Notification Example**:
 ```
-Budget Pal: Today's target: $47. Yesterday: $23 | Month: $850/$3000. Reply STOP to opt out.
+Moony: Today's target: $47. Yesterday: $23 | Month: $850/$3000. Reply STOP to opt out.
 ```
 
 **HELP Response Example**:
 ```
-Budget Pal: For support visit [your-domain]/support or email help@budgetpal.com. To opt out, reply STOP.
+Moony: For support visit [your-domain]/support or email help@budgetpal.com. To opt out, reply STOP.
 ```
 
 **Goal Confirmation Example**:

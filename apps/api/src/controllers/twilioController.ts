@@ -345,8 +345,8 @@ export class TwilioController {
       }
 
       const analytics = user.spendingAnalytics;
-      let message = `Budget Pal`;
-      message += `👋 Hi ${user.firstName}! Welcom to Budget Pal, !\n\n`;
+      let message = `Moony`;
+      message += `👋 Hi ${user.firstName}! Welcom to Moony, !\n\n`;
 
       if (analytics) {
         message += `I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:\n`;

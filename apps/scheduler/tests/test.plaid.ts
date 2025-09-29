@@ -25,7 +25,7 @@ async function testPlaidConnection(): Promise<void> {
       user: {
         client_user_id: 'lucas_garza_budget_pal'
       },
-      client_name: 'Lucas Budget Pal',
+      client_name: 'Lucas Moony',
       products: ['transactions' as const, 'auth' as const] as Products[],
       country_codes: ['US' as const] as CountryCode[],
       language: 'en' as const,

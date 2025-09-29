@@ -83,7 +83,7 @@ const PlaidConnectionPage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Budget Pal Logo" 
+            alt="Moony Logo" 
             className="w-20 h-auto"
           />
         </div>

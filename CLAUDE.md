@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-Budget Pal is a Node.js/TypeScript application that provides automated daily spending tracking with bank integration via Plaid and messaging via Twilio/WhatsApp.
+Moony is a Node.js/TypeScript application that provides automated daily spending tracking with bank integration via Plaid and messaging via Twilio/WhatsApp.
 
 **Core Components:**
 - **Main Daemon** (`src/index.ts`): Entry point that starts the scheduler and Express server

@@ -63,7 +63,7 @@ const ApiTestPage = () => {
               API Integration Test
             </h1>
             <p className="text-white/80 text-sm">
-              Test the frontend API connection to Budget Pal backend
+              Test the frontend API connection to Moony backend
             </p>
           </div>
 

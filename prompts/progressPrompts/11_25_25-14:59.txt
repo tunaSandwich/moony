@@ -1,9 +1,9 @@
-# Budget Pal Project - Context Transfer Document
+# Moony Project - Context Transfer Document
 
 ## PROJECT OVERVIEW
 
 ### Core Description
-Budget Pal is a lightweight AI assistant MVP that helps users stay on track with monthly budgets through daily SMS guidance. The system analyzes bank transaction data via Plaid to calculate spending analytics and sends personalized daily spending recommendations.
+Moony is a lightweight AI assistant MVP that helps users stay on track with monthly budgets through daily SMS guidance. The system analyzes bank transaction data via Plaid to calculate spending analytics and sends personalized daily spending recommendations.
 
 ### Key Objectives
 - **Primary Goal**: Deliver daily spending recommendations based on remaining budget and days left in month
@@ -119,9 +119,9 @@ Budget Pal is a lightweight AI assistant MVP that helps users stay on track with
 
 ### Welcome Message (First Contact)
 ```
-Budget Pal
+Moony
 
-👋 Hi {name}! Welcome to Budget Pal.
+👋 Hi {name}! Welcome to Moony.
 
 I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
 
@@ -134,7 +134,7 @@ What's your spending goal for this month? Just reply with a number (ex: 2000).
 
 ### Confirmation Message (After Goal Set)
 ```
-Budget Pal
+Moony
 
 ✅ Perfect! Your ${monthlyLimit} monthly budget is all set.
 

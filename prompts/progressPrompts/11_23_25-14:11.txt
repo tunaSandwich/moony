@@ -1,4 +1,4 @@
-# Budget Pal Project - Context Transfer Document
+# Moony Project - Context Transfer Document
 
 ## PROJECT OVERVIEW
 
@@ -94,7 +94,7 @@ Building a lightweight AI assistant (MVP) that helps users stay on track with mo
 
 ### Current Technical Status
 - **Analytics Calculation**: Working (tested with $3200 avg, $3000 last month)
-- **Welcome SMS**: Delivering via WhatsApp (`👋 Welcome to Budget Pal...`)
+- **Welcome SMS**: Delivering via WhatsApp (`👋 Welcome to Moony...`)
 - **SMS Response Processing**: **BROKEN** - "3000" replies not triggering goal setting
 
 ### Active Blockers

@@ -1,7 +1,7 @@
 (First Time Setup:)
-Budget Pal
+Moony
 
-👋 Hi {name}! Welcome to Budget Pal.
+👋 Hi {name}! Welcome to Moony.
 
 I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
 
@@ -14,7 +14,7 @@ What's your spending goal for this month? Just reply with a number (ex: 2000).
 —————————
 (First Message after set up)
 
-Budget Pal
+Moony
 
 ✅ Perfect! Your $2,000 monthly budget is all set.
 
@@ -27,7 +27,7 @@ Reply STOP to opt out anytime.
 
 —————————
 (daily text)
-Budget Pal
+Moony
 
 ☀️ Good Morning {name}!
 🎯 Today's spending target: $x
@@ -39,7 +39,7 @@ Reply STOP to opt out
 
 —————————
 (Fridays)
-Budget Pal
+Moony
 
 ☀️ Good morning Lucas!
 🎯 Today's spending target: $67
@@ -54,7 +54,7 @@ Reply STOP to opt out
 
 —————————
 (Sunday)
-Budget Pal
+Moony
 
 ☀️ Good morning Lucas!
 🎯 Today's spending target: $52
@@ -69,7 +69,7 @@ Reply STOP to opt out
 —————————
 
 (Data Issue Fallback)
-🛠️ Budget Pal 🛠️
+🛠️ Moony 🛠️
 
 We had trouble getting data. We're looking into it.
 
@@ -77,7 +77,7 @@ We had trouble getting data. We're looking into it.
 
 (Under Budget)
 
-Budget Pal
+Moony
 
 🎉 Amazing work, Lucas! You crushed it this month.
 
@@ -89,7 +89,7 @@ Ready to set next month's goal? Just reply with a number (ex: 3000) or ignore th
 
 (Over Budget)
 
-Budget Pal
+Moony
 
 📊 Hey Lucas, here's your month wrap-up:
 
@@ -99,7 +99,7 @@ What's your goal for next month? Reply with a number (ex: 3000) or ignore this t
 
 —————————
 
-🙏 Budget Pal 🙏
+🙏 Moony 🙏
 
 For support email gonzalezgarza.lucas@gmail.com.
 

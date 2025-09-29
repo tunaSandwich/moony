@@ -1,8 +1,8 @@
-# Budget Pal Frontend API Integration
+# Moony Frontend API Integration
 
 ## Overview
 
-Simple, clean API connection layer for the React frontend that provides easy access to all Budget Pal backend endpoints with built-in JWT authentication, error handling, and TypeScript support.
+Simple, clean API connection layer for the React frontend that provides easy access to all Moony backend endpoints with built-in JWT authentication, error handling, and TypeScript support.
 
 ## Quick Start
 

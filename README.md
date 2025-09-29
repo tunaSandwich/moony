@@ -1,4 +1,4 @@
-## Budget Pal
+## Moony
 
 Automated daily spending tracker that connects to your bank via Plaid, computes simple spending metrics, and sends a daily WhatsApp (or SMS) update via Twilio.
 

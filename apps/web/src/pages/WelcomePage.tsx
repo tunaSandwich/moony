@@ -138,7 +138,7 @@ const WelcomePage = () => {
             </p>
             <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
               <p className="text-green-200 text-sm">
-                🎯 Your Budget Pal journey begins now!
+                🎯 Your Moony journey begins now!
               </p>
             </div>
             <Button
@@ -162,7 +162,7 @@ const WelcomePage = () => {
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-3xl font-light text-white mb-2">
-            Welcome to <span className="font-semibold">Budget Pal</span>!
+            Welcome to <span className="font-semibold">Moony</span>!
           </h1>
           <p className="text-white/80 text-sm">
             Your spending analytics are ready.

@@ -1,6 +1,6 @@
-# Budget Pal - Frontend Web Application
+# Moony - Frontend Web Application
 
-A modern React application built with TypeScript, Tailwind CSS, and Vite for the Budget Pal spending tracking platform.
+A modern React application built with TypeScript, Tailwind CSS, and Vite for the Moony spending tracking platform.
 
 ## 🚀 Quick Start
 
