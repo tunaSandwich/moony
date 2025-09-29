@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { TopBar } from '@/components/ui/TopBar';
 import { twilioApi, userApi } from '@/api';
 import type { User } from '@/api/types';
 import logoText from '@/assets/icons/logo_text.png';
@@ -196,12 +197,13 @@ const PhoneVerificationPage = () => {
       {/* Main Content with Padding for Header */}
       <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+        <TopBar radiusMode="inherit" />
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-white mb-2">
+          <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
             <span className="font-semibold">Moony</span> SMS Setup
           </h1>
-          <p className="text-white/80 text-sm">
+          <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
             Enable daily spending notifications
           </p>
         </div>
@@ -209,7 +211,7 @@ const PhoneVerificationPage = () => {
         <div className="space-y-6">
           {state.error && (
             <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-              <p className="text-red-200 text-sm">{state.error}</p>
+              <p className="text-red-700 text-sm">{state.error}</p>
             </div>
           )}
 
@@ -222,9 +224,9 @@ const PhoneVerificationPage = () => {
                   id="smsConsent"
                   checked={state.smsConsentGiven}
                   onChange={(e) => updateState({ smsConsentGiven: e.target.checked, error: null })}
-                  className="w-4 h-4 mt-1 rounded border-white/30 bg-white/20 text-blue-600 focus:ring-2 focus:ring-white/50"
+                  className="w-4 h-4 mt-1 rounded border-gray-300 bg-white/70 text-blue-600 focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 />
-                <label htmlFor="smsConsent" className="text-white/90 text-sm leading-relaxed">
+                <label htmlFor="smsConsent" className="text-sm leading-relaxed" style={{ color: '#1E1E1E' }}>
                   <strong>I consent to receive daily spending notifications via SMS from Moony.</strong>
                   <br />
                   Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
@@ -240,7 +242,7 @@ const PhoneVerificationPage = () => {
           {/* Phone Number Input */}
           {state.smsConsentGiven && (
             <div>
-              <label htmlFor="phoneNumber" className="block text-white/90 text-sm font-medium mb-2">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
                 Phone Number
               </label>
               <input
@@ -249,7 +251,8 @@ const PhoneVerificationPage = () => {
                 value={state.phoneNumber}
                 onChange={(e) => updateState({ phoneNumber: e.target.value, error: null })}
                 placeholder="Enter your phone number (e.g., +15551234567)"
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
+              style={{ color: '#1E1E1E' }}
                 disabled={state.verificationCodeSent || state.isLoading}
               />
             </div>
@@ -258,7 +261,7 @@ const PhoneVerificationPage = () => {
           {/* Verification Code Input */}
           {state.verificationCodeSent && (
             <div>
-              <label htmlFor="verificationCode" className="block text-white/90 text-sm font-medium mb-2">
+            <label htmlFor="verificationCode" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
                 Verification Code
               </label>
               <input
@@ -268,9 +271,10 @@ const PhoneVerificationPage = () => {
                 onChange={(e) => updateState({ verificationCode: e.target.value.replace(/\D/g, ''), error: null })}
                 placeholder="Enter 6-digit code"
                 maxLength={6}
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm text-center text-lg tracking-widest"
+              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm text-center text-lg tracking-widest"
+              style={{ color: '#1E1E1E' }}
               />
-              <p className="text-white/70 text-xs mt-2">
+            <p className="text-xs mt-2" style={{ color: '#1E1E1E', opacity: 0.8 }}>
                 We sent a verification code to {state.phoneNumber}
               </p>
             </div>
@@ -283,7 +287,8 @@ const PhoneVerificationPage = () => {
                 onClick={handleSendCode}
                 disabled={!state.smsConsentGiven || !state.phoneNumber.trim() || state.isLoading}
                 isLoading={state.isLoading}
-                className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
+                className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                style={{ color: '#1E1E1E' }}
                 size="lg"
               >
                 {state.isLoading ? 'Sending Code...' : 'Send Verification Code'}
@@ -293,7 +298,8 @@ const PhoneVerificationPage = () => {
                 onClick={handleVerifyCode}
                 disabled={state.verificationCode.length !== 6 || state.isLoading}
                 isLoading={state.isLoading}
-                className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
+                className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                style={{ color: '#1E1E1E' }}
                 size="lg"
               >
                 {state.isLoading ? 'Verifying...' : 'Verify Phone Number'}
@@ -304,18 +310,18 @@ const PhoneVerificationPage = () => {
 
           {/* Legal Links */}
           <div className="pt-4 border-t border-white/20">
-            <p className="text-white/70 text-xs text-center leading-relaxed">
+            <p className="text-xs text-center leading-relaxed" style={{ color: '#1E1E1E', opacity: 0.8 }}>
               By continuing, you agree to our{' '}
               <button 
                 onClick={handleTermsClick}
-                className="underline hover:text-white transition-colors"
+                className="underline hover:text-black transition-colors"
               >
                 Terms
               </button>{' '}
               and{' '}
               <button 
                 onClick={handlePrivacyClick}
-                className="underline hover:text-white transition-colors"
+                className="underline hover:text-black transition-colors"
               >
                 Privacy Policy
               </button>.

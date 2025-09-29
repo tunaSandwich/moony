@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { userApi, goalsApi } from '@/api';
 import type { User } from '@/api/types';
+import { TopBar } from '@/components/ui/TopBar';
+import logoText from '@/assets/icons/logo_text.png';
 
 interface WelcomeState {
   user: User | null;
@@ -156,131 +158,154 @@ const WelcomePage = () => {
 
   // Main welcome content
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-3xl font-light text-white mb-2">
-            Welcome to <span className="font-semibold">Moony</span>!
-          </h1>
-          <p className="text-white/80 text-sm">
-            Your spending analytics are ready.
-          </p>
-          {import.meta.env.DEV && (
-            <div className="mt-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full inline-block">
-              <p className="text-yellow-200 text-xs">
-                🧪 Test Mode: Messages via WhatsApp
-              </p>
-            </div>
-          )}
+    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+      {/* Fixed Header with Logo - Consistent with Landing Page */}
+      <header 
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
+        style={{
+          height: '60px',
+          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
+        }}
+      >
+        <div className="absolute top-4 left-20 z-10">
+          <img 
+            src={logoText} 
+            alt="Moony Logo" 
+            className="w-20 h-auto"
+          />
         </div>
+      </header>
 
-        <div className="space-y-6">
-          {state.error && (
-            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-              <p className="text-red-200 text-sm">{state.error}</p>
-            </div>
-          )}
-
-          {/* Analytics Display */}
-          {state.user?.analytics && (
-            <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-              <h2 className="text-lg font-semibold text-white mb-3">Your Spending Summary</h2>
-              <div className="space-y-2 text-white/90 text-sm">
-                <div className="flex justify-between">
-                  <span>📊 Average monthly:</span>
-                  <span className="font-medium">{formatCurrency(state.user.analytics.averageMonthlySpending)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>📅 Last month:</span>
-                  <span className="font-medium">{formatCurrency(state.user.analytics.lastMonthSpending)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>💰 This month so far:</span>
-                  <span className="font-medium">{formatCurrency(state.user.analytics.currentMonthSpending)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Messaging Instructions */}
-          {!state.showFallback ? (
-            <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-              <h2 className="text-lg font-semibold text-white mb-3">📱 Check Your Phone</h2>
-              <div className="space-y-2 text-white/90 text-sm">
-                <p>We've sent a message to your phone with:</p>
-                <ul className="list-disc list-inside ml-2 space-y-1">
-                  <li>Your spending summary</li>
-                  <li>Instructions to set your goal</li>
-                </ul>
-                <p className="mt-3 font-medium">
-                  Simply reply to that message (SMS or WhatsApp) with your monthly spending goal (example: 3000).
+      {/* Main Content with Padding for Header */}
+      <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+          <TopBar radiusMode="inherit" />
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="text-6xl mb-4">🎉</div>
+            <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
+              Welcome to <span className="font-semibold">Moony</span>!
+            </h1>
+            <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+              Your spending analytics are ready.
+            </p>
+            {import.meta.env.DEV && (
+              <div className="mt-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full inline-block">
+                <p className="text-xs" style={{ color: '#1E1E1E' }}>
+                  🧪 Test Mode: Messages via WhatsApp
                 </p>
-                <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
-                  <p className="text-white/70 text-xs">
-                    💡 The message may arrive via SMS or WhatsApp depending on availability. Check both!
-                  </p>
-                </div>
               </div>
-            </div>
-          ) : (
-            /* Fallback Content */
-            <div className="space-y-4">
+            )}
+          </div>
+
+          <div className="space-y-6">
+            {state.error && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{state.error}</p>
+              </div>
+            )}
+
+            {/* Analytics Display */}
+            {state.user?.analytics && (
               <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                <h2 className="text-lg font-semibold text-white mb-3">Haven't received the message yet?</h2>
-                <p className="text-white/90 text-sm mb-4">
-                  📋 Set your goal here instead:
-                </p>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label htmlFor="manualGoal" className="block text-white/90 text-sm font-medium mb-2">
-                      Monthly Spending Goal
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 text-lg">$</span>
-                      <input
-                        id="manualGoal"
-                        type="number"
-                        value={state.manualGoal}
-                        onChange={(e) => updateState({ manualGoal: e.target.value, error: null })}
-                        placeholder="3000"
-                        min="100"
-                        max="20000"
-                        className="w-full pl-8 pr-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
-                        disabled={state.isSubmitting}
-                      />
-                    </div>
-                    <p className="text-white/60 text-xs mt-1">
-                      Enter an amount between $100 and $20,000
+                <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>Your Spending Summary</h2>
+                <div className="space-y-2 text-sm" style={{ color: '#1E1E1E' }}>
+                  <div className="flex justify-between">
+                    <span>📊 Average monthly:</span>
+                    <span className="font-medium">{formatCurrency(state.user.analytics.averageMonthlySpending)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>📅 Last month:</span>
+                    <span className="font-medium">{formatCurrency(state.user.analytics.lastMonthSpending)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>💰 This month so far:</span>
+                    <span className="font-medium">{formatCurrency(state.user.analytics.currentMonthSpending)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Messaging Instructions */}
+            {!state.showFallback ? (
+              <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>📱 Check Your Phone</h2>
+                <div className="space-y-2 text-sm" style={{ color: '#1E1E1E' }}>
+                  <p>We've sent a message to your phone with:</p>
+                  <ul className="list-disc list-inside ml-2 space-y-1">
+                    <li>Your spending summary</li>
+                    <li>Instructions to set your goal</li>
+                  </ul>
+                  <p className="mt-3 font-medium">
+                    Simply reply to that message (SMS or WhatsApp) with your monthly spending goal (example: 3000).
+                  </p>
+                  <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
+                    <p className="text-xs" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                      💡 The message may arrive via SMS or WhatsApp depending on availability. Check both!
                     </p>
                   </div>
-
-                  <Button
-                    onClick={handleManualGoalSubmit}
-                    disabled={!state.manualGoal.trim() || state.isSubmitting}
-                    isLoading={state.isSubmitting}
-                    className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
-                    size="lg"
-                  >
-                    {state.isSubmitting ? 'Setting Goal...' : 'Set Goal'}
-                  </Button>
                 </div>
               </div>
+            ) : (
+              /* Fallback Content */
+              <div className="space-y-4">
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>Haven't received the message yet?</h2>
+                  <p className="text-sm mb-4" style={{ color: '#1E1E1E' }}>
+                    📋 Set your goal here instead:
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="manualGoal" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
+                        Monthly Spending Goal
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg" style={{ color: '#1E1E1E', opacity: 0.6 }}>$</span>
+                        <input
+                          id="manualGoal"
+                          type="number"
+                          value={state.manualGoal}
+                          onChange={(e) => updateState({ manualGoal: e.target.value, error: null })}
+                          placeholder="3000"
+                          min="100"
+                          max="20000"
+                          className="w-full pl-8 pr-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
+                          style={{ color: '#1E1E1E' }}
+                          disabled={state.isSubmitting}
+                        />
+                      </div>
+                      <p className="text-xs mt-1" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                        Enter an amount between $100 and $20,000
+                      </p>
+                    </div>
 
-              {/* Troubleshooting Tips */}
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <h3 className="text-white/90 text-sm font-medium mb-2">💡 Message Troubleshooting Tips:</h3>
-                <ul className="text-white/70 text-xs space-y-1">
-                  <li>• Check both SMS and WhatsApp messages</li>
-                  <li>• Look in spam/blocked message folders</li>
-                  <li>• Make sure you have cell or internet service</li>
-                  <li>• The message may take a few minutes to arrive</li>
-                </ul>
+                    <Button
+                      onClick={handleManualGoalSubmit}
+                      disabled={!state.manualGoal.trim() || state.isSubmitting}
+                      isLoading={state.isSubmitting}
+                      className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                      style={{ color: '#1E1E1E' }}
+                      size="lg"
+                    >
+                      {state.isSubmitting ? 'Setting Goal...' : 'Set Goal'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Troubleshooting Tips */}
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <h3 className="text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>💡 Message Troubleshooting Tips:</h3>
+                  <ul className="text-xs space-y-1" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                    <li>• Check both SMS and WhatsApp messages</li>
+                    <li>• Look in spam/blocked message folders</li>
+                    <li>• Make sure you have cell or internet service</li>
+                    <li>• The message may take a few minutes to arrive</li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
