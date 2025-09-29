@@ -1,24 +1,27 @@
 import crypto from 'crypto';
 
-const ALGORITHM = 'aes-256-cbc';
-const IV_LENGTH = 16;
+const ALGORITHM = 'aes-256-gcm';
+const NONCE_LENGTH = 12;
 
 export function encrypt(text: string, key: string): string {
   // Ensure key is exactly 32 bytes for AES-256
   const keyBuffer = crypto.scryptSync(key, 'salt', 32);
   
-  // Generate random IV
-  const iv = crypto.randomBytes(IV_LENGTH);
+  // Generate random 12-byte nonce for GCM
+  const nonce = crypto.randomBytes(NONCE_LENGTH);
   
-  // Create cipher with IV
-  const cipher = crypto.createCipheriv(ALGORITHM, keyBuffer, iv);
+  // Create cipher with nonce
+  const cipher = crypto.createCipheriv(ALGORITHM, keyBuffer, nonce);
   
   // Encrypt the text
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
+  let encrypted = cipher.update(text, 'utf8');
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
   
-  // Combine IV and encrypted data
-  const result = iv.toString('hex') + ':' + encrypted;
+  // Get the authentication tag
+  const tag = cipher.getAuthTag();
+  
+  // Format: nonce_base64:ciphertext_base64:tag_base64
+  const result = nonce.toString('base64') + ':' + encrypted.toString('base64') + ':' + tag.toString('base64');
   
   return result;
 }
@@ -28,20 +31,24 @@ export function decrypt(encryptedData: string, key: string): string {
     // Ensure key is exactly 32 bytes for AES-256
     const keyBuffer = crypto.scryptSync(key, 'salt', 32);
     
-    // Split the encrypted data
+    // Split the encrypted data: nonce_base64:ciphertext_base64:tag_base64
     const parts = encryptedData.split(':');
-    if (parts.length !== 2) {
+    if (parts.length !== 3) {
       throw new Error('Invalid encrypted data format');
     }
     
-    const iv = Buffer.from(parts[0], 'hex');
-    const encrypted = parts[1];
+    const nonce = Buffer.from(parts[0], 'base64');
+    const encrypted = Buffer.from(parts[1], 'base64');
+    const tag = Buffer.from(parts[2], 'base64');
     
-    // Create decipher with IV
-    const decipher = crypto.createDecipheriv(ALGORITHM, keyBuffer, iv);
+    // Create decipher with nonce
+    const decipher = crypto.createDecipheriv(ALGORITHM, keyBuffer, nonce);
+    
+    // Set the authentication tag
+    decipher.setAuthTag(tag);
     
     // Decrypt the data
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    let decrypted = decipher.update(encrypted, undefined, 'utf8');
     decrypted += decipher.final('utf8');
     
     return decrypted;

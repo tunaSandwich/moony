@@ -131,13 +131,27 @@ export class PlaidController {
 
       const encryptedAccessToken = encrypt(accessToken, encryptionKey);
 
+      // Verify encryption worked (token should be different and longer)
+      if (encryptedAccessToken === accessToken || encryptedAccessToken.length <= accessToken.length) {
+        logger.error('Plaid token encryption failed - encrypted token matches original', { userId });
+        throw new AppError(ERROR_MESSAGES.CONFIG_ERROR, 500);
+      }
+
+      // Verify GCM format (should contain 3 parts: nonce:ciphertext:tag)
+      const parts = encryptedAccessToken.split(':');
+      if (parts.length !== 3) {
+        logger.error('Plaid token encryption failed - invalid GCM format', { userId });
+        throw new AppError(ERROR_MESSAGES.CONFIG_ERROR, 500);
+      }
+
       // Update user record with encrypted access token
       await prisma.user.update({
         where: { id: userId },
         data: { plaidAccessToken: encryptedAccessToken },
       });
 
-      logger.info('Bank connected successfully', { userId });
+      // Log confirmation that encryption occurred (without logging actual tokens)
+      logger.info('Bank connected successfully with encrypted token', { userId });
 
       // Trigger analytics processing in background (non-blocking)
       this.triggerAnalyticsProcessing(userId);
