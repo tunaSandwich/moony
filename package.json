@@ -33,17 +33,14 @@
     "db:status:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && npx prisma migrate status --schema=apps/api/prisma/schema.prisma",
     "db:generate": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma generate --schema=apps/api/prisma/schema.prisma",
     "db:reset": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma migrate reset --schema=apps/api/prisma/schema.prisma",
+    "db:reset:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && npx prisma migrate reset --schema=apps/api/prisma/schema.prisma",
     "db:seed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts",
     "db:seed:clear": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear",
     "db:seed:clearAndSeed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear && tsx apps/api/prisma/seed.ts",
-    "db:seed:stagin": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts",
-    "db:seed:staging:clear": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear",
-    "db:seed:staging:clearAndSeed": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear && tsx apps/api/prisma/seed.ts",
 
-    "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/scripts/create-user.ts",
-    "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && tsx apps/api/scripts/create-user.ts",
+    "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/create-user.ts",
+    "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/create-user.ts",
 
-    
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
     "test:plaid:staging": "NODE_ENV=staging tsx tests/test.plaid.ts",

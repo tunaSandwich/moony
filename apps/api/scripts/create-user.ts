@@ -31,6 +31,16 @@ function requireStringArg(args: ArgMap, names: string[]): string {
   throw new Error(`Missing required argument: --${names[0]}`);
 }
 
+function optionalStringArg(args: ArgMap, names: string[]): string | undefined {
+  for (const name of names) {
+    const value = args[name];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return undefined;
+}
+
 function generateInviteCode(length: number = 6): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let result = '';
@@ -60,6 +70,8 @@ async function main() {
     const lastName = requireStringArg(args, ['lastName', 'l']);
     const phoneNumber = requireStringArg(args, ['phoneNumber', 'p']);
 
+    const providedInviteCode = optionalStringArg(args, ['inviteCode', 'i']);
+
     // Ensure phone number does not already exist
     const existingByPhone = await prisma.user.findUnique({ where: { phoneNumber } });
     if (existingByPhone) {
@@ -67,7 +79,17 @@ async function main() {
       process.exit(1);
     }
 
-    const inviteCode = await generateUniqueInviteCode(prisma);
+    let inviteCode: string;
+    if (providedInviteCode) {
+      const existingByCode = await prisma.user.findUnique({ where: { inviteCode: providedInviteCode } });
+      if (existingByCode) {
+        console.error(`Invite code ${providedInviteCode} is already in use (id=${existingByCode.id}).`);
+        process.exit(1);
+      }
+      inviteCode = providedInviteCode;
+    } else {
+      inviteCode = await generateUniqueInviteCode(prisma);
+    }
 
     const user = await prisma.user.create({
       data: {
