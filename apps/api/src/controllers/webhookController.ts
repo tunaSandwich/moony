@@ -260,9 +260,9 @@ export class WebhookController {
         const analytics = await getUserSpendingAnalytics(user.id);
         
         if (analytics) {
-          const welcomeMessage = `Moony
+          const welcomeMessage = `moony
 
-👋 Hi ${user.firstName}! Welcome to Moony.
+👋 Hi ${user.firstName}! Welcome to moony.
 
 I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
 
@@ -395,7 +395,7 @@ What's your spending goal for this month? Just reply with a number (ex: 2000).`;
       const formattedTarget = this.calculationService.formatDailyTargetMessage(dailyTarget);
 
       // Send confirmation message using the exact new template
-      let confirmationMessage = `Moony
+      let confirmationMessage = `moony
 
 ✅ Perfect! Your ${formatCurrency(goalAmount)} monthly budget is all set.
 

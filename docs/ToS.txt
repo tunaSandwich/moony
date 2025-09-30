@@ -1,8 +1,8 @@
 1. Service Description
-Moony provides automated daily spending notifications and monthly budget tracking services via SMS messaging. Our service connects to your bank account through Plaid to analyze your spending patterns and provide personalized budget alerts.
+moony provides automated daily spending notifications and monthly budget tracking services via SMS messaging. Our service connects to your bank account through Plaid to analyze your spending patterns and provide personalized budget alerts.
 
 2. SMS Services Agreement
-By using Moony's SMS services, you agree to receive:
+By using moony's SMS services, you agree to receive:
 
 • Daily spending notifications and budget updates
 • Monthly budget summaries and goal reminders
@@ -19,16 +19,16 @@ You may opt out of SMS services at any time by:
 For help with SMS services, reply HELP to any message or visit our support page.
 
 4. Financial Data
-Moony uses Plaid to securely connect to your bank account. We only access transaction data necessary to provide spending analysis and budget tracking. We do not store your banking credentials and cannot initiate transactions from your accounts.
+moony uses Plaid to securely connect to your bank account. We only access transaction data necessary to provide spending analysis and budget tracking. We do not store your banking credentials and cannot initiate transactions from your accounts.
 
 5. Privacy and Data Protection
 Your privacy is important to us. Please review our Privacy Policy for detailed information about how we collect, use, and protect your personal and financial information. We do not sell or share your personal data with third parties for marketing purposes.
 
 6. Service Availability
-Moony is provided "as is" without warranties. We strive for 99% uptime but cannot guarantee uninterrupted service. SMS delivery depends on your carrier's network and may be delayed or fail to deliver.
+moony is provided "as is" without warranties. We strive for 99% uptime but cannot guarantee uninterrupted service. SMS delivery depends on your carrier's network and may be delayed or fail to deliver.
 
 7. Account Termination
-You may terminate your Moony account at any time. Upon termination, we will stop sending SMS messages and delete your financial data within 30 days, except as required by law or for legitimate business purposes.
+You may terminate your moony account at any time. Upon termination, we will stop sending SMS messages and delete your financial data within 30 days, except as required by law or for legitimate business purposes.
 
 8. Contact Information
 For questions about these Terms of Service or our SMS services:
@@ -37,4 +37,4 @@ For questions about these Terms of Service or our SMS services:
 • SMS: Reply HELP to any message
 • Web: Visit our support page
 9. Changes to Terms
-We may update these Terms of Service from time to time. We will notify you of significant changes via SMS or email. Continued use of Moony after changes indicates acceptance of the updated terms.
+We may update these Terms of Service from time to time. We will notify you of significant changes via SMS or email. Continued use of moony after changes indicates acceptance of the updated terms.

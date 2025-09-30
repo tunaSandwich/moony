@@ -1,4 +1,4 @@
-// Example: How to use the Moony API in React components
+// Example: How to use the moony API in React components
 import { useState } from 'react';
 import { authApi, twilioApi } from '@/api';
 

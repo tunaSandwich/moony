@@ -353,7 +353,7 @@ const LandingPage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Moony Logo" 
+            alt="moony Logo" 
             className="w-20 h-auto"
           />
         </div>
@@ -456,7 +456,7 @@ const LandingPage = () => {
           <div className="mb-8">
             <img 
               src={logo} 
-              alt="Moony Logo" 
+              alt="moony Logo" 
               className="w-16 h-16 mx-auto"
             />
           </div>

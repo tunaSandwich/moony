@@ -17,7 +17,7 @@ const TermsOfServicePage = () => {
               Terms of Service
             </h1>
             <p className="text-white/80 text-sm">
-              Moony - Daily Spending Notifications
+              moony - Daily Spending Notifications
             </p>
           </div>
 
@@ -26,7 +26,7 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">1. Service Description</h2>
               <p className="text-sm leading-relaxed">
-                Moony provides automated daily spending notifications and monthly budget tracking services via SMS messaging. 
+                moony provides automated daily spending notifications and monthly budget tracking services via SMS messaging. 
                 Our service connects to your bank account through Plaid to analyze your spending patterns and provide personalized budget alerts.
               </p>
             </section>
@@ -34,7 +34,7 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">2. SMS Services Agreement</h2>
               <p className="text-sm leading-relaxed mb-3">
-                By using Moony's SMS services, you agree to receive:
+                By using moony's SMS services, you agree to receive:
               </p>
               <ul className="text-sm space-y-1 ml-4">
                 <li>• Daily spending notifications and budget updates</li>
@@ -65,7 +65,7 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">4. Financial Data</h2>
               <p className="text-sm leading-relaxed">
-                Moony uses Plaid to securely connect to your bank account. We only access transaction data necessary to provide spending analysis and budget tracking. 
+                moony uses Plaid to securely connect to your bank account. We only access transaction data necessary to provide spending analysis and budget tracking. 
                 We do not store your banking credentials and cannot initiate transactions from your accounts.
               </p>
             </section>
@@ -81,7 +81,7 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">6. Service Availability</h2>
               <p className="text-sm leading-relaxed">
-                Moony is provided "as is" without warranties. We strive for 99% uptime but cannot guarantee uninterrupted service. 
+                moony is provided "as is" without warranties. We strive for 99% uptime but cannot guarantee uninterrupted service. 
                 SMS delivery depends on your carrier's network and may be delayed or fail to deliver.
               </p>
             </section>
@@ -89,7 +89,7 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">7. Account Termination</h2>
               <p className="text-sm leading-relaxed">
-                You may terminate your Moony account at any time. Upon termination, we will stop sending SMS messages and delete your financial data within 30 days, 
+                You may terminate your moony account at any time. Upon termination, we will stop sending SMS messages and delete your financial data within 30 days, 
                 except as required by law or for legitimate business purposes.
               </p>
             </section>
@@ -110,7 +110,7 @@ const TermsOfServicePage = () => {
               <h2 className="text-xl font-semibold text-white mb-3">9. Changes to Terms</h2>
               <p className="text-sm leading-relaxed">
                 We may update these Terms of Service from time to time. We will notify you of significant changes via SMS or email. 
-                Continued use of Moony after changes indicates acceptance of the updated terms.
+                Continued use of moony after changes indicates acceptance of the updated terms.
               </p>
             </section>
 

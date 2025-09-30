@@ -1,6 +1,6 @@
-# Moony - Frontend Web Application
+# moony - Frontend Web Application
 
-A modern React application built with TypeScript, Tailwind CSS, and Vite for the Moony spending tracking platform.
+A modern React application built with TypeScript, Tailwind CSS, and Vite for the moony spending tracking platform.
 
 ## 🚀 Quick Start
 

@@ -54,7 +54,7 @@ const InviteCodePage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Moony Logo" 
+            alt="moony Logo" 
             className="w-20 h-auto"
           />
         </div>
@@ -69,7 +69,7 @@ const InviteCodePage = () => {
             Enter Invite Code
           </h1>
           <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-            Enter your invitation code to get started with Moony
+            Enter your invitation code to get started with moony
           </p>
         </div>
 

@@ -1,8 +1,8 @@
 Landing Page Prompt
-Create a modern, trust-focused landing page for Moony using the design specification provided. The page should include:
+Create a modern, trust-focused landing page for moony using the design specification provided. The page should include:
 Header Section:
 
-Clean navigation with Moony logo (use a simple text logo with the primary blue color #0698FE)
+Clean navigation with moony logo (use a simple text logo with the primary blue color #0698FE)
 Minimal navigation items: "How it Works", "Security", "Get Started" button
 
 Hero Section:
@@ -45,7 +45,7 @@ Copyright and company info
 
 Use the design system colors, typography, and spacing. Ensure mobile responsiveness and accessibility. Include subtle animations on scroll for engagement.
 Step 1: Goal Setting Prompt
-Create a clean, focused goal-setting page that represents step 1 of the Moony onboarding flow. The page should include:
+Create a clean, focused goal-setting page that represents step 1 of the moony onboarding flow. The page should include:
 Page Structure:
 
 Progress indicator showing "Step 1 of 4"
@@ -84,7 +84,7 @@ Tooltip explaining how the goal will be used
 
 Use the established design system with proper spacing, colors, and typography. Ensure form accessibility with proper labels and ARIA attributes.
 Step 2: Bank Connection Prompt
-Create a secure, trust-focused bank connection page for step 2 of Moony onboarding using Plaid integration. The page should include:
+Create a secure, trust-focused bank connection page for step 2 of moony onboarding using Plaid integration. The page should include:
 Page Structure:
 
 Progress indicator showing "Step 2 of 4"
@@ -143,7 +143,7 @@ Link to detailed security information
 
 Emphasize security and trust throughout. Use calming colors and professional imagery. Ensure the page addresses common banking security concerns.
 Step 3: SMS Consent Prompt
-Create a compliant, clear SMS consent page for step 3 of Moony onboarding. This page must meet A2P (Application-to-Person) messaging compliance requirements:
+Create a compliant, clear SMS consent page for step 3 of moony onboarding. This page must meet A2P (Application-to-Person) messaging compliance requirements:
 Page Structure:
 
 Progress indicator showing "Step 3 of 4"
@@ -165,7 +165,7 @@ Clear error states for invalid numbers
 Consent Section (Critical for A2P Compliance):
 
 Large, prominent checkbox (not pre-checked)
-Clear consent language: "I agree to receive automated text messages from Moony at the phone number provided"
+Clear consent language: "I agree to receive automated text messages from moony at the phone number provided"
 Message frequency disclosure: "Message frequency: 1-2 messages per day, up to 30 per month"
 Rate disclosure: "Message and data rates may apply"
 Opt-out instructions: "Reply STOP to opt out at any time"
@@ -210,7 +210,7 @@ Show clear error messages for missing requirements
 
 The design should prioritize legal compliance while maintaining user experience. Use trust signals and clear communication about what users can expect.
 Step 4: Confirmation Prompt
-Create a celebratory, informative confirmation page for step 4 (final step) of Moony onboarding. The page should include:
+Create a celebratory, informative confirmation page for step 4 (final step) of moony onboarding. The page should include:
 Page Structure:
 
 Progress indicator showing "Step 4 of 4" or "Complete!"
@@ -221,7 +221,7 @@ Main Content:
 
 Large success icon (checkmark in circle, confetti, or celebration graphic)
 Celebratory headline: "You're all set up!"
-Success message: "Moony is now tracking your spending and will send your first update tomorrow morning."
+Success message: "moony is now tracking your spending and will send your first update tomorrow morning."
 
 Setup Summary Card:
 
@@ -276,8 +276,8 @@ Subtle animation or confetti effect
 
 Additional Features:
 
-Social sharing: "I'm taking control of my spending with Moony!"
-Referral prompt: "Know someone who could benefit? Share Moony"
+Social sharing: "I'm taking control of my spending with moony!"
+Referral prompt: "Know someone who could benefit? Share moony"
 Mobile app download (if applicable)
 
 Footer:

@@ -1,4 +1,4 @@
-# Moony - Complete Design Specification & Development Guide
+# moony - Complete Design Specification & Development Guide
 
 ## Table of Contents
 1. [Design System](#design-system)
@@ -290,12 +290,12 @@ Footer
 
 ### Landing Page Prompt
 
-**Objective**: Create a modern, trust-focused landing page for Moony that converts visitors into users while establishing credibility and security.
+**Objective**: Create a modern, trust-focused landing page for moony that converts visitors into users while establishing credibility and security.
 
 **Requirements**:
 
 **Header Section:**
-- Clean, minimal navigation bar with Moony logo (use text-based logo in primary blue #0698FE)
+- Clean, minimal navigation bar with moony logo (use text-based logo in primary blue #0698FE)
 - Navigation items: "How it Works", "Security", "Get Started" button (primary button style)
 - Fixed header on scroll with subtle shadow
 - Mobile-responsive hamburger menu
@@ -539,7 +539,7 @@ Footer
 **SMS Consent Section (Critical A2P Compliance):**
 - Large, prominent checkbox (NEVER pre-checked)
 - Clear, legally compliant consent language:
-  - "I agree to receive automated text messages from Moony at the phone number provided"
+  - "I agree to receive automated text messages from moony at the phone number provided"
 - Required disclosures in clear, readable format:
   - "Message frequency: 1-2 messages per day, up to 30 per month"
   - "Message and data rates may apply"
@@ -612,7 +612,7 @@ Footer
 **Success Header:**
 - Large success icon (animated checkmark, confetti, celebration)
 - Celebratory headline: "You're all set up!"
-- Success message: "Moony is now tracking your spending and will send your first update tomorrow morning."
+- Success message: "moony is now tracking your spending and will send your first update tomorrow morning."
 - Subtle success animation or micro-interaction
 
 **Setup Summary Card:**
@@ -664,7 +664,7 @@ Footer
 
 **Sharing & Referral:**
 - Social sharing options:
-  - "I'm taking control of my spending with Moony! 💰"
+  - "I'm taking control of my spending with moony! 💰"
 - Referral program promotion
 - Success story sharing capability
 - Community joining options
@@ -673,7 +673,7 @@ Footer
 - Links to helpful content:
   - "10 Tips for Staying on Budget"
   - "How to Optimize Your Spending Categories"
-  - "Moony User Guide"
+  - "moony User Guide"
 - Video tutorials or onboarding materials
 - FAQ section for common questions
 
@@ -756,4 +756,4 @@ Footer
 
 ---
 
-*This specification serves as the complete reference for building Moony's onboarding experience. All development should adhere to these guidelines while maintaining flexibility for user experience improvements and A/B testing optimizations.*
+*This specification serves as the complete reference for building moony's onboarding experience. All development should adhere to these guidelines while maintaining flexibility for user experience improvements and A/B testing optimizations.*

@@ -159,7 +159,7 @@ const PhoneVerificationPage = () => {
           <div className="text-center space-y-6">
             <div className="text-6xl">🎉</div>
             <h1 className="text-3xl font-light text-white">
-              Welcome to Moony!
+              Welcome to moony!
             </h1>
             <p className="text-white/90 text-sm">
               Your phone number has been verified successfully. You'll receive a welcome message with your spending analytics shortly.
@@ -188,7 +188,7 @@ const PhoneVerificationPage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Moony Logo" 
+            alt="moony Logo" 
             className="w-20 h-auto"
           />
         </div>
@@ -201,7 +201,7 @@ const PhoneVerificationPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
-            <span className="font-semibold">Moony</span> SMS Setup
+            <span className="font-semibold">moony</span> SMS Setup
           </h1>
           <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
             Enable daily spending notifications
@@ -227,7 +227,7 @@ const PhoneVerificationPage = () => {
                   className="w-4 h-4 mt-1 rounded border-gray-300 bg-white/70 text-blue-600 focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 />
                 <label htmlFor="smsConsent" className="text-sm leading-relaxed" style={{ color: '#1E1E1E' }}>
-                  <strong>I consent to receive daily spending notifications via SMS from Moony.</strong>
+                  <strong>I consent to receive daily spending notifications via SMS from moony.</strong>
                   <br />
                   Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
                   <br />

@@ -1,4 +1,4 @@
-# Moony Frontend Technical Specification
+# moony Frontend Technical Specification
 
 ## Technology Stack
 
@@ -973,4 +973,4 @@ export const initWebVitals = () => {
 // initWebVitals();
 ```
 
-This frontend specification provides a comprehensive, scalable architecture for Moony with modern React patterns, TypeScript safety, and production-ready practices.
+This frontend specification provides a comprehensive, scalable architecture for moony with modern React patterns, TypeScript safety, and production-ready practices.

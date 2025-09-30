@@ -84,7 +84,7 @@ const PlaidConnectionPage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Moony Logo" 
+            alt="moony Logo" 
             className="w-20 h-auto"
           />
         </div>

@@ -1,6 +1,6 @@
 
 1. Information We Collect
-Moony collects the following types of information to provide our services:
+moony collects the following types of information to provide our services:
 
 • Contact Information: Name, phone number, email address
 • Financial Data: Bank account transactions, spending patterns, account balances
@@ -17,7 +17,7 @@ We use your information to:
 3. Mobile Information Protection
 Mobile information will not be shared with third parties for marketing or promotional purposes.
 
-Your mobile phone number and SMS preferences are strictly protected. We only use your mobile information to provide the Moony services you have explicitly requested, such as spending notifications and budget alerts.
+Your mobile phone number and SMS preferences are strictly protected. We only use your mobile information to provide the moony services you have explicitly requested, such as spending notifications and budget alerts.
 
 4. Financial Data Security
 Your financial data is protected through multiple layers of security:
@@ -61,14 +61,14 @@ You have the right to:
 • Export your data in a portable format
 • Withdraw consent for data processing where applicable
 9. Children's Privacy
-Moony is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. If we become aware that we have collected such information, we will take steps to delete it promptly.
+moony is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. If we become aware that we have collected such information, we will take steps to delete it promptly.
 
 10. Changes to This Policy
-We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of significant changes via email or SMS. Your continued use of Moony after changes indicates acceptance of the updated policy.
+We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of significant changes via email or SMS. Your continued use of moony after changes indicates acceptance of the updated policy.
 
 11. Contact Us
 If you have questions about this Privacy Policy or how we handle your information:
 
 • Email: gonzalezgarza.lucas@gmail.com
-• Mail: Moony Privacy Team
+• Mail: moony Privacy Team
 • Phone: Reply HELP to any SMS message

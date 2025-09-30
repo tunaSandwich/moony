@@ -1,7 +1,7 @@
-# Moony - Claude Code Implementation Guide
+# moony - Claude Code Implementation Guide
 
 ## Project Overview
-Moony is a personal finance automation platform that connects to bank accounts via Plaid, tracks spending, and sends automated SMS notifications to help users stay on budget.
+moony is a personal finance automation platform that connects to bank accounts via Plaid, tracks spending, and sends automated SMS notifications to help users stay on budget.
 
 ## Architecture Overview
 - **Frontend**: React 18+ with TypeScript, Tailwind CSS, and modern state management
@@ -14,7 +14,7 @@ Moony is a personal finance automation platform that connects to bank accounts v
 ### Phase 1: Project Setup & Landing Page
 **Prompt for Claude Code:**
 ```
-Create a new React TypeScript project for Moony with the following setup:
+Create a new React TypeScript project for moony with the following setup:
 - Vite as build tool for fast development
 - TypeScript with strict configuration
 - Tailwind CSS for styling
@@ -486,4 +486,4 @@ npm run storybook:build
 - Secure cookie handling
 - Content Security Policy implementation
 
-This guide provides Claude Code with comprehensive instructions for building a production-ready Moony frontend following industry best practices and scalable architecture patterns.
+This guide provides Claude Code with comprehensive instructions for building a production-ready moony frontend following industry best practices and scalable architecture patterns.

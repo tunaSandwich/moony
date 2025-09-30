@@ -10,7 +10,7 @@ dotenv.config({ path: '.env' }); // fallback for shared variables
 const scheduler = new SchedulerService();
 
 function start() {
-  logger.info('[Main] Moony daemon starting');
+  logger.info('[Main] moony daemon starting');
   // Global error handlers for better visibility in Railway logs
   process.on('unhandledRejection', (reason) => {
     logger.error('[Process] Unhandled promise rejection', reason as any);

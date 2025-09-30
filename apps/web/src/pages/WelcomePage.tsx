@@ -140,7 +140,7 @@ const WelcomePage = () => {
             </p>
             <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
               <p className="text-green-200 text-sm">
-                🎯 Your Moony journey begins now!
+                🎯 Your moony journey begins now!
               </p>
             </div>
             <Button
@@ -170,7 +170,7 @@ const WelcomePage = () => {
         <div className="absolute top-4 left-20 z-10">
           <img 
             src={logoText} 
-            alt="Moony Logo" 
+            alt="moony Logo" 
             className="w-20 h-auto"
           />
         </div>
@@ -184,7 +184,7 @@ const WelcomePage = () => {
           <div className="text-center mb-8">
             <div className="text-6xl mb-4">🎉</div>
             <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
-              Welcome to <span className="font-semibold">Moony</span>!
+              Welcome to <span className="font-semibold">moony</span>!
             </h1>
             <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
               Your spending analytics are ready.

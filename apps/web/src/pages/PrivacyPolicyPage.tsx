@@ -17,7 +17,7 @@ const PrivacyPolicyPage = () => {
               Privacy Policy
             </h1>
             <p className="text-white/80 text-sm">
-              Moony - How We Protect Your Information
+              moony - How We Protect Your Information
             </p>
           </div>
 
@@ -26,7 +26,7 @@ const PrivacyPolicyPage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">1. Information We Collect</h2>
               <p className="text-sm leading-relaxed mb-3">
-                Moony collects the following types of information to provide our services:
+                moony collects the following types of information to provide our services:
               </p>
               <ul className="text-sm space-y-1 ml-4">
                 <li>• <strong>Contact Information:</strong> Name, phone number, email address</li>
@@ -57,7 +57,7 @@ const PrivacyPolicyPage = () => {
               </p>
               <p className="text-sm leading-relaxed mt-2">
                 Your mobile phone number and SMS preferences are strictly protected. We only use your mobile information to provide 
-                the Moony services you have explicitly requested, such as spending notifications and budget alerts.
+                the moony services you have explicitly requested, such as spending notifications and budget alerts.
               </p>
             </section>
 
@@ -136,7 +136,7 @@ const PrivacyPolicyPage = () => {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">9. Children's Privacy</h2>
               <p className="text-sm leading-relaxed">
-                Moony is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. 
+                moony is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. 
                 If we become aware that we have collected such information, we will take steps to delete it promptly.
               </p>
             </section>
@@ -145,7 +145,7 @@ const PrivacyPolicyPage = () => {
               <h2 className="text-xl font-semibold text-white mb-3">10. Changes to This Policy</h2>
               <p className="text-sm leading-relaxed">
                 We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. 
-                We will notify you of significant changes via email or SMS. Your continued use of Moony after changes indicates acceptance of the updated policy.
+                We will notify you of significant changes via email or SMS. Your continued use of moony after changes indicates acceptance of the updated policy.
               </p>
             </section>
 
@@ -156,7 +156,7 @@ const PrivacyPolicyPage = () => {
               </p>
               <ul className="text-sm space-y-1 ml-4 mt-2">
                 <li>• Email: gonzalezgarza.lucas@gmail.com</li>
-                <li>• Mail: Moony Privacy Team</li>
+                <li>• Mail: moony Privacy Team</li>
                 <li>• Phone: Reply HELP to any SMS message</li>
               </ul>
             </section>
