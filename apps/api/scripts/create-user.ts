@@ -1,3 +1,19 @@
+/**
+ * Example: create a user from the command line
+ *
+ * Using npm script (recommended):
+ *   npm run user:create -- --firstName "Lucas" --lastName "Garza" --phoneNumber "+16268075538" --inviteCode "LUCAS"
+ *
+ * Direct with tsx:
+ *   NODE_ENV=local tsx apps/api/scripts/create-user.ts --firstName "Jane" --lastName "Doe" --phoneNumber "+15555550123" [--inviteCode "ABC123"]
+ *
+ * If compiled to JS (create-user.js):
+ *   NODE_ENV=local node apps/api/scripts/create-user.js --firstName "Jane" --lastName "Doe" --phoneNumber "+15555550123" [--inviteCode "ABC123"]
+ *
+ * Required flags: --firstName, --lastName, --phoneNumber
+ * Optional flag:  --inviteCode
+ */
+
 import '../src/config/loadEnv.js';
 import { PrismaClient } from '@prisma/client';
 

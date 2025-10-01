@@ -333,6 +333,7 @@ export class TwilioController {
             select: {
               averageMonthlySpending: true,
               lastMonthSpending: true,
+              twoMonthsAgoSpending: true,
               currentMonthSpending: true
             }
           }
@@ -350,7 +351,9 @@ export class TwilioController {
 
       if (analytics) {
         message += `I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:\n`;
-        message += `📊 Avg monthly: $${analytics.averageMonthlySpending || 0}\n`;
+        if (analytics.twoMonthsAgoSpending) {
+          message += `📅 Two months ago: $${analytics.twoMonthsAgoSpending}\n`;
+        }
         message += `📅 Last month: $${analytics.lastMonthSpending || 0}\n`;
         message += `💰 This month so far: $${analytics.currentMonthSpending || 0}\n\n`;
         message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;

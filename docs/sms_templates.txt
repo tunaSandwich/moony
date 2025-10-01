@@ -1,13 +1,13 @@
 (First Time Setup:)
 moony
 
-👋 Hi {name}! Welcome to moony.
+👋 Welcome {name}!
 
 I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
 
-📊 Monthly average: $117
-📅 Last month: $117
-💰 This month so far: $111
+📅 Two months ago: $23,971
+📅 Last month: $4,660
+💰 This month so far: $4,377
 
 What's your spending goal for this month? Just reply with a number (ex: 2000).
 

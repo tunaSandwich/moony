@@ -65,6 +65,7 @@ model UserSpendingAnalytics {
   userId                 String    @unique @map("user_id")
   averageMonthlySpending Decimal?  @map("average_monthly_spending") @db.Decimal(10, 2)
   lastMonthSpending      Decimal?  @map("last_month_spending") @db.Decimal(10, 2)
+  twoMonthsAgoSpending   Decimal?  @map("two_months_ago_spending") @db.Decimal(10, 2)
   currentMonthSpending   Decimal   @default(0) @map("current_month_spending") @db.Decimal(10, 2)
   lastCalculatedAt       DateTime? @map("last_calculated_at")
   createdAt              DateTime  @default(now()) @map("created_at")

@@ -3,6 +3,7 @@ import { Transaction } from 'plaid';
 export interface SpendingMetrics {
   averageMonthlySpending: number;
   lastMonthSpending: number;
+  twoMonthsAgoSpending: number | null;
   currentMonthSpending: number;
   lastCalculatedAt: Date;
 }
