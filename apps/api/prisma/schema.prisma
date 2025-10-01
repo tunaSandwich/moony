@@ -11,6 +11,8 @@ model User {
   id                String                 @id @default(cuid())
   inviteCode        String                 @unique @map("invite_code")
   plaidAccessToken  String?                @map("plaid_access_token")
+  plaidItemId       String?                @map("plaid_item_id")
+  plaidConnectedAt  DateTime?              @map("plaid_connected_at")
   firstName         String                 @map("first_name")
   lastName          String                 @map("last_name")
   phoneNumber       String                 @unique @map("phone_number")

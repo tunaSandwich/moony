@@ -7,6 +7,7 @@ import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { MessagingService } from '../services/messagingService.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
+import { PlaidWebhookService } from '../services/PlaidWebhookService.js';
 
 const prisma = new PrismaClient();
 
@@ -146,47 +147,19 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-// Utility function to get user spending analytics for welcome message
-const getUserSpendingAnalytics = async (userId: string): Promise<{
-  averageMonthlySpending: number;
-  lastMonthSpending: number;
-  currentMonthSpending: number;
-} | null> => {
-  try {
-    const analytics = await prisma.userSpendingAnalytics.findUnique({
-      where: { userId },
-      select: {
-        averageMonthlySpending: true,
-        lastMonthSpending: true,
-        currentMonthSpending: true,
-        lastCalculatedAt: true
-      }
-    });
-
-    if (!analytics) {
-      return null;
-    }
-
-    return {
-      averageMonthlySpending: Number(analytics.averageMonthlySpending),
-      lastMonthSpending: Number(analytics.lastMonthSpending),
-      currentMonthSpending: Number(analytics.currentMonthSpending)
-    };
-  } catch (error) {
-    logger.error('Failed to fetch user spending analytics', { userId, error: (error as Error).message });
-    return null;
-  }
-};
+// Note: Welcome message analytics are handled in TwilioController after phone verification
 
 export class WebhookController {
   private messagingService: MessagingService;
   private calculationService: CalculationService;
   private plaidAnalyticsService: PlaidAnalyticsService;
+  private plaidWebhookService: PlaidWebhookService;
 
   constructor() {
     this.messagingService = new MessagingService();
     this.calculationService = new CalculationService();
     this.plaidAnalyticsService = new PlaidAnalyticsService();
+    this.plaidWebhookService = new PlaidWebhookService();
   }
 
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -247,39 +220,10 @@ export class WebhookController {
         throw new AppError(ERROR_MESSAGES.MISSING_DATA, 400);
       }
 
-      // Check if this is a new user (no previous spending goals)
-      const isNewUser = user.spendingGoals.length === 0;
-      
       // Get previous goal amount if exists
       const previousGoalAmount = user.spendingGoals[0] 
         ? Number(user.spendingGoals[0].monthlyLimit) 
         : undefined;
-
-      // If new user, send welcome message with spending analytics
-      if (isNewUser) {
-        const analytics = await getUserSpendingAnalytics(user.id);
-        
-        if (analytics) {
-          const welcomeMessage = `moony
-
-👋 Hi ${user.firstName}! Welcome to moony.
-
-I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
-
-📊 Monthly average: ${formatCurrency(analytics.averageMonthlySpending)}
-📅 Last month: ${formatCurrency(analytics.lastMonthSpending)}  
-💰 This month so far: ${formatCurrency(analytics.currentMonthSpending)}
-
-What's your spending goal for this month? Just reply with a number (ex: 2000).`;
-          
-          await sendResponse(phoneNumber, welcomeMessage, channel);
-          
-          // Return early - wait for user to respond with their goal
-          res.set('Content-Type', 'application/xml');
-          res.status(200).send('<?xml version="1.0" encoding=\"UTF-8\"?><Response></Response>');
-          return;
-        }
-      }
 
       // Parse spending goal from message
       const goalAmount = parseSpendingGoal(messageBody, previousGoalAmount);
@@ -436,6 +380,83 @@ Reply STOP to opt out anytime.`;
       await sendResponse(messageInfo.phoneNumber, 'Sorry, there was an error processing your message. Please try again later.', messageInfo.channel);
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
+    }
+  });
+
+  /**
+   * Handle Plaid webhooks (HISTORICAL_UPDATE, etc.)
+   * Fast response required - async processing handled by PlaidWebhookService
+   */
+  public handlePlaidWebhook = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const startTime = Date.now();
+    const signature = req.headers['plaid-verification'] as string;
+    
+    try {
+      logger.info('Plaid webhook received', {
+        webhook_type: req.body?.webhook_type,
+        webhook_code: req.body?.webhook_code,
+        item_id: req.body?.item_id,
+        hasSignature: !!signature
+      });
+
+      // Quick validation of required fields
+      if (!req.body || typeof req.body !== 'object') {
+        logger.error('Invalid Plaid webhook payload', { body: req.body });
+        res.status(400).json({ error: 'Invalid payload' });
+        return;
+      }
+
+      // Get raw body for signature verification
+      const rawBody = JSON.stringify(req.body);
+
+      // Process webhook asynchronously
+      const result = await this.plaidWebhookService.handleWebhook(
+        req.body,
+        signature || '',
+        rawBody
+      );
+
+      const processingTime = Date.now() - startTime;
+
+      logger.info('Plaid webhook processing completed', {
+        webhook_type: req.body.webhook_type,
+        webhook_code: req.body.webhook_code,
+        item_id: req.body.item_id,
+        success: result.success,
+        message: result.message,
+        processingTimeMs: processingTime
+      });
+
+      // Return success response quickly (within 10 seconds as required by Plaid)
+      if (result.success) {
+        res.status(200).json({ 
+          status: 'success',
+          message: result.message 
+        });
+      } else {
+        // For webhook processing failures, return appropriate status
+        const statusCode = result.shouldRetry ? 500 : 400;
+        res.status(statusCode).json({ 
+          error: result.message 
+        });
+      }
+
+    } catch (error: any) {
+      const processingTime = Date.now() - startTime;
+      
+      logger.error('Failed to process Plaid webhook', {
+        webhook_type: req.body?.webhook_type,
+        webhook_code: req.body?.webhook_code,
+        item_id: req.body?.item_id,
+        error: error.message,
+        processingTimeMs: processingTime
+      });
+
+      // Return 500 to trigger Plaid retry
+      res.status(500).json({ 
+        error: 'Webhook processing failed',
+        message: error.message 
+      });
     }
   });
 }

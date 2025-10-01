@@ -2,7 +2,7 @@
  * Example: create a user from the command line
  *
  * Using npm script (recommended):
- *   npm run user:create -- --firstName "Lucas" --lastName "Garza" --phoneNumber "+16268075538" --inviteCode "LUCAS"
+ *   npm run user:create:staging -- --firstName "Lucas" --lastName "Garza" --phoneNumber "+16268075538" --inviteCode "LUCAS"
  *
  * Direct with tsx:
  *   NODE_ENV=local tsx apps/api/scripts/create-user.ts --firstName "Jane" --lastName "Doe" --phoneNumber "+15555550123" [--inviteCode "ABC123"]

@@ -10,8 +10,14 @@ const PlaidConnectionPage = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+
+
+
+
 
   // Initialize Plaid Link
   const { open, ready } = usePlaidLink({
@@ -25,8 +31,17 @@ const PlaidConnectionPage = () => {
         const result = await plaidApi.connectAccount(publicToken);
         console.log('Bank connected successfully:', result);
         
-        // Navigate to phone verification step
-        navigate('/phone-verification');
+        // Clear link token to prevent re-launch bug
+        setLinkToken(null);
+        
+        // Show success message and navigate
+        setIsConnecting(false);
+        setShowSuccess(true);
+        
+        // Navigate to phone verification after 1 second
+        setTimeout(() => {
+          navigate('/phone-verification');
+        }, 1000);
         
       } catch (error) {
         console.error('Failed to connect bank account:', error);
@@ -81,7 +96,7 @@ const PlaidConnectionPage = () => {
           background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
         }}
       >
-        <div className="absolute top-4 left-20 z-10">
+        <div className="absolute top-5 left-10 z-10">
           <img 
             src={logoText} 
             alt="moony Logo" 
@@ -164,6 +179,19 @@ const PlaidConnectionPage = () => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   <span className="text-sm font-medium" style={{ color: '#1E1E1E' }}>Connecting your bank account...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showSuccess && (
+            <div className="text-center space-y-4">
+              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                <div className="flex items-center justify-center space-x-3">
+                  <svg className="h-5 w-5" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium" style={{ color: '#1E1E1E' }}>Bank connected! Redirecting...</span>
                 </div>
               </div>
             </div>

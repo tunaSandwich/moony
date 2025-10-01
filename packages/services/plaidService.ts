@@ -11,6 +11,7 @@ export class PlaidService {
         products: ['transactions', 'auth'] as Products[],
         country_codes: ['US'] as CountryCode[],
         language: 'en',
+        webhook: process.env.PLAID_WEBHOOK_URL || 'http://localhost:3001/api/webhooks/plaid'
       };
       if (process.env.PLAID_REDIRECT_URI) {
         request.redirect_uri = process.env.PLAID_REDIRECT_URI;

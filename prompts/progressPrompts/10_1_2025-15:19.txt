@@ -1,0 +1,280 @@
+Context Transfer Document: Budget Pal SMS Budgeting Application
+PROJECT OVERVIEW
+Core Project: Budget Pal (moony) - SMS-based daily spending guidance app
+
+Architecture: React/Vite frontend (onboarding only), Node.js/Express/TypeScript backend, PostgreSQL/Prisma, Plaid (transactions), Twilio (SMS)
+User Flow: Invite code → Plaid bank connection → Phone verification → Goal setting via SMS → Daily spending notifications
+MVP Status: Pre-launch, single developer, cost-conscious ($5-10/month per user target)
+Key Constraint: "Simple solutions over perfect engineering" - ship working features, iterate later
+
+Target Users: Individuals wanting daily spending accountability via text messages without complex budgeting apps
+CRITICAL TECHNICAL DECISIONS
+Analytics Calculation Method (MAJOR DECISION)
+Problem: User had $23,971 spending in July (student loan payoff) skewing average monthly spending calculations.
+Solution Implemented:
+
+Use MEDIAN instead of MEAN for "typical monthly spending"
+Exclude current incomplete month from calculations
+Calculate twoMonthsAgoSpending, lastMonthSpending, currentMonthSpending separately
+Database stores all three values plus median as averageMonthlySpending
+
+Rationale: Median is resistant to outliers (like one-time $12k expenses), represents "typical month" better than mean for personal finance
+Edge Cases Handled:
+
+New accounts with <2 complete months: Use single month value
+2 complete months: Median = average of two values
+3+ complete months: True median calculation
+
+Webhook Architecture (RECENTLY IMPLEMENTED)
+Context: Plaid doesn't provide transaction data immediately after bank connection. Historical data takes 30-120 seconds to arrive via webhook.
+Original Problem: Code tried to calculate analytics immediately after bank connection, got incomplete data (400 errors), users waited on loading screens.
+Final Architecture Decision:
+
+User connects bank → Navigate immediately to phone verification (don't block user)
+Attempt immediate analytics with 10-second timeout (fast path when it works)
+Plaid sends INITIAL_UPDATE webhook (30 days of data, ~10 seconds)
+Plaid sends HISTORICAL_UPDATE webhook (full 90 days, ~60 seconds)
+Fallback job runs every minute to catch missed webhooks (checks for users with plaidConnectedAt > 5 minutes ago but no analytics)
+
+Important: Webhooks update analytics silently in background. They do NOT trigger welcome SMS. Welcome SMS triggers from phone verification success.
+Webhook Signature Verification (KNOWN ISSUE)
+Problem: Plaid changed from HMAC-SHA256 (t=timestamp,v1=signature) to JWT format (eyJhbGciOiJFUzI1NiI...)
+Current State: Verification temporarily disabled for MVP launch
+typescript// Returns true with warning log in development
+// TODO: Implement JWT verification before production scale
+Why Deferred: JWT verification requires fetching Plaid's public keys, parsing JWT headers, matching key IDs, validating signatures - ~50 lines of non-trivial code. Risk assessment: Low priority for MVP (internal endpoint, not user-facing).
+Post-Launch Task: Implement proper JWT verification using jsonwebtoken and jwks-rsa libraries.
+DATABASE SCHEMA ADDITIONS
+Recent Changes to User Model:
+prismamodel User {
+  plaidAccessToken    String?   // Encrypted with AES-256-GCM
+  plaidItemId         String?   // Added for webhook user lookup
+  plaidConnectedAt    DateTime? // Added for fallback job timing
+}
+
+model UserSpendingAnalytics {
+  averageMonthlySpending  Decimal   // Median of complete months
+  lastMonthSpending       Decimal   // Previous complete month
+  twoMonthsAgoSpending    Decimal?  // 3rd most recent month (null if <3 months)
+  currentMonthSpending    Decimal   // Incomplete current month
+  lastCalculatedAt        DateTime
+}
+Important: plaidItemId is required for webhook processing - webhooks send item_id, not user_id.
+SMS MESSAGE FLOW (CRITICAL - CURRENTLY BROKEN)
+CORRECT FLOW (What Should Happen):
+1. Bank Connection
+
+User connects via Plaid
+Navigate immediately to phone verification
+Analytics process in background
+
+2. Phone Verification
+
+User enters phone, receives SMS code
+User enters code and submits
+IMMEDIATELY after successful verification: Call sendWelcomeSMS(userId)
+
+3. Welcome SMS (3 Scenarios Based on Analytics State)
+Scenario A - Full Data (has averageMonthlySpending AND twoMonthsAgoSpending):
+moony
+
+👋 Welcome Lucas!
+
+I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
+
+📊 Monthly average: $4,661
+📅 Last month: $4,430
+💰 This month so far: $20
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
+Scenario B - Partial Data (currentMonthSpending > 0 but missing historical):
+moony
+
+👋 Welcome Lucas!
+
+I'll help you stay on track with daily spending guidance.
+
+💰 So far in October: $20
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
+Scenario C - No Data (no analytics or currentMonthSpending = 0):
+moony
+
+👋 Welcome Lucas!
+
+I'll help you stay on track with daily spending guidance.
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
+4. User Replies with Number (e.g., "4500")
+
+Incoming message webhook receives this
+Parse number, save as spending goal
+Send confirmation:
+
+moony
+
+✅ Perfect! Your $4,500 monthly budget is all set.
+
+🎯 Today's spending target: $150
+Progress: $20 spent of $4,500
+
+You'll get a daily text like this each morning to help you stay on track. Your budget resets on the 1st of every month.
+
+Reply STOP to opt out anytime.
+CURRENT BUG (MUST FIX):
+Symptom: Welcome SMS sends when user sends first message to Twilio number, not after phone verification.
+Root Cause: sendWelcomeSMS() is being called from incoming message webhook handler instead of from phone verification success handler.
+Fix Required:
+
+Add await this.sendWelcomeSMS(userId) to phone verification success method (after code validation)
+Remove any sendWelcomeSMS() calls from webhook handlers
+Webhook should ONLY handle goal setting (parsing number replies)
+
+PLAID INTEGRATION DETAILS
+Link Token Configuration
+File: packages/services/plaidService.ts
+Critical Addition:
+typescriptconst request: LinkTokenCreateRequest = {
+  user: { client_user_id: userId },
+  client_name: 'Spending Tracker',
+  products: ['transactions', 'auth'],
+  country_codes: ['US'],
+  language: 'en',
+  webhook: process.env.PLAID_WEBHOOK_URL  // MUST include this for webhooks
+};
+Environment Variables:
+PLAID_WEBHOOK_URL=https://your-ngrok-url.ngrok-free.dev/api/webhooks/plaid
+PLAID_WEBHOOK_SECRET=<generate with: openssl rand -hex 32>
+Webhook Endpoint: POST /api/webhooks/plaid handled by PlaidWebhookService
+Plaid Data Availability Timing
+
+Immediate: Bank connection succeeds, access_token and item_id returned
+~10 seconds: INITIAL_UPDATE webhook fires (30 days of transactions)
+~60 seconds: HISTORICAL_UPDATE webhook fires (full 90 days)
+Edge case: Some institutions may take 5+ minutes or never send webhook (handled by fallback job)
+
+Note: New accounts connected on 1st of month will show currentMonthSpending = 0 (correct behavior).
+REJECTED APPROACHES & TRADE-OFFS
+Outlier Detection
+Considered: Automatically detect and exclude outlier months (spending >2x median)
+Rejected: User's $23,971 July spending was legitimate (student loan payoff). Excluding real expenses would mislead users about actual spending patterns. Median handles this naturally without complex outlier logic.
+Transaction-Level Outlier Removal
+Considered: Remove individual expensive transactions from calculations
+Rejected: "The student loan payment was a REAL expense." Removing it would hide important financial events. Problem isn't the transaction - it's that it's non-recurring. Median at month level solves this.
+Complex Polling UI
+Considered: Show loading state while waiting for analytics, poll every 3 seconds with exponential backoff, 3-minute timeout
+Implemented then reverted: Added too much complexity, poor UX (users stuck waiting), Plaid widget kept re-launching
+Final Decision: Navigate immediately, let analytics populate in background, send SMS when ready
+Message Queue Infrastructure
+Considered: RabbitMQ/Redis for webhook processing at scale
+Rejected for MVP: Overkill for single developer, pre-launch app. Simple retry logic and fallback job sufficient. Can add later if needed.
+COLLABORATION PREFERENCES
+Communication Style:
+
+Direct, technical responses without preamble
+Explicit about trade-offs and risks
+Research-backed recommendations (provided citations from Plaid docs, UX best practices, Node.js patterns)
+Clear "give Claude Code this prompt" blocks when ready to implement
+
+Decision-Making Pattern:
+
+User describes problem with context
+I research best practices thoroughly (often 3-5 web searches)
+Present 2-3 options with pros/cons
+User picks approach
+I provide complete, production-ready prompt for Claude Code
+
+Red Flags That Triggered Course Corrections:
+
+"We're not in production yet" → Simplified migration strategy
+"I'm building this for users, remember?" → Refocused on user journey over technical perfection
+"This is MVP" → Deferred JWT verification, message queues, other nice-to-haves
+
+Debugging Approach:
+
+Always asked for logs and database state before suggesting fixes
+Traced root cause systematically (e.g., discovered Plaid 400 errors were because data wasn't ready yet)
+Avoided assumptions, verified behavior with evidence
+
+What Worked Well:
+
+Breaking complex problems into phases (backend → frontend → testing)
+Providing exact file locations and line numbers for changes
+Creating self-contained prompts Claude Code could execute independently
+Explaining "why" behind technical decisions (median vs mean, webhooks vs polling)
+
+CURRENT STATE & NEXT STEPS
+COMPLETED
+✅ Median-based analytics calculation with edge case handling
+✅ Webhook infrastructure (endpoint, signature verification stub, fallback job)
+✅ Database schema updates (plaidItemId, plaidConnectedAt, twoMonthsAgoSpending)
+✅ Immediate navigation flow (no blocking on analytics)
+✅ Three-scenario welcome message logic
+✅ Plaid Link token configuration with webhook URL
+ACTIVE BUG (MUST FIX BEFORE LAUNCH)
+🔴 Welcome SMS triggers from webhook instead of phone verification
+
+Fix location: twilioController.ts verifyCode method
+Add: await this.sendWelcomeSMS(userId) after successful verification
+Remove: Any sendWelcomeSMS() calls from webhook handlers
+
+POST-LAUNCH PRIORITIES
+
+JWT webhook verification (30-minute task, low urgency)
+Remove extensive debug logging from plaidAnalyticsService.ts
+Monitor webhook reliability, tune fallback job frequency if needed
+Consider median vs mean for users with sparse data
+
+OPEN QUESTIONS
+
+None blocking launch. JWT verification is documented TODO.
+
+ENVIRONMENT SETUP
+Required .env Variables:
+# Plaid
+PLAID_CLIENT_ID=your_client_id
+PLAID_SECRET=your_sandbox_secret
+PLAID_ENV=sandbox
+PLAID_WEBHOOK_URL=https://your-ngrok-url.ngrok-free.dev/api/webhooks/plaid
+PLAID_WEBHOOK_SECRET=<openssl rand -hex 32>
+
+# Database
+DATABASE_URL=postgresql://...
+
+# Encryption
+ENCRYPTION_KEY=<32-byte key for AES-256-GCM>
+
+# Twilio
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=...
+Development Webhook Testing:
+
+Run ngrok http 3001 (or appropriate port)
+Update PLAID_WEBHOOK_URL in .env with ngrok HTTPS URL
+Webhook requests visible at http://127.0.0.1:4040
+
+KEY FILES & RESPONSIBILITIES
+Analytics:
+
+apps/api/src/services/plaidAnalyticsService.ts - Median calculation, transaction fetching
+apps/api/src/services/PlaidWebhookService.ts - Webhook handling, signature verification
+apps/api/src/services/WebhookFallbackService.ts - Every-minute job to catch missed webhooks
+
+Controllers:
+
+apps/api/src/controllers/plaidController.ts - Bank connection, immediate analytics attempt
+apps/api/src/controllers/twilioController.ts - SMS sending, phone verification (WHERE BUG FIX GOES)
+apps/api/src/controllers/webhookController.ts - Routes webhooks to appropriate services
+
+Frontend:
+
+apps/web/src/pages/PlaidConnectionPage.tsx - Bank connection, immediate navigation
+apps/web/src/pages/PhoneVerificationPage.tsx - Phone number entry, code verification
+
+Config:
+
+packages/services/plaidService.ts - Link token creation WITH webhook URL
+packages/services/schedulerService.ts - Cron jobs including webhook fallback
+
+This document should provide complete context for continuing development. The immediate priority is fixing the welcome SMS trigger location.

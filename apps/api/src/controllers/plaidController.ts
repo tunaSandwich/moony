@@ -121,6 +121,7 @@ export class PlaidController {
       });
 
       const accessToken = response.data.access_token;
+      const itemId = response.data.item_id;
 
       // Validate and encrypt the access token before storing
       const encryptionKey = process.env.ENCRYPTION_KEY;
@@ -144,17 +145,40 @@ export class PlaidController {
         throw new AppError(ERROR_MESSAGES.CONFIG_ERROR, 500);
       }
 
-      // Update user record with encrypted access token
+      // Update user record with encrypted access token and item ID
       await prisma.user.update({
         where: { id: userId },
-        data: { plaidAccessToken: encryptedAccessToken },
+        data: { 
+          plaidAccessToken: encryptedAccessToken,
+          plaidItemId: itemId,
+          plaidConnectedAt: new Date()
+        },
       });
 
       // Log confirmation that encryption occurred (without logging actual tokens)
-      logger.info('Bank connected successfully with encrypted token', { userId });
+      logger.info('Bank connected successfully with encrypted token', { 
+        userId, 
+        itemId: itemId.substring(0, 10) + '...' 
+      });
 
-      // Trigger analytics processing in background (non-blocking)
-      this.triggerAnalyticsProcessing(userId);
+      // Attempt immediate analytics processing with timeout
+      // This provides faster user experience, with webhook fallback for edge cases
+      try {
+        const analyticsService = new PlaidAnalyticsService();
+        const analyticsPromise = analyticsService.processUserAnalytics(userId);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Analytics timeout')), 10000)
+        );
+
+        await Promise.race([analyticsPromise, timeoutPromise]);
+        logger.info('Immediate analytics processing completed successfully', { userId });
+      } catch (error: any) {
+        // Analytics failure is not critical - webhook fallback will handle it
+        logger.warn('Immediate analytics processing failed, webhook fallback will retry', { 
+          userId, 
+          error: error.message 
+        });
+      }
 
       // Return success response
       res.status(200).json({
@@ -214,29 +238,4 @@ export class PlaidController {
     }
   }
 
-  /**
-   * Trigger analytics processing in background after successful bank connection
-   * Non-blocking operation with error handling
-   */
-  private triggerAnalyticsProcessing(userId: string): void {
-    logger.info('Triggering analytics processing', { userId });
-
-    // Use setImmediate to ensure this runs asynchronously and doesn't block the response
-    setImmediate(async () => {
-      try {
-        const analyticsService = new PlaidAnalyticsService();
-        await analyticsService.processUserAnalytics(userId);
-        await analyticsService.disconnect();
-      } catch (error: any) {
-        // Error handling is done within the analytics service
-        // This is just an additional safety net
-        logger.error('Analytics processing trigger failed', { 
-          userId, 
-          error: error.message 
-        });
-      }
-    });
-
-    logger.info('Analytics processing initiated in background', { userId });
-  }
 }

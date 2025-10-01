@@ -12,4 +12,11 @@ router.post(
   webhookController.handleIncomingMessage
 );
 
+// Handle Plaid webhooks (HISTORICAL_UPDATE, etc.)
+router.post(
+  '/plaid',
+  plaidRateLimit, // Apply rate limiting to prevent abuse
+  webhookController.handlePlaidWebhook
+);
+
 export default router;

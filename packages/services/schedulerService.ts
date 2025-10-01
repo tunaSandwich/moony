@@ -5,21 +5,25 @@ import { format as formatDateFn, startOfMonth, subMonths } from 'date-fns';
 import { PlaidService } from './plaidService.js';
 import { CalculationService, PlaidTransaction } from './calculationService.js';
 import { SmsService } from './smsService.js';
+import { WebhookFallbackService } from '../../apps/api/src/services/WebhookFallbackService.js';
 import { logger } from '../utils/logger.js';
 
 type ParsedTime = { hours: number; minutes: number };
 
 export class SchedulerService {
   private task: ScheduledTask | null = null;
+  private fallbackTask: ScheduledTask | null = null;
   private plaidService: PlaidService;
   private calculationService: CalculationService;
   private smsService: SmsService;
+  private webhookFallbackService: WebhookFallbackService;
   private lastRunAt: Date | null = null;
 
   constructor() {
     this.plaidService = new PlaidService();
     this.calculationService = new CalculationService();
     this.smsService = new SmsService();
+    this.webhookFallbackService = new WebhookFallbackService();
   }
 
   private parseDailyTime(input: string | undefined): ParsedTime {
@@ -112,6 +116,26 @@ export class SchedulerService {
     }
   }
 
+  private async runWebhookFallbackJob(): Promise<void> {
+    const startedAt = new Date();
+    logger.info('[Scheduler] Webhook fallback job started');
+
+    try {
+      await this.webhookFallbackService.processAnalyticsFallbacks();
+      logger.info('[Scheduler] Webhook fallback job completed successfully');
+    } catch (error) {
+      const details = (error as any)?.response?.data ?? error;
+      logger.error('[Scheduler] Webhook fallback job failed', details);
+    } finally {
+      const endedAt = new Date();
+      logger.debug('[Scheduler] Webhook fallback job finished', {
+        startedAt: startedAt.toISOString(),
+        endedAt: endedAt.toISOString(),
+        durationMs: endedAt.getTime() - startedAt.getTime(),
+      });
+    }
+  }
+
   start(): void {
     const enabledRaw = (process.env.SCHEDULER_ENABLED ?? 'true').toLowerCase();
     const enabled = enabledRaw !== 'false' && enabledRaw !== '0' && enabledRaw !== 'no';
@@ -136,12 +160,25 @@ export class SchedulerService {
     });
 
     try {
+      // Schedule daily job
       this.task = cron.schedule(cronExpr, () => {
         // Fire and forget; errors are handled inside runDailyJob
         void this.runDailyJob();
       }, { timezone: tz });
+
+      // Schedule webhook fallback job (every minute)
+      logger.info('[Scheduler] Scheduling webhook fallback job', {
+        cronExpr: '* * * * *', // Every minute
+        timezone: tz,
+      });
+
+      this.fallbackTask = cron.schedule('* * * * *', () => {
+        // Fire and forget; errors are handled inside runWebhookFallbackJob
+        void this.runWebhookFallbackJob();
+      }, { timezone: tz });
+
     } catch (err) {
-      logger.error('[Scheduler] Failed to schedule cron task', err);
+      logger.error('[Scheduler] Failed to schedule cron tasks', err);
       throw err;
     }
   }
@@ -150,11 +187,22 @@ export class SchedulerService {
     if (this.task) {
       try {
         this.task.stop();
-        logger.info('[Scheduler] Stopped');
+        logger.info('[Scheduler] Daily job stopped');
       } catch (err) {
-        logger.error('[Scheduler] Error while stopping', err);
+        logger.error('[Scheduler] Error while stopping daily job', err);
       } finally {
         this.task = null;
+      }
+    }
+
+    if (this.fallbackTask) {
+      try {
+        this.fallbackTask.stop();
+        logger.info('[Scheduler] Webhook fallback job stopped');
+      } catch (err) {
+        logger.error('[Scheduler] Error while stopping fallback job', err);
+      } finally {
+        this.fallbackTask = null;
       }
     }
   }

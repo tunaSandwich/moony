@@ -138,7 +138,7 @@ const PhoneVerificationPage = () => {
   // Show loading while fetching user data
   if (state.loadingUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
           <div className="text-center space-y-6">
             <div className="text-4xl">📱</div>
@@ -154,7 +154,7 @@ const PhoneVerificationPage = () => {
 
   if (state.isVerified) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
           <div className="text-center space-y-6">
             <div className="text-6xl">🎉</div>

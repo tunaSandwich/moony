@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import twilio from 'twilio';
 import { PrismaClient } from '@prisma/client';
+import { format, subMonths } from 'date-fns';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -319,7 +320,7 @@ export class TwilioController {
    * Uses dual-channel messaging (SMS/WhatsApp) with automatic fallback
    * Non-blocking operation with error handling
    */
-  private sendWelcomeSMS = async (userId: string): Promise<void> => {
+  public sendWelcomeSMS = async (userId: string): Promise<void> => {
     try {
       logger.info('Sending welcome message with analytics', { userId });
 
@@ -345,21 +346,39 @@ export class TwilioController {
         return;
       }
 
-      const analytics = user.spendingAnalytics;
-      let message = `moony`;
-      message += `👋 Hi ${user.firstName}! Welcom to moony, !\n\n`;
+      // Get current month and previous month names
+      const now = new Date();
+      const currentMonthName = format(now, 'MMMM');
+      const lastMonthName = format(subMonths(now, 1), 'MMMM');
+      const twoMonthsAgoName = format(subMonths(now, 2), 'MMMM');
 
-      if (analytics) {
-        message += `I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:\n`;
-        if (analytics.twoMonthsAgoSpending) {
-          message += `📅 Two months ago: $${analytics.twoMonthsAgoSpending}\n`;
-        }
-        message += `📅 Last month: $${analytics.lastMonthSpending || 0}\n`;
-        message += `💰 This month so far: $${analytics.currentMonthSpending || 0}\n\n`;
-        message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
+      const analytics = user.spendingAnalytics;
+      let message = `moony\n\n👋 Welcome ${user.firstName}!\n\nI'll help you stay on track with daily spending guidance.`;
+
+      // Determine scenario based on available data
+      if (analytics?.averageMonthlySpending && 
+          parseFloat(analytics.averageMonthlySpending.toString()) > 0 && 
+          analytics.twoMonthsAgoSpending && 
+          parseFloat(analytics.twoMonthsAgoSpending.toString()) > 0) {
+        
+        // Scenario A: Full data - has averageMonthlySpending AND twoMonthsAgoSpending
+        message += ` First, let's see your spending pattern:\n\n`;
+        message += `📅 ${twoMonthsAgoName}: $${analytics.twoMonthsAgoSpending.toString()}\n`;
+        message += `📅 ${lastMonthName}: $${analytics.lastMonthSpending?.toString() || '0'}\n`;
+        message += `💰 ${currentMonthName} so far: $${analytics.currentMonthSpending?.toString() || '0'}\n\n`;
+        message += `What's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
+        
+      } else if (analytics?.currentMonthSpending && 
+                 parseFloat(analytics.currentMonthSpending.toString()) > 0) {
+        
+        // Scenario B: Partial data - has currentMonthSpending > 0 but missing historical
+        message += `\n\n💰 So far in ${currentMonthName}: $${analytics.currentMonthSpending.toString()}\n\n`;
+        message += `What's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
+        
       } else {
-        message += `We're analyzing your spending patterns and will send you your first budget insights soon!\n\n`;
-        message += `What's your spending goal this month? Just reply with a number (ex: 3000).`;
+        
+        // Scenario C: No data - no analytics and currentMonthSpending = 0
+        message += `\n\nWhat's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
       }
 
       // Use the messaging service with automatic channel selection and fallback
@@ -373,7 +392,9 @@ export class TwilioController {
           userId,
           channel: result.channel,
           messageSid: result.messageSid,
-          fallbackUsed: result.fallbackUsed || false
+          fallbackUsed: result.fallbackUsed || false,
+          scenario: analytics?.averageMonthlySpending && analytics?.twoMonthsAgoSpending ? 'A' : 
+                   analytics?.currentMonthSpending && parseFloat(analytics.currentMonthSpending.toString()) > 0 ? 'B' : 'C'
         });
       } else {
         logger.error('Welcome message failed to send', {
