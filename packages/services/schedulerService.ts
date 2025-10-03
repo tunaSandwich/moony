@@ -1,10 +1,17 @@
+/**
+ * SchedulerService
+ * 
+ * Manages two cron jobs:
+ * 1. Daily SMS Job: Sends morning spending updates to all active users
+ *    - Runs once per day at configured time (default 8:00 AM)
+ *    - Uses DailySmsService to process all verified users
+ * 
+ * 2. Webhook Fallback Job: Catches missed Plaid webhooks
+ *    - Runs every minute
+ *    - Processes users whose analytics weren't calculated after bank connection
+ */
 import cron, { ScheduledTask } from 'node-cron';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { format as formatDateFn, startOfMonth, subMonths } from 'date-fns';
-import { PlaidService } from './plaidService.js';
-import { CalculationService, PlaidTransaction } from './calculationService.js';
-import { SmsService } from './smsService.js';
+import { DailySmsService } from '../../apps/api/src/services/dailySmsService.js';
 import { WebhookFallbackService } from '../../apps/api/src/services/WebhookFallbackService.js';
 import { logger } from '../utils/logger.js';
 
@@ -13,16 +20,12 @@ type ParsedTime = { hours: number; minutes: number };
 export class SchedulerService {
   private task: ScheduledTask | null = null;
   private fallbackTask: ScheduledTask | null = null;
-  private plaidService: PlaidService;
-  private calculationService: CalculationService;
-  private smsService: SmsService;
+  private dailySmsService: DailySmsService;
   private webhookFallbackService: WebhookFallbackService;
   private lastRunAt: Date | null = null;
 
   constructor() {
-    this.plaidService = new PlaidService();
-    this.calculationService = new CalculationService();
-    this.smsService = new SmsService();
+    this.dailySmsService = new DailySmsService();
     this.webhookFallbackService = new WebhookFallbackService();
   }
 
@@ -48,67 +51,38 @@ export class SchedulerService {
     return `${time.minutes} ${time.hours} * * *`;
   }
 
-  private async resolvePlaidAccessToken(): Promise<string | null> {
-    if (process.env.PLAID_ACCESS_TOKEN) {
-      return process.env.PLAID_ACCESS_TOKEN;
-    }
-    // Fallback to temp file saved by the server's exchange endpoint
-    try {
-      const storagePath = path.join(process.cwd(), 'temp_access_token.json');
-      const raw = await fs.readFile(storagePath, 'utf8');
-      const parsed = JSON.parse(raw);
-      const token = parsed?.access_token;
-      if (typeof token === 'string' && token.length > 0) return token;
-      logger.warn('temp_access_token.json found but access_token missing or invalid');
-    } catch (err) {
-      logger.warn('PLAID_ACCESS_TOKEN not set and temp_access_token.json not found');
-    }
-    return null;
-  }
-
-  private formatYMD(date: Date): string {
-    return formatDateFn(date, 'yyyy-MM-dd');
-  }
-
   async runDailyJob(): Promise<void> {
     const startedAt = new Date();
-    logger.info('[Scheduler] Daily job started');
+    logger.info('[Scheduler] Daily SMS job started');
+    
     try {
-      const accessToken = await this.resolvePlaidAccessToken();
-      if (!accessToken) {
-        logger.error('[Scheduler] Missing Plaid access token. Skipping job.');
-        return;
-      }
-
-      const now = new Date();
-      const lastMonthStart = startOfMonth(subMonths(now, 1));
-      const endDate = now;
-      const startDate = lastMonthStart;
-
-      const startStr = this.formatYMD(startDate);
-      const endStr = this.formatYMD(endDate);
-
-      logger.info('[Scheduler] Fetching transactions', { startStr, endStr });
-      const plaidTxs = await this.plaidService.getTransactions(accessToken, startStr, endStr);
-
-      const mapped: PlaidTransaction[] = (plaidTxs || []).map((tx: any) => ({
-        date: tx.date || tx.authorized_date || tx.posted_at || tx.timestamp || new Date().toISOString().slice(0, 10),
-        amount: Number(tx.amount) || 0,
-      }));
-
-      const report = this.calculationService.generateSpendingReport(mapped);
-      const message = this.smsService.formatSpendingMessage(report);
-
-      logger.info('[Scheduler] Sending WhatsApp spending update');
-      await this.smsService.sendWhatsAppUpdate(message);
+      const result = await this.dailySmsService.sendDailyMessages();
+      
       this.lastRunAt = new Date();
-      logger.info('[Scheduler] Daily job completed successfully');
+      
+      logger.info('[Scheduler] Daily SMS job completed successfully', {
+        totalUsers: result.totalUsers,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        skippedCount: result.skippedCount,
+        errorCount: result.errors.length
+      });
+      
+      // Log any errors that occurred
+      if (result.errors.length > 0) {
+        logger.warn('[Scheduler] Some users failed to receive daily SMS', {
+          failedUserIds: result.errors.map(e => e.userId),
+          errors: result.errors
+        });
+      }
+      
     } catch (error) {
       const details = (error as any)?.response?.data ?? error;
-      logger.error('[Scheduler] Daily job failed', details);
+      logger.error('[Scheduler] Daily SMS job failed', details);
+      throw error; // Re-throw so monitoring can catch critical failures
     } finally {
       const endedAt = new Date();
-      logger.info('[Scheduler] Daily job finished', {
+      logger.info('[Scheduler] Daily SMS job finished', {
         startedAt: startedAt.toISOString(),
         endedAt: endedAt.toISOString(),
         durationMs: endedAt.getTime() - startedAt.getTime(),
