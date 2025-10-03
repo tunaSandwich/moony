@@ -130,18 +130,23 @@ export class PlaidWebhookService {
           return await this.processHistoricalUpdate(user.id, item_id);
         
         case 'DEFAULT_UPDATE':
-          // For ongoing transaction updates, we could trigger analytics refresh
-          // For now, log and acknowledge
-          logger.info('DEFAULT_UPDATE received - ongoing transactions available', {
+          logger.info('DEFAULT_UPDATE received - triggering analytics refresh', {
             userId: user.id,
             item_id,
             new_transactions: payload.new_transactions || 0
           });
           
-          // Future: Could trigger analytics refresh for recent spending updates
+          // Trigger analytics refresh to update currentMonthSpending
+          await this.analyticsService.processUserAnalytics(user.id);
+          
+          logger.info('Analytics refreshed successfully for DEFAULT_UPDATE', {
+            userId: user.id,
+            item_id
+          });
+          
           return {
             success: true,
-            message: 'DEFAULT_UPDATE acknowledged'
+            message: 'DEFAULT_UPDATE processed - analytics refreshed'
           };
 
         default:
