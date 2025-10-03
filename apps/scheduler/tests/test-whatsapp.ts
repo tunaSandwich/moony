@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { startOfMonth, endOfMonth, subMonths, formatISO } from 'date-fns';
 import { PlaidService } from '@services/plaidService';
 import { CalculationService } from '@services/calculationService';
-import { SmsService } from '@services/smsService';
+import { MessagingService } from '../../../apps/api/src/services/messagingService.js';
 import { logger } from '../utils/logger.js';
 
 dotenv.config();
@@ -37,14 +37,30 @@ async function main() {
     const calc = new CalculationService();
     const report = calc.generateSpendingReport(transactions);
 
-    const sms = new SmsService();
-    const message = sms.formatSpendingMessage(report);
+    const messaging = new MessagingService();
+    // Legacy format - simplified for testing
+    const message = `Spending Report:\nTotal: $${report.monthlySpent}\nDaily Average: $${report.averageDaily}`;
 
-    logger.info('Sending WhatsApp message...');
-    logger.info('Debug send: calling sendWhatsAppHello first');
-    await sms.sendWhatsAppHello();
-    logger.info('Debug hello sent. Now sending spending update.');
-    await sms.sendWhatsAppUpdate(message);
+    const testPhoneNumber = process.env.YOUR_WHATSAPP_NUMBER || process.env.YOUR_PHONE_NUMBER;
+    if (!testPhoneNumber) {
+      throw new Error('YOUR_WHATSAPP_NUMBER or YOUR_PHONE_NUMBER environment variable required for testing');
+    }
+
+    logger.info('Sending WhatsApp test message...');
+    const result = await messaging.sendMessage({
+      to: testPhoneNumber,
+      body: message,
+      forceChannel: 'whatsapp'
+    });
+
+    if (result.success) {
+      logger.info('WhatsApp test message sent successfully', {
+        messageSid: result.messageSid,
+        channel: result.channel
+      });
+    } else {
+      logger.error('Failed to send WhatsApp test message', { error: result.error });
+    }
     logger.info('Done.');
   } catch (error) {
     logger.error('test-whatsapp failed', error);
