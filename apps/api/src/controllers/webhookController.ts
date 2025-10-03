@@ -32,6 +32,12 @@ const ERROR_MESSAGES = {
 const validateTwilioSignature = (req: Request): boolean => {
   const signature = req.headers['x-twilio-signature'] as string;
   
+  // Allow testing in local development without signature/auth token
+  if (process.env.NODE_ENV === 'local') {
+    logger.debug('Bypassing Twilio signature validation in local development');
+    return true;
+  }
+  
   if (!signature) {
     return false;
   }
@@ -201,6 +207,11 @@ export class WebhookController {
             orderBy: { createdAt: 'desc' },
             take: 1,
             select: { monthlyLimit: true }
+          },
+          spendingAnalytics: {
+            select: {
+              currentMonthSpending: true
+            }
           }
         }
       });
@@ -283,6 +294,19 @@ export class WebhookController {
       let currentPeriodSpending = 0;
       let calculationError: string | undefined;
 
+      // Get user data for debugging if needed
+      const userForDebug = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { plaidAccessToken: true }
+      });
+
+      logger.debug('Starting currentPeriodSpending calculation', {
+        userId: user.id,
+        periodStart: format(periodStart, 'yyyy-MM-dd'),
+        periodEnd: format(periodEnd, 'yyyy-MM-dd'),
+        hasPlaidAccessToken: !!userForDebug?.plaidAccessToken
+      });
+
       try {
         // Fetch real transaction data for the period
         const { transactions, error } = await this.plaidAnalyticsService.fetchPeriodTransactions(
@@ -291,20 +315,45 @@ export class WebhookController {
           periodEnd
         );
 
+        logger.debug('fetchPeriodTransactions result', {
+          userId: user.id,
+          transactionCount: transactions?.length || 0,
+          hasError: !!error,
+          error: error || null
+        });
+
         if (error) {
           calculationError = error;
+          
+          // Try to use database analytics as fallback for current period spending
+          if (user.spendingAnalytics?.currentMonthSpending) {
+            currentPeriodSpending = Number(user.spendingAnalytics.currentMonthSpending);
+            logger.info('Using database analytics as fallback for spending calculation', {
+              userId: user.id,
+              fallbackSpending: currentPeriodSpending,
+              reason: 'Plaid API unavailable'
+            });
+          }
+          
           logger.warn('Using fallback calculation due to Plaid error', { 
             userId: user.id, 
-            error 
+            error,
+            fallbackSpending: currentPeriodSpending
           });
-        } else {
-          // Convert transactions and calculate period spending
+        } else if (transactions) {
+          // Convert and calculate spending from Plaid transactions
           const plaidTransactions = this.calculationService.convertToPlaidTransactions(transactions);
           currentPeriodSpending = this.calculationService.calculatePeriodSpending(
             plaidTransactions, 
             periodStart, 
             periodEnd
           );
+
+          logger.debug('Calculated spending from Plaid transactions', {
+            userId: user.id,
+            currentPeriodSpending,
+            transactionCount: plaidTransactions.length
+          });
         }
 
         // Calculate period-aware daily target

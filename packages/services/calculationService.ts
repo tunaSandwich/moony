@@ -1,4 +1,5 @@
-import { startOfMonth, endOfMonth, subMonths, isAfter, isBefore, isEqual, differenceInCalendarDays, getDaysInMonth, differenceInDays } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, differenceInCalendarDays, getDaysInMonth, differenceInDays } from 'date-fns';
+import { isWithinInterval, parseISO, startOfDay, endOfDay, format } from 'date-fns';
 import { logger } from '../utils/logger.js';
 
 export type PlaidTransaction = { date: string; amount: number };
@@ -14,8 +15,13 @@ export interface ProcessedTransaction {
 }
 
 export class CalculationService {
-  private isWithinInclusive(date: Date, start: Date, end: Date): boolean {
-    return (isAfter(date, start) || isEqual(date, start)) && (isBefore(date, end) || isEqual(date, end));
+  private isWithinInclusive(date: Date | string, start: Date, end: Date): boolean {
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    
+    return isWithinInterval(dateObj, {
+      start: startOfDay(start),
+      end: endOfDay(end)
+    });
   }
 
   calculateMonthlySpending(transactions: PlaidTransaction[], targetMonth: Date): number {
@@ -86,25 +92,37 @@ export class CalculationService {
    * @param periodEnd - End date of the period (inclusive)
    * @returns Total spending amount within the period
    */
-  calculatePeriodSpending(transactions: PlaidTransaction[], periodStart: Date, periodEnd: Date): number {
+  calculatePeriodSpending(
+    transactions: PlaidTransaction[], 
+    periodStart: Date, 
+    periodEnd: Date
+  ): number {
     try {
+      // Get YYYY-MM-DD strings for comparison
+      const startDateStr = format(startOfMonth(periodStart), 'yyyy-MM-dd');
+      const endDateStr = format(endOfMonth(periodStart), 'yyyy-MM-dd');
+      
       let total = 0;
       
       for (const tx of transactions) {
-        const txDate = new Date(tx.date);
+        const txDateStr = typeof tx.date === 'string' 
+          ? tx.date 
+          : format(tx.date, 'yyyy-MM-dd');
         
-        // Check if transaction is within the period (inclusive)
-        if (Number.isFinite(tx.amount) && 
-            tx.amount > 0 && 
-            this.isWithinInclusive(txDate, periodStart, periodEnd)) {
+        if (
+          Number.isFinite(tx.amount) && 
+          tx.amount > 0 && 
+          txDateStr >= startDateStr && 
+          txDateStr <= endDateStr
+        ) {
           total += tx.amount;
         }
       }
       
       return Number(total.toFixed(2));
     } catch (err) {
-      logger.error('calculatePeriodSpending failed', { err, periodStart, periodEnd });
-      return 0; // Graceful fallback
+      logger.error('calculatePeriodSpending failed', err);
+      throw err;
     }
   }
 
