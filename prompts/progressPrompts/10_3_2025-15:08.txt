@@ -1,0 +1,316 @@
+Budget Pal - Context Transfer Document
+PROJECT OVERVIEW
+Core Project Description
+Budget Pal (codename: "moony") is an SMS-based daily spending guidance application that helps users stay on budget through daily text message check-ins. Users connect their bank via Plaid, set monthly spending goals via SMS, and receive morning texts showing their daily spending target and progress.
+Key Requirements
+
+Primary constraint: "Simple solutions over perfect engineering" - ship working features, iterate later
+Cost target: $5-10/month per user
+MVP focus: Pre-launch, single developer, minimal infrastructure
+User experience: Zero-friction - no app downloads, just text messages
+
+Target Users
+Individuals wanting daily spending accountability via text messages without dealing with complex budgeting apps. Focus on simplicity over feature richness.
+Architecture
+
+Frontend: React/Vite (onboarding only - invite code, Plaid connection, phone verification)
+Backend: Node.js/Express/TypeScript, PostgreSQL/Prisma
+External Services: Plaid (bank transactions), Twilio (SMS/WhatsApp)
+Deployment: Single server, webhook-driven updates
+
+
+TECHNICAL DECISIONS & ARCHITECTURE
+Critical Analytics Decision: Median vs Mean
+Problem: User had $23,971 spending in July (student loan payoff) skewing calculations.
+Solution: Use MEDIAN for "typical monthly spending"
+
+Resistant to outliers (one-time $12k expenses)
+Better represents "typical month" for personal finance
+Store separately: twoMonthsAgoSpending, lastMonthSpending, currentMonthSpending, averageMonthlySpending (median)
+
+Edge cases handled:
+
+New accounts <2 months: Use single month value
+2 months: Median = average of two
+3+ months: True median calculation
+
+Webhook Architecture (Critical)
+Problem: Plaid doesn't provide data immediately after bank connection. Historical data arrives via webhook in 30-120 seconds.
+Solution:
+
+User connects bank → Navigate immediately to phone verification (don't block)
+Plaid sends INITIAL_UPDATE webhook (~10 seconds, 30 days data)
+Plaid sends HISTORICAL_UPDATE webhook (~60 seconds, full 90 days)
+Most important: DEFAULT_UPDATE webhooks fire 1-4x daily with new transactions
+Fallback job runs every minute to catch missed webhooks
+
+Key implementation: DEFAULT_UPDATE webhook must call processUserAnalytics() to keep spending data current. This was initially missing and caused stale data ($20 shown when actual was $507).
+SMS Message Flow
+Correct sequence:
+
+Bank connection → Analytics process in background
+Phone verification → User enters code
+Immediately after verification success: Send welcome SMS with 3 scenarios based on available data
+User replies with goal amount (e.g., "4500")
+System sends confirmation with current spending and daily target
+
+Welcome SMS scenarios:
+
+Scenario A (full data): Show 2-3 months history + current month
+Scenario B (partial): Show current month only
+Scenario C (no data): Just ask for goal
+
+Daily SMS format (finalized):
+moony
+
+☀️ Good Morning {name}!
+
+🎯 Today's spending target: $X
+{Month} so far: $Y of $Z used
+
+Recent purchases may take a day to show
+
+Reply STOP to opt out
+Database Schema
+Key models:
+
+User: includes plaidAccessToken (encrypted), plaidItemId, plaidConnectedAt
+SpendingGoal: monthlyLimit, periodStart, periodEnd, isActive
+UserSpendingAnalytics: averageMonthlySpending (median), lastMonthSpending, twoMonthsAgoSpending, currentMonthSpending, lastCalculatedAt
+
+Note: plaidItemId required for webhook lookup (webhooks send item_id, not user_id)
+Date Comparison Bug (FIXED)
+Problem: Timezone issues caused date filtering to fail. Oct 1 transactions weren't counted because:
+
+Transaction dates came as strings: '2025-10-01'
+Period dates were Date objects with UTC timezone
+isWithinInterval() failed due to timezone mismatch
+
+Solution: Compare dates as strings, not Date objects:
+typescriptconst txDateStr = typeof tx.date === 'string' ? tx.date : format(tx.date, 'yyyy-MM-dd');
+if (txDateStr >= startDateStr && txDateStr <= endDateStr) { ... }
+Multi-User Daily SMS Architecture
+Service: DailySmsService replaces old single-user SmsService
+
+Queries all users where phoneVerified = true, isActive = true, has active goal
+Uses cached analytics from database (not real-time Plaid fetches)
+Processes users sequentially with per-user error isolation
+Returns summary: { totalUsers, successCount, failureCount, skippedCount, errors }
+
+Scheduler: SchedulerService runs two cron jobs:
+
+Daily SMS job (default 8 AM) - calls DailySmsService.sendDailyMessages()
+Webhook fallback job (every minute) - catches missed webhook analytics
+
+
+DESIGN CONSIDERATIONS & TRADE-OFFS
+Key Design Principles
+
+Median over mean for spending calculations (handles outliers naturally)
+Cached analytics over real-time fetches for daily SMS (speed + Plaid data lag reality)
+Webhook-driven updates over polling (Plaid's designed approach)
+Per-user error isolation in batch jobs (one failure doesn't crash job)
+Date string comparisons over Date object math (avoids timezone hell)
+
+Resolved Trade-offs
+Daily SMS data source:
+
+❌ Rejected: Always fetch fresh from Plaid (slower, redundant with webhooks)
+❌ Rejected: Estimate missing data with averages (breaks user trust when wrong)
+✅ Chosen: Use cached analytics updated by webhooks (reasonably current, fast, honest)
+
+"Yesterday's spending" feature:
+
+❌ Rejected: Calculate from Plaid each morning (data lag makes it inaccurate)
+❌ Rejected: Store daily snapshots (added complexity for MVP)
+✅ Chosen: Drop the feature, show month-to-date only with disclaimer about lag
+
+Confirmation message spending display:
+
+❌ Rejected: Always fetch fresh (10-30 second wait for user)
+❌ Rejected: Show zero if no data (confusing UX)
+✅ Chosen: Use cached analytics as fallback when Plaid fails, with note if data stale
+
+Rejected Approaches
+Outlier detection: Considered automatically excluding months >2x median. Rejected because user's $23,971 July was legitimate (student loan). Removing real expenses misleads users. Median handles this naturally.
+Transaction-level filtering: Considered removing individual expensive transactions. Rejected because "the student loan payment was a REAL expense." Problem isn't the transaction, it's non-recurring nature. Month-level median solves this.
+Complex polling UI: Implemented then reverted. Loading screens while waiting for analytics added poor UX (users stuck waiting), Plaid widget kept re-launching. Better to navigate immediately, let analytics populate in background.
+Message queues: Considered RabbitMQ/Redis for webhook processing. Rejected as overkill for single developer, pre-launch app. Simple retry logic + fallback job sufficient for MVP.
+Pending Decisions
+None blocking launch. Post-launch considerations:
+
+JWT webhook verification (currently disabled, documented as TODO)
+/transactions/refresh add-on for on-demand updates (if users complain about lag)
+Migration to /transactions/sync API (newer Plaid endpoint, better for updates)
+
+
+CURRENT STATE
+Completed (Production Ready)
+✅ Task 1: Fixed confirmation SMS bug
+
+Added database analytics fallback when Plaid fails
+Shows accurate spending amounts ($44.29, not $7 due to date bug)
+
+✅ Task 2: Created multi-user daily SMS service
+
+DailySmsService processes all verified users
+Correct message format with blank lines
+Per-user error handling, comprehensive logging
+
+✅ Task 3: Updated scheduler service
+
+Integrated DailySmsService into daily cron job
+Removed obsolete single-user dependencies
+Simplified to <30 lines
+
+✅ Webhook Fix: Enabled analytics updates
+
+DEFAULT_UPDATE webhooks now call processUserAnalytics()
+Analytics stay current automatically (1-4x daily)
+Fixed root cause of stale data issue
+
+✅ Task 4: Cleaned up obsolete code
+
+Deleted old smsService.ts
+Updated test file to use MessagingService
+No obsolete references remain
+
+Current System Behavior
+Data freshness: Analytics lag 6-24 hours behind reality (banking/Plaid limitation, acceptable for MVP)
+Daily SMS flow:
+
+Scheduler triggers at 8 AM
+Queries all verified users with active goals
+Uses cached currentMonthSpending from analytics table
+Calculates daily target based on days remaining
+Sends formatted SMS to each user
+Logs success/failure/skip counts
+
+Analytics update flow:
+
+Plaid detects new transactions (1-4x daily)
+Sends DEFAULT_UPDATE webhook
+PlaidWebhookService receives webhook
+Calls plaidAnalyticsService.processUserAnalytics()
+Fetches 6 months of transactions
+Calculates median-based metrics
+Updates user_spending_analytics table
+
+Known Limitations (Acceptable for MVP)
+
+Webhook signature verification disabled (JWT implementation deferred)
+Data lag of 6-24 hours (Plaid's reality, not fixable without paid add-on)
+Sequential user processing in daily SMS (could parallelize if >1000 users)
+Extensive debug logging (can clean up post-launch)
+
+No Current Blockers
+System is production-ready for beta testing with friends.
+
+COLLABORATION PREFERENCES
+Most Helpful Approaches
+Request complete context before advising:
+
+Specific files needed
+Database state queries
+Full error logs (not summaries)
+Expected vs actual behavior
+
+Research external APIs before claiming behavior:
+
+Use web_search for Plaid/Twilio documentation
+Check timing, pricing, limitations
+Cite sources explicitly
+
+Challenge ideas constructively:
+
+Point out flaws directly
+Explain trade-offs with pros/cons
+Suggest alternatives with rationale
+Push back on overengineering
+
+Communication Style Preferences
+Direct and technical: Skip flattery, get to substance
+Honest over agreeable: Point out bad ideas
+Options with trade-offs: Present 2-3 approaches, recommend one with rationale
+Research-backed: Cite sources when making claims about external services
+Problem-Solving Approach
+
+Understand problem fully before suggesting solutions
+Request diagnostics (logs, database state, files)
+Form hypothesis about root cause
+Test hypothesis with specific checks
+Then propose fix with complete implementation prompt
+
+Implementation Format
+Never: "Update your file to do X"
+Always: Complete Claude Code prompt as markdown file:
+markdown# Task: [Title]
+## Context
+## File to Modify
+## Changes Required
+## Success Criteria
+## Testing Instructions
+MVP Context Awareness
+Always consider:
+
+"Do we need this now or post-launch?"
+"What's the simplest solution that works?"
+Cost implications ($5-10/user target)
+Single developer velocity
+
+Challenge:
+
+Message queues before 1000+ users
+Complex caching before measuring need
+Over-abstraction before patterns emerge
+"Best practices" that add complexity without clear MVP benefit
+
+Effective Patterns from This Session
+What worked well:
+
+Breaking complex features into 4 sequential tasks
+Providing exact file locations and line numbers
+Creating self-contained prompts for Claude Code
+Explaining "why" behind technical decisions
+Debugging systematically (logs → hypothesis → test → fix)
+Research before recommending (Plaid docs, transaction timing, webhooks)
+
+What to avoid:
+
+Assuming behavior without checking
+Jumping to solutions without understanding
+Suggesting complex infrastructure for MVP
+Making claims without sources
+
+
+Key Technical Insights for Future Work
+Plaid Pricing Structure
+
+Charged per connected Item (monthly), NOT per API call
+Unlimited /transactions/get and /transactions/sync calls
+Webhooks are free and unlimited
+/transactions/refresh is paid add-on
+
+This means: No financial reason to avoid Plaid fetches, but architectural reasons to use webhooks + cache.
+Banking Transaction Timing Reality
+
+Pending transactions: Immediate in bank app
+Posted transactions: 1-5 business days (up to 14 in rare cases)
+Plaid visibility: 6-24 hours after posting
+No way to eliminate this lag without paid real-time add-ons
+
+Conclusion: 6-24 hour data lag is acceptable and industry standard. Set user expectations clearly.
+Date Handling Pattern
+When comparing transaction dates:
+
+Always compare as strings ('2025-10-01')
+Never parse to Date objects for comparison (timezone hell)
+Format period dates with format(date, 'yyyy-MM-dd')
+Use string comparison: txDate >= startDate && txDate <= endDate
+
+Webhook Reliability Pattern
+
+Primary: Webhooks update data automatically
+Fallback: Cron job catches missed webhooks every minute
+Check: Users with plaidConnectedAt > 5 min ago but no analytics
+Result: Resilient to webhook delivery failures without user impact
