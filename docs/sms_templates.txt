@@ -29,11 +29,12 @@ Reply STOP to opt out anytime.
 (daily text)
 moony
 
-☀️ Good Morning {name}!
-🎯 Today's spending target: $x
+☀️ Good Morning Lucas!
 
-Yesterday you spent: $y ✅
-Progress: $z of $t used
+🎯 Today's spending target: $145
+October so far: $347 of $4,500 used
+
+Recent purchases may take a day to show
 
 Reply STOP to opt out
 
