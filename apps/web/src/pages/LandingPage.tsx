@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import phoneImage from '@/assets/images/hand_and_phone.png';
+import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
 import Lenis from 'lenis';
@@ -27,7 +27,7 @@ const LandingPage = () => {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const phoneRef = useRef<HTMLImageElement>(null);
+  const phoneRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number | undefined>(null);
   const lenisRef = useRef<Lenis | null>(null);
   
@@ -83,6 +83,16 @@ const LandingPage = () => {
 
     phoneRef.current.style.opacity = '0';
     phoneRef.current.style.transform = 'translateY(40px)';
+  }, []);
+
+  // Ensure autoplay kicks in on mount for mobile browsers
+  useEffect(() => {
+    if (phoneRef.current) {
+      const playPromise = phoneRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    }
   }, []);
 
   // Page load animations
@@ -428,17 +438,21 @@ const LandingPage = () => {
 
           {/* iPhone Mockup - Exactly 40px below button */}
           <div className="flex justify-center">
-            <img
+            <video
               ref={phoneRef}
-              src={phoneImage}
-              alt="Budget tracking on mobile"
-              className="w-full max-w-4xl h-auto mx-auto relative z-10 phone-fade-mask"
+              src={phoneVideo}
+              aria-label="Budget tracking on mobile"
+              className="w-full max-w-3xl h-auto mx-auto relative z-10 phone-fade-mask"
               style={{ 
-                maxWidth: '1472px',
-                width: 'min(90vw, 1472px)',
+                maxWidth: '1200px',
+                width: 'min(90vw, 900px)',
                 opacity: 0,
               }}
-              loading="lazy"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
             />
           </div>
         </div>
