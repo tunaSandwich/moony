@@ -5,11 +5,11 @@
 :root {
   /* Colors - Background */
   --color-bg-pink: #FFF8FC;
-  --color-bg-coral: #FCE7F3;
+  --color-bg-coral: #FFF8FC;
   
   /* Colors - Coral Scale */
   --color-coral-50: #FDF2F8;
-  --color-coral-100: #FCE7F3;
+  --color-coral-100: #FFF8FC;
   --color-coral-200: #FBCFE8;
   --color-coral-300: #F9A8D4;
   --color-coral-400: #F472B6;
@@ -104,7 +104,7 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
-  background-color: #FCE7F3;
+  background-color: #FFF8FC;
 }
 
 /* Reduced Motion Support */

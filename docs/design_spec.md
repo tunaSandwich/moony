@@ -16,7 +16,7 @@
 - **Background Pink**: #FFF8FC (Main page background - soft pink)
 - **Coral Scale**: 
   - Coral 50: #FDF2F8
-  - Coral 100: #FCE7F3 (Also used as body background fallback)
+  - Coral 100: #FFF8FC (Also used as body background fallback)
   - Coral 200: #FBCFE8
   - Coral 300: #F9A8D4
   - Coral 400: #F472B6

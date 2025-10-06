@@ -9,13 +9,13 @@ export const colors = {
   // Background Colors
   background: {
     pink: '#FFF8FC',
-    coral: '#FCE7F3',
+    coral: '#FFF8FC',
   },
   
   // Coral Scale
   coral: {
     50: '#FDF2F8',
-    100: '#FCE7F3',
+    100: '#FFF8FC',
     200: '#FBCFE8',
     300: '#F9A8D4',
     400: '#F472B6',

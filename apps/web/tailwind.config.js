@@ -29,7 +29,7 @@ export default {
           500: 'var(--color-coral-500)',
           600: 'var(--color-coral-600)',
           // Keep existing for backwards compatibility
-          DEFAULT: '#FCE7F3',
+          DEFAULT: '#FFF8FC',
         },
         
         // Text colors

@@ -5,6 +5,7 @@ import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
 import Lenis from 'lenis';
+import { colors, animationDurations, easingStrings, lerp, easeOutCubic } from '@/design-system';
 
 // Bank logos
 import chaseLogo from '@/assets/images/banks/chase.svg';
@@ -27,10 +28,6 @@ const BANK_LOGOS = [
   { src: usBankLogo, alt: 'US Bank' },
   { src: schwabLogo, alt: 'Charles Schwab' },
 ];
-
-// Professional-grade easing utility functions
-const lerp = (start: number, end: number, factor: number): number => start + (end - start) * factor;
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -131,15 +128,15 @@ const LandingPage = () => {
     const executeAnimation = () => {
       if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !phoneRef.current) return;
 
-      const duration = prefersReducedMotion ? 100 : 1500; // 1.5s total or instant for reduced motion
+      const duration = prefersReducedMotion ? animationDurations.instant : animationDurations.pageLoad;
       
       // Set transition properties
       const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
       elements.forEach(el => {
-        el.style.transition = prefersReducedMotion ? 'none' : 'all 0.6s ease-out';
+        el.style.transition = prefersReducedMotion ? 'none' : `all 0.6s ${easingStrings.default}`;
       });
 
-      phoneRef.current.style.transition = prefersReducedMotion ? 'none' : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'; // Spring
+      phoneRef.current.style.transition = prefersReducedMotion ? 'none' : `all 0.4s ${easingStrings.spring}`;
 
       if (prefersReducedMotion) {
         // Instant appearance for reduced motion
@@ -379,14 +376,13 @@ const LandingPage = () => {
   }, [prefersReducedMotion, animationsComplete]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+    <div className="min-h-screen relative overflow-hidden bg-pink-bg">
       {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
       <header 
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-strong h-[60px]"
         style={{
-          height: '60px',
-          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
+          background: 'var(--header-gradient)',
         }}
         
       >
@@ -493,7 +489,7 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto text-center">
 
           {/* Description */}
-          <p className="text-sm sm:text-lg text-gray-700 mb-10 leading-relaxed font-bold">
+          <p className="text-sm sm:text-lg mb-10 leading-relaxed font-bold" style={{ color: colors.gray[700] }}>
             Connect your bank and phone. 
             Set your goal. 
             Stay on budget with daily text updates.
@@ -507,11 +503,11 @@ const LandingPage = () => {
             <div className="w-full h-px bg-gray-300 mb-12"></div>
             
             {/* Section Heading */}
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center" style={{ color: colors.gray[900] }}>
               Works with your bank
             </h2>
             {/* Subtext */}
-            <p className="text-sm text-gray-600 mb-10 text-center">
+            <p className="text-sm mb-10 text-center" style={{ color: colors.gray[500] }}>
               Powered by Plaid • 11,000+ banks supported
             </p>
             
@@ -548,7 +544,7 @@ const LandingPage = () => {
           <div className="w-full h-px bg-gray-300 mb-12"></div>
 
           {/* Privacy Links */}
-          <div className="flex justify-center items-center space-x-4 text-sm text-gray-600 mb-16">
+          <div className="flex justify-center items-center space-x-4 text-sm mb-16" style={{ color: colors.gray[500] }}>
             <a href="#" className="hover:text-gray-800 transition-colors">PRIVACY POLICY</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-800 transition-colors">TERMS OF SERVICE</a>
