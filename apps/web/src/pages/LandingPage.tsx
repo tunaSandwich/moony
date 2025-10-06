@@ -85,15 +85,24 @@ const LandingPage = () => {
     phoneRef.current.style.transform = 'translateY(40px)';
   }, []);
 
-  // Ensure autoplay kicks in on mount for mobile browsers
+  // Start video playback on first scroll instead of on load
   useEffect(() => {
-    if (phoneRef.current) {
+    if (!phoneRef.current || prefersReducedMotion) return;
+    let hasStarted = false;
+
+    const handleFirstScroll = () => {
+      if (hasStarted || !phoneRef.current) return;
+      hasStarted = true;
       const playPromise = phoneRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {});
       }
-    }
-  }, []);
+      window.removeEventListener('scroll', handleFirstScroll);
+    };
+
+    window.addEventListener('scroll', handleFirstScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleFirstScroll);
+  }, [prefersReducedMotion]);
 
   // Page load animations
   useEffect(() => {
@@ -448,7 +457,6 @@ const LandingPage = () => {
                 width: 'min(90vw, 900px)',
                 opacity: 0,
               }}
-              autoPlay
               loop
               muted
               playsInline
