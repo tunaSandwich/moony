@@ -391,11 +391,11 @@ const LandingPage = () => {
         
       >
         {/* Logo in header */}
-        <div className="absolute top-4 left-20 z-10">
+        <div className="absolute top-10 left-10 z-10">
           <img 
             src={logoText} 
             alt="moony Logo" 
-            className="w-20 h-auto"
+            className="w-23 h-auto"
           />
         </div>
         
@@ -491,9 +491,14 @@ const LandingPage = () => {
       {/* Bottom Section - Extended for Testing */}
       <footer className="relative z-20 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
+
           {/* Description */}
-          <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed">
-          Connect your bank and phone, set your goal, and stay on budget with daily text updates.
+          <p className="text-sm sm:text-lg text-gray-700 mb-10 leading-relaxed font-bold">
+            Connect your bank and phone. 
+            Set your goal. 
+            Stay on budget with daily text updates.
+            <br></br>
+            {/* <p className="font-normal sm:text-sm mt-2"> Powered by AI</p> */}
           </p>
 
           {/* Bank Compatibility Section */}
@@ -502,9 +507,13 @@ const LandingPage = () => {
             <div className="w-full h-px bg-gray-300 mb-12"></div>
             
             {/* Section Heading */}
-            <h2 className="text-xl sm:text-2xl font-light text-gray-800 text-left mb-10">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">
               Works with your bank
             </h2>
+            {/* Subtext */}
+            <p className="text-sm text-gray-600 mb-10 text-center">
+              Powered by Plaid • 11,000+ banks supported
+            </p>
             
             {/* Bank Logos Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto mb-6">
@@ -516,7 +525,7 @@ const LandingPage = () => {
                   <img
                     src={bank.src}
                     alt={bank.alt}
-                    className="h-10 w-auto object-contain opacity-70 hover:opacity-90 transition-opacity duration-200"
+                    className="h-9 w-auto object-contain opacity-70 hover:opacity-90 transition-opacity duration-200"
                     loading="lazy"
                     style={{ filter: 'grayscale(100%)' }}
                   />
@@ -524,10 +533,6 @@ const LandingPage = () => {
               ))}
             </div>
             
-            {/* Subtext */}
-            <p className="text-sm text-gray-600 text-center">
-              Powered by Plaid • 11,000+ banks supported
-            </p>
           </div>
           
           {/* Logo */}
