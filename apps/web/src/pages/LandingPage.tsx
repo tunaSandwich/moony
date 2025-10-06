@@ -6,6 +6,28 @@ import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
 import Lenis from 'lenis';
 
+// Bank logos
+import chaseLogo from '@/assets/images/banks/chase.svg';
+import boaLogo from '@/assets/images/banks/bank-of-america.svg';
+import wellsFargoLogo from '@/assets/images/banks/wells-fargo.svg';
+import capitalOneLogo from '@/assets/images/banks/capital-one.svg';
+import citiLogo from '@/assets/images/banks/citi.svg';
+import amexLogo from '@/assets/images/banks/american-express.svg';
+import usBankLogo from '@/assets/images/banks/us-bank.svg';
+import schwabLogo from '@/assets/images/banks/schwab.svg';
+
+// Bank logos data structure
+const BANK_LOGOS = [
+  { src: chaseLogo, alt: 'Chase Bank' },
+  { src: boaLogo, alt: 'Bank of America' },
+  { src: wellsFargoLogo, alt: 'Wells Fargo' },
+  { src: capitalOneLogo, alt: 'Capital One' },
+  { src: citiLogo, alt: 'Citibank' },
+  { src: amexLogo, alt: 'American Express' },
+  { src: usBankLogo, alt: 'US Bank' },
+  { src: schwabLogo, alt: 'Charles Schwab' },
+];
+
 // Professional-grade easing utility functions
 const lerp = (start: number, end: number, factor: number): number => start + (end - start) * factor;
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
@@ -471,8 +493,42 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto text-center">
           {/* Description */}
           <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed">
-            Connect your bank, connect your phone, set your spending goal and get daily sms updates tracking your progress
+          Connect your bank and phone, set your goal, and stay on budget with daily text updates.
           </p>
+
+          {/* Bank Compatibility Section */}
+          <div className="mb-16">
+            {/* Horizontal Divider */}
+            <div className="w-full h-px bg-gray-300 mb-12"></div>
+            
+            {/* Section Heading */}
+            <h2 className="text-xl sm:text-2xl font-light text-gray-800 text-left mb-10">
+              Works with your bank
+            </h2>
+            
+            {/* Bank Logos Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto mb-6">
+              {BANK_LOGOS.map((bank, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-center p-4"
+                >
+                  <img
+                    src={bank.src}
+                    alt={bank.alt}
+                    className="h-10 w-auto object-contain opacity-70 hover:opacity-90 transition-opacity duration-200"
+                    loading="lazy"
+                    style={{ filter: 'grayscale(100%)' }}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {/* Subtext */}
+            <p className="text-sm text-gray-600 text-center">
+              Powered by Plaid • 11,000+ banks supported
+            </p>
+          </div>
           
           {/* Logo */}
           <div className="mb-8">
@@ -483,6 +539,9 @@ const LandingPage = () => {
             />
           </div>
           
+          {/* Horizontal Divider */}
+          <div className="w-full h-px bg-gray-300 mb-12"></div>
+
           {/* Privacy Links */}
           <div className="flex justify-center items-center space-x-4 text-sm text-gray-600 mb-16">
             <a href="#" className="hover:text-gray-800 transition-colors">PRIVACY POLICY</a>
