@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
+import { Header } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
-import logoText from '@/assets/icons/logo_text.png';
 import logo from '@/assets/icons/logo.png';
-import Lenis from 'lenis';
-import { colors, animationDurations, easingStrings, lerp, easeOutCubic } from '@/design-system';
+import { colors, animationDurations, easingStrings } from '@/design-system';
+import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
 
 // Bank logos
 import chaseLogo from '@/assets/images/banks/chase.svg';
@@ -31,63 +31,30 @@ const BANK_LOGOS = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   
   // Page load animation state
   const [animationsComplete, setAnimationsComplete] = useState(false);
   
-  // Professional animation direct variables (no async state issues)
-  const smoothOpacityRef = useRef({
-    currentSubtitleOpacity: 1,
-    currentTitleOpacity: 1
-  });
   
   const headerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const phoneRef = useRef<HTMLVideoElement>(null);
-  const rafRef = useRef<number | undefined>(null);
-  const lenisRef = useRef<Lenis | null>(null);
+  
+  // Initialize hooks
+  useSmoothScroll({ disabled: prefersReducedMotion });
+  useScrollFade(
+    { titleRef, subtitleRef, buttonRef },
+    { disabled: prefersReducedMotion, animationsComplete }
+  );
   
   const handleGetStarted = () => {
     navigate('/invite');
   };
 
-  useEffect(() => {
-    // Check for reduced motion preference
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-    
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches);
-    };
-    
-    mediaQuery.addEventListener('change', handleMediaChange);
-    return () => mediaQuery.removeEventListener('change', handleMediaChange);
-  }, []);
 
-  // Professional smooth scroll initialization
-  useEffect(() => {
-    if (prefersReducedMotion) return;
-
-    // Initialize Lenis smooth scroll
-    lenisRef.current = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Custom easeOutExpo
-    });
-
-    // Lenis animation loop
-    const raf = (time: number) => {
-      lenisRef.current?.raf(time);
-      requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenisRef.current?.destroy();
-    };
-  }, [prefersReducedMotion]);
 
   // Set initial styles immediately on mount
   useEffect(() => {
@@ -176,226 +143,11 @@ const LandingPage = () => {
     return () => clearTimeout(timer);
   }, [prefersReducedMotion]);
 
-  useEffect(() => {
-    // Skip animations if user prefers reduced motion or page load animations still running
-    if (prefersReducedMotion || !animationsComplete) return;
-
-    // Detect CSS mask support for fallback
-    const supportsCSSMask = typeof CSS !== 'undefined' && CSS.supports && 
-      (CSS.supports('mask', 'linear-gradient(black, transparent)') || 
-       CSS.supports('-webkit-mask', 'linear-gradient(black, transparent)'));
-    
-    // Performance optimization: Use simple opacity fallback for unsupported browsers
-    const useSimpleFade = !supportsCSSMask;
-    
-    const calculateDistance = () => {
-      if (!buttonRef.current || !titleRef.current || !subtitleRef.current) return;
-      
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const buttonTop = buttonRect.top;
-      
-      // Get actual text element positions
-      const titleRect = titleRef.current.getBoundingClientRect();
-      const subtitleRect = subtitleRef.current.getBoundingClientRect();
-      
-      // Distance from button top to bottom of each text element
-      const distanceToSubtitleBottom = buttonTop - subtitleRect.bottom;
-      const distanceToTitleBottom = buttonTop - titleRect.bottom;
-      
-      // Professional eased opacity calculations (maintaining existing trigger distances)
-      const rawSubtitleOpacity = distanceToSubtitleBottom <= 30 ? Math.max(0, (distanceToSubtitleBottom - 20) / 10) : 1;
-      const rawTitleOpacity = distanceToTitleBottom <= 30 ? Math.max(0, (distanceToTitleBottom - 20) / 10) : 1;
-      
-      // Apply easing for organic feel
-      const targetSubtitleOpacity = rawSubtitleOpacity < 1 ? easeOutCubic(rawSubtitleOpacity) : 1;
-      const targetTitleOpacity = rawTitleOpacity < 1 ? easeOutCubic(rawTitleOpacity) : 1;
-
-      // Direct interpolation (fixes async state issue)
-      smoothOpacityRef.current.currentSubtitleOpacity = lerp(
-        smoothOpacityRef.current.currentSubtitleOpacity, 
-        targetSubtitleOpacity, 
-        0.1
-      );
-      smoothOpacityRef.current.currentTitleOpacity = lerp(
-        smoothOpacityRef.current.currentTitleOpacity, 
-        targetTitleOpacity, 
-        0.1
-      );
-      
-      // Use interpolated values immediately (no async delay)
-      const subtitleOpacity = smoothOpacityRef.current.currentSubtitleOpacity;
-      const titleOpacity = smoothOpacityRef.current.currentTitleOpacity;
-
-      // Optimized fade with accessibility and browser support
-      if (useSimpleFade) {
-        // Fallback: Simple opacity for unsupported browsers or reduced motion
-        subtitleRef.current.style.opacity = subtitleOpacity.toString();
-        titleRef.current.style.opacity = titleOpacity.toString();
-        // Clear any existing masks
-        subtitleRef.current.style.mask = '';
-        subtitleRef.current.style.webkitMask = '';
-        titleRef.current.style.mask = '';
-        titleRef.current.style.webkitMask = '';
-      } else {
-        // Enhanced: Wrapper-based masking to preserve text gradients
-        // Create wrapper elements to apply vertical fade without interfering with text gradient
-
-        // Get or create wrapper elements
-        const subtitleWrapper = subtitleRef.current.parentElement;
-        const titleWrapper = titleRef.current.parentElement;
-
-        // Apply fade through wrapper opacity rather than direct text masking
-        // This preserves the background-clip text gradient while still achieving vertical fade
-        if (subtitleWrapper) {
-          if (subtitleOpacity >= 0.99) {
-            // Remove mask when fully visible
-            subtitleWrapper.style.mask = '';
-            subtitleWrapper.style.webkitMask = '';
-          } else {
-            // Apply mask only when fading
-            const subtitleFadeStart = 100 - (subtitleOpacity * 100);
-            const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
-
-            // Apply CSS mask to wrapper, preserving text gradient on inner element
-            const subtitleMask = `linear-gradient(to top, transparent ${subtitleFadeStart}%, black ${subtitleFadeEnd}%)`;
-            subtitleWrapper.style.mask = subtitleMask;
-            subtitleWrapper.style.webkitMask = subtitleMask;
-          }
-          
-          // Ensure text element maintains its gradient
-          subtitleRef.current.style.opacity = '1';
-          subtitleRef.current.style.mask = '';
-          subtitleRef.current.style.webkitMask = '';
-        }
-
-        if (titleWrapper) {
-          if (titleOpacity >= 0.99) {
-            // Remove mask when fully visible
-            titleWrapper.style.mask = '';
-            titleWrapper.style.webkitMask = '';
-          } else {
-            // Apply mask only when fading
-            const titleFadeStart = 100 - (titleOpacity * 100);
-            const titleFadeEnd = Math.min(100, titleFadeStart + 35);
-            
-            // Apply CSS mask to wrapper, preserving text gradient on inner element  
-            const titleMask = `linear-gradient(to top, transparent ${titleFadeStart}%, black ${titleFadeEnd}%)`;
-            titleWrapper.style.mask = titleMask;
-            titleWrapper.style.webkitMask = titleMask;
-          }
-          
-          // Ensure text element maintains its gradient
-          titleRef.current.style.opacity = '1';
-          titleRef.current.style.mask = '';
-          titleRef.current.style.webkitMask = '';
-        }
-      }
-      
-      // Enhanced debug logging for professional animation system
-      const logData: Record<string, string | number> = {
-        buttonTop: Math.round(buttonTop),
-        subtitleBottom: Math.round(subtitleRect.bottom),
-        titleBottom: Math.round(titleRect.bottom),
-        distanceToSubtitleBottom: Math.round(distanceToSubtitleBottom),
-        distanceToTitleBottom: Math.round(distanceToTitleBottom),
-        subtitleOpacity: Math.round(subtitleOpacity * 100) / 100,
-        titleOpacity: Math.round(titleOpacity * 100) / 100,
-        targetSubtitle: Math.round(targetSubtitleOpacity * 100) / 100,
-        targetTitle: Math.round(targetTitleOpacity * 100) / 100,
-        interpolationFix: '🔧 DIRECT VARS (no async)',
-        renderMode: useSimpleFade ? '🔄 OPACITY FALLBACK' : '🎭 BUTTERY SMOOTH',
-        smoothScrollActive: lenisRef.current ? '✨ LENIS ACTIVE' : '❌ Disabled',
-        maskSupport: supportsCSSMask ? '✅ Supported' : '❌ Fallback',
-        subtitleState: subtitleOpacity < 1 ? 
-          (useSimpleFade ? `🔄 SMOOTH OPACITY (${Math.round(subtitleOpacity * 100)}%)` : `🎭 SMOOTH MASK (${Math.round(subtitleOpacity * 100)}%)`) 
-          : '⚪ Visible',
-        titleState: titleOpacity < 1 ? 
-          (useSimpleFade ? `🔄 SMOOTH OPACITY (${Math.round(titleOpacity * 100)}%)` : `🎭 SMOOTH MASK (${Math.round(titleOpacity * 100)}%)`) 
-          : '⚪ Visible'
-      };
-      
-      // Add gradient info only when using CSS masks
-      if (!useSimpleFade) {
-        const subtitleFadeStart = 100 - (subtitleOpacity * 100);
-        const subtitleFadeEnd = Math.min(100, subtitleFadeStart + 35);
-        const titleFadeStart = 100 - (titleOpacity * 100);
-        const titleFadeEnd = Math.min(100, titleFadeStart + 35);
-        
-        logData.subtitleGradient = `${Math.round(subtitleFadeStart)}% → ${Math.round(subtitleFadeEnd)}%`;
-        logData.titleGradient = `${Math.round(titleFadeStart)}% → ${Math.round(titleFadeEnd)}%`;
-      }
-      
-      console.log(logData);
-    };
-
-    // Optimized RAF handling with throttling for mobile performance
-    let lastScrollTime = 0;
-    const handleScroll = () => {
-      const now = performance.now();
-      
-      // Cancel previous frame if pending
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      
-      // Mobile optimization: Throttle to prevent excessive calculations during fast scrolling
-      if (now - lastScrollTime < 8) { // ~120fps limit to maintain smooth scrolling
-        rafRef.current = requestAnimationFrame(calculateDistance);
-        return;
-      }
-      
-      lastScrollTime = now;
-      rafRef.current = requestAnimationFrame(calculateDistance);
-    };
-
-    // Initial calculation
-    calculateDistance();
-    
-    // Add scroll listener with passive option for performance (crucial for mobile)
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Add resize listener to recalculate on orientation change (mobile optimization)
-    const handleResize = () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      rafRef.current = requestAnimationFrame(calculateDistance);
-    };
-    
-    window.addEventListener('resize', handleResize, { passive: true });
-    
-    return () => {
-      // Comprehensive cleanup to prevent memory leaks
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = undefined;
-      }
-    };
-  }, [prefersReducedMotion, animationsComplete]);
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-pink-bg">
       {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
-      <header 
-        ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-strong h-[60px]"
-        style={{
-          background: 'var(--header-gradient)',
-        }}
-        
-      >
-        {/* Logo in header */}
-        <div className="absolute top-10 left-10 z-10">
-          <img 
-            src={logoText} 
-            alt="moony Logo" 
-            className="w-23 h-auto"
-          />
-        </div>
-        
-      </header>
+      <Header ref={headerRef} />
 
       {/* Fixed Text Section - Exactly 280px from top */}
       <div 

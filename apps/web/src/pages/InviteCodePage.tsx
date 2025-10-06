@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
+import { Header } from '@/components';
 import { authApi } from '@/api';
-import logoText from '@/assets/icons/logo_text.png';
 
 const InviteCodePage = () => {
   const [inviteCode, setInviteCode] = useState('');
@@ -44,21 +44,7 @@ const InviteCodePage = () => {
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
       {/* Fixed Header with Logo - Consistent with Landing Page */}
-      <header 
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
-        style={{
-          height: '60px',
-          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
-        }}
-      >
-        <div className="absolute top-4 left-20 z-10">
-          <img 
-            src={logoText} 
-            alt="moony Logo" 
-            className="w-20 h-auto"
-          />
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content with Padding for Header */}
       <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
