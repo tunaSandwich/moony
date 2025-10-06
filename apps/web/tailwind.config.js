@@ -6,60 +6,128 @@ export default {
   ],
   theme: {
     extend: {
+      // Colors - Map to CSS custom properties
       colors: {
+        // Background colors
+        'pink-bg': 'var(--color-bg-pink)',
+        'coral-bg': 'var(--color-bg-coral)',
+        
+        // Primary color (keeping existing for backwards compatibility)
         primary: {
           DEFAULT: '#0698FE',
           dark: '#051327',
           light: '#C6E7FF',
         },
+        
+        // Coral scale
         coral: {
+          50: 'var(--color-coral-50)',
+          100: 'var(--color-coral-100)',
+          200: 'var(--color-coral-200)',
+          300: 'var(--color-coral-300)',
+          400: 'var(--color-coral-400)',
+          500: 'var(--color-coral-500)',
+          600: 'var(--color-coral-600)',
+          // Keep existing for backwards compatibility
           DEFAULT: '#FCE7F3',
-          50: '#FDF2F8',
-          100: '#FCE7F3',
-          200: '#FBCFE8',
-          300: '#F9A8D4',
-          400: '#F472B6',
-          500: '#EC4899',
-          600: '#DB2777',
         },
-        success: '#10B981',
-        warning: '#F59E0B',
-        error: '#F472B6',
+        
+        // Text colors
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        
+        // Semantic colors
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        error: 'var(--color-error)',
+        
+        // Grays - Map to CSS variables
         gray: {
-          900: '#111827',
-          700: '#374151',
-          500: '#6B7280',
-          300: '#D1D5DB',
-          100: '#F3F4F6',
-          50: '#F9FAFB',
+          900: 'var(--color-gray-900)',
+          700: 'var(--color-gray-700)',
+          500: 'var(--color-gray-500)',
+          300: 'var(--color-gray-300)',
+          100: 'var(--color-gray-100)',
+          50: 'var(--color-gray-50)',
         },
       },
+      
+      // Spacing - Map to CSS custom properties
+      spacing: {
+        'xs': 'var(--spacing-xs)',
+        'sm': 'var(--spacing-sm)',
+        'md': 'var(--spacing-md)',
+        'lg': 'var(--spacing-lg)',
+        'xl': 'var(--spacing-xl)',
+        '2xl': 'var(--spacing-2xl)',
+        '3xl': 'var(--spacing-3xl)',
+        '4xl': 'var(--spacing-4xl)',
+        '5xl': 'var(--spacing-5xl)',
+        '6xl': 'var(--spacing-6xl)',
+        '7xl': 'var(--spacing-7xl)',
+        '8xl': 'var(--spacing-8xl)',
+      },
+      
+      // Font family
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
-      spacing: {
-        'xs': '4px',
-        'sm': '8px',
-        'md': '12px',
-        'lg': '16px',
-        'xl': '20px',
-        '2xl': '24px',
-        '3xl': '32px',
-        '4xl': '40px',
-        '5xl': '48px',
-        '6xl': '64px',
-        '7xl': '80px',
-        '8xl': '96px',
-      },
-      borderRadius: {
-        lg: '8px',
-        xl: '12px',
-      },
+      
+      // Font sizes - Map to CSS custom properties
       fontSize: {
-        'body-large': ['1.125rem', { lineHeight: '1.6' }],
-        'body': ['1rem', { lineHeight: '1.6' }],
-        'body-small': ['0.875rem', { lineHeight: '1.5' }],
-        'caption': ['0.75rem', { lineHeight: '1.4' }],
+        'h1': 'var(--font-size-h1)',
+        'h2': 'var(--font-size-h2)',
+        'h3': 'var(--font-size-h3)',
+        'body-large': 'var(--font-size-body-large)',
+        'body': 'var(--font-size-body)',
+        'body-small': 'var(--font-size-body-small)',
+        'caption': 'var(--font-size-caption)',
+      },
+      
+      // Font weights
+      fontWeight: {
+        normal: 'var(--font-weight-normal)',
+        medium: 'var(--font-weight-medium)',
+        semibold: 'var(--font-weight-semibold)',
+        bold: 'var(--font-weight-bold)',
+      },
+      
+      // Border radius
+      borderRadius: {
+        'sm': 'var(--radius-sm)',
+        'md': 'var(--radius-md)',
+        'lg': 'var(--radius-lg)',
+        'xl': 'var(--radius-xl)',
+        'full': 'var(--radius-full)',
+      },
+      
+      // Box shadows
+      boxShadow: {
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+        'xl': 'var(--shadow-xl)',
+      },
+      
+      // Backdrop blur
+      backdropBlur: {
+        'strong': 'var(--backdrop-blur-strong)',
+        'medium': 'var(--backdrop-blur-medium)',
+      },
+      
+      // Animation durations (in milliseconds - convert to seconds in usage)
+      transitionDuration: {
+        'instant': '100ms',
+        'fast': '200ms',
+        'normal': '300ms',
+        'slow': '700ms',
+      },
+      
+      // Custom transition timing functions
+      transitionTimingFunction: {
+        'default': 'var(--animation-easing-default)',
+        'spring': 'var(--animation-easing-spring)',
+        'expo': 'var(--animation-easing-expo)',
       },
     },
   },
