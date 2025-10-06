@@ -13,23 +13,39 @@
 ### Color Palette
 
 #### Primary Colors
-- **Primary**: #0698FE (Bright Blue)
-- **Primary Dark**: #051327 (Hover states, active elements)
-- **Primary Light**: #C6E7FF (Light backgrounds, subtle highlights)
+- **Background Pink**: #FFF8FC (Main page background - soft pink)
+- **Coral Scale**: 
+  - Coral 50: #FDF2F8
+  - Coral 100: #FCE7F3 (Also used as body background fallback)
+  - Coral 200: #FBCFE8
+  - Coral 300: #F9A8D4
+  - Coral 400: #F472B6
+  - Coral 500: #EC4899
+  - Coral 600: #DB2777
+
+#### Text Colors
+- **Primary Text**: #1E1E1E (Main text, headings)
+- **Secondary Text (Gray)**: #848484 (Gradient start/end)
+- **Text Gradient**: linear-gradient(90deg, #848484 0%, #1E1E1E 50%, #848484 100%)
 
 #### Semantic Colors
-- **Success**: #10B981 (Confirmations, positive actions, completed states)
-- **Warning**: #F59E0B (Alerts, cautions, attention-needed states)
-- **Error**: #F472B6 (Errors, destructive actions, validation failures)
+- **Success**: #10B981
+- **Warning**: #F59E0B  
+- **Error**: #F472B6
 
-#### Gray Scale
-- **Gray 900**: #111827 (Primary text, headlines)
-- **Gray 700**: #374151 (Secondary text, subheadings)
-- **Gray 500**: #6B7280 (Muted text, placeholders)
-- **Gray 300**: #D1D5DB (Borders, dividers)
-- **Gray 100**: #F3F4F6 (Light backgrounds, subtle sections)
-- **Gray 50**: #F9FAFB (Subtle backgrounds, page backgrounds)
-- **White**: #FFFFFF (Cards, primary backgrounds)
+#### Neutral Grays
+- Gray 900: #111827
+- Gray 700: #374151
+- Gray 500: #6B7280
+- Gray 300: #D1D5DB
+- Gray 100: #F3F4F6
+- Gray 50: #F9FAFB
+- White: #FFFFFF
+
+#### Glassmorphism Effects
+- **Glass Background**: rgba(255, 255, 255, 0.1) with backdrop-blur
+- **Glass Border**: rgba(255, 255, 255, 0.2)
+- **Header Gradient**: linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)
 
 ### Typography
 
