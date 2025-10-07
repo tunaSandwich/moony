@@ -4,7 +4,7 @@ import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
 import { plaidApi } from '@/api/plaid';
-import logoText from '@/assets/icons/logo_text.png';
+import { Header } from '@/components';
 
 const PlaidConnectionPage = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -13,11 +13,6 @@ const PlaidConnectionPage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-
-
-
-
 
   // Initialize Plaid Link
   const { open, ready } = usePlaidLink({
@@ -41,7 +36,7 @@ const PlaidConnectionPage = () => {
         // Navigate to phone verification after 1 second
         setTimeout(() => {
           navigate('/phone-verification');
-        }, 1000);
+        }, 2500);
         
       } catch (error) {
         console.error('Failed to connect bank account:', error);
@@ -53,9 +48,10 @@ const PlaidConnectionPage = () => {
     onExit: useCallback((error: unknown) => {
       console.log('Plaid Link exited');
       setIsConnecting(false);
+      setLinkToken(null);  // Clear link token to return to initial state
+      setError('');        // Clear any error messages
       if (error) {
         console.error('Plaid Link error:', error);
-        setError('Connection was cancelled. Please try again to continue.');
       }
     }, []),
   });
@@ -89,21 +85,8 @@ const PlaidConnectionPage = () => {
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
       {/* Fixed Header with Logo - Consistent with Landing Page */}
-      <header 
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-[25px]"
-        style={{
-          height: '60px',
-          background: 'linear-gradient(to bottom, rgba(255, 248, 252, 0.9) 0%, rgba(255, 248, 252, 0.5) 50%, rgba(255, 248, 252, 0) 100%)',
-        }}
-      >
-        <div className="absolute top-5 left-10 z-10">
-          <img 
-            src={logoText} 
-            alt="moony Logo" 
-            className="w-20 h-auto"
-          />
-        </div>
-      </header>
+
+      <Header />
 
       {/* Main Content with Padding for Header */}
       <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>

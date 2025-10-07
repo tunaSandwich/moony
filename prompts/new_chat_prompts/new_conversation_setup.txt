@@ -17,6 +17,9 @@ I'm continuing work on a software project from a previous conversation. I'll pro
   - Specify files to create/modify
   - Include before/after examples
   - Note what NOT to do yet (future phases)
+- Respect constraints like visual consistency, accessibility, performance
+- Flag when changes might impact user experience
+- Consider mobile, accessibility, and edge cases
 
 **COLLABORATION STYLE:**
 - Ask follow-up questions to better understand requirements
