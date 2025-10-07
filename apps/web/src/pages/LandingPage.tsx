@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { Header } from '@/components';
+import { Header, Footer } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
-import logo from '@/assets/icons/logo.png';
 import { colors, animationDurations, easingStrings } from '@/design-system';
 import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
 
@@ -236,20 +235,17 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Bottom Section - Extended for Testing */}
-      <footer className="relative z-20 py-16 px-4">
+      {/* Bottom Section */}
+      <div className="relative z-20 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-
           {/* Description */}
           <p className="text-sm sm:text-lg mb-10 leading-relaxed font-bold" style={{ color: colors.gray[700] }}>
             Connect your bank and phone. 
             Set your goal. 
             Stay on budget with daily text updates.
-            <br></br>
-            {/* <p className="font-normal sm:text-sm mt-2"> Powered by AI</p> */}
           </p>
 
-          {/* Bank Compatibility Section */}
+          {/* Bank Compatibility Section - Will extract in Phase 2C */}
           <div className="mb-16">
             {/* Horizontal Divider */}
             <div className="w-full h-px bg-gray-300 mb-12"></div>
@@ -280,32 +276,12 @@ const LandingPage = () => {
                 </div>
               ))}
             </div>
-            
           </div>
-          
-          {/* Logo */}
-          <div className="mb-8">
-            <img 
-              src={logo} 
-              alt="moony Logo" 
-              className="w-16 h-16 mx-auto"
-            />
-          </div>
-          
-          {/* Horizontal Divider */}
-          <div className="w-full h-px bg-gray-300 mb-12"></div>
-
-          {/* Privacy Links */}
-          <div className="flex justify-center items-center space-x-4 text-sm mb-16" style={{ color: colors.gray[500] }}>
-            <a href="#" className="hover:text-gray-800 transition-colors">PRIVACY POLICY</a>
-            <span>|</span>
-            <a href="#" className="hover:text-gray-800 transition-colors">TERMS OF SERVICE</a>
-            <span>|</span>
-            <a href="#" className="hover:text-gray-800 transition-colors">LICENSE AGREEMENT</a>
-          </div>
-          
         </div>
-      </footer>
+      </div>
+
+      {/* Footer */}
+      <Footer showLogo={true} />
 
       {/* Background decorative elements */}
       <div className="absolute top-20 left-4 sm:left-10 w-16 sm:w-20 h-16 sm:h-20 bg-coral-300 rounded-full opacity-20 blur-xl animate-pulse"></div>

@@ -3,4 +3,5 @@ export { PlaidLink, type PlaidLinkProps } from './PlaidLink';
 export * from './ui/Button';
 
 // Layout components
-export { Header } from './layout';
+export { Header, Footer } from './layout';
+export type { FooterLink, FooterProps } from './layout';
