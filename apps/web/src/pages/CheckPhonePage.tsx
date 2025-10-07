@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
 import { Header } from '@/components';
+import { twilioApi } from '@/api/twilio';
 
 const CheckPhonePage = () => {
   const [showResend, setShowResend] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendError, setResendError] = useState<string | null>(null);
-  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendState, setResendState] = useState({
+    isResending: false,
+    success: false,
+    error: null as string | null
+  });
 
   // Show resend button after 45 seconds
   useEffect(() => {
@@ -19,27 +21,26 @@ const CheckPhonePage = () => {
   }, []);
 
   const handleResendMessage = async () => {
-    setIsResending(true);
-    setResendError(null);
+    setResendState({ isResending: true, success: false, error: null });
     
     try {
-      const response = await fetch('/api/twilio/resend-welcome', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      // Call the backend to resend the welcome SMS
+      await twilioApi.resendWelcomeMessage();
       
-      if (!response.ok) {
-        throw new Error('Failed to resend message');
-      }
+      setResendState({ isResending: false, success: true, error: null });
       
-      setResendSuccess(true);
-      setTimeout(() => setResendSuccess(false), 3000);
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setResendState(prev => ({ ...prev, success: false }));
+      }, 5000);
+      
     } catch (error) {
-      setResendError(error instanceof Error ? error.message : 'Failed to resend message');
-    } finally {
-      setIsResending(false);
+      console.error('Failed to resend message:', error);
+      setResendState({ 
+        isResending: false, 
+        success: false, 
+        error: 'Failed to resend. Please try again or contact support.' 
+      });
     }
   };
 
@@ -92,15 +93,15 @@ const CheckPhonePage = () => {
                     Haven't received it yet?{' '}
                     <button
                       onClick={handleResendMessage}
-                      disabled={isResending}
+                      disabled={resendState.isResending}
                       className="underline hover:opacity-70 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ color: '#1E1E1E' }}
                     >
-                      {isResending ? 'Sending...' : 'Resend message'}
+                      {resendState.isResending ? 'Sending...' : 'Resend message'}
                     </button>
                   </p>
                   
-                  {resendSuccess && (
+                  {resendState.success && (
                     <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
                       <p className="text-sm font-medium" style={{ color: '#22c55e' }}>
                         ✓ Message sent! Check your phone.
@@ -108,9 +109,9 @@ const CheckPhonePage = () => {
                     </div>
                   )}
                   
-                  {resendError && (
+                  {resendState.error && (
                     <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                      <p className="text-sm text-red-700">{resendError}</p>
+                      <p className="text-sm text-red-700">{resendState.error}</p>
                     </div>
                   )}
                 </div>
@@ -122,6 +123,7 @@ const CheckPhonePage = () => {
                       🔍 Troubleshooting tips:
                     </h3>
                     <ul className="text-xs space-y-2" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                      <li>• Check both SMS and WhatsApp messages</li>
                       <li>• Look in spam/blocked message folders</li>
                       <li>• Make sure you have cell signal or internet</li>
                     </ul>
@@ -129,14 +131,7 @@ const CheckPhonePage = () => {
                   
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-xs text-center" style={{ color: '#1E1E1E', opacity: 0.7 }}>
-                      Still having trouble? Contact{' '}
-                      <a 
-                        href="mailto:gonzalezgarza.lucas@gmail.com?subject=moony%20-%20Welcome%20Message%20Not%20Received"
-                        className="hover:opacity-70 transition-opacity"
-                        style={{ color: '#1E1E1E', textDecoration: 'none' }}
-                      >
-                        gonzalezgarza.lucas@gmail.com
-                      </a>
+                      Still having trouble? Contact gonzalezgarza.lucas@gmail.com
                     </p>
                   </div>
                 </div>

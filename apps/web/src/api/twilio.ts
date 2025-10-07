@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import apiClient from './client';
 import type {
   SendVerificationCodeResponse,
@@ -40,6 +41,23 @@ export const twilioApi = {
       const response = await apiClient.post<VerifyPhoneNumberResponse>(
         '/api/twilio/verify-number',
         requestData
+      );
+
+      return response.data;
+    } catch (error) {
+      // Error handling is done in the axios interceptor
+      throw error;
+    }
+  },
+
+  /**
+   * Resend welcome message for verified users
+   * POST /api/twilio/resend-welcome
+   */
+  async resendWelcomeMessage(): Promise<{ message: string }> {
+    try {
+      const response = await apiClient.post<{ message: string }>(
+        '/api/twilio/resend-welcome'
       );
 
       return response.data;
