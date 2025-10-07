@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
 import { Header } from '@/components';
 import { authApi } from '@/api';
+import { colors } from '@/design-system';
 
 const InviteCodePage = () => {
   const [inviteCode, setInviteCode] = useState('');
@@ -23,8 +24,10 @@ const InviteCodePage = () => {
       // Call the API to validate invite code
       const response = await authApi.validateInviteCode(inviteCode, phoneNumber);
       
-      console.log('User authenticated:', response.user);
-      console.log('Token stored successfully');
+      if (import.meta.env.DEV) {
+        console.log('User authenticated:', response.user);
+        console.log('Token stored successfully');
+      }
       
       // Navigate to bank connection step
       navigate('/connect-bank');
@@ -42,7 +45,7 @@ const InviteCodePage = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+    <div className="min-h-screen relative overflow-hidden bg-pink-bg">
       {/* Fixed Header with Logo - Consistent with Landing Page */}
       <Header />
 
@@ -51,10 +54,10 @@ const InviteCodePage = () => {
         <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
           <TopBar radiusMode="inherit" />
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
+          <h1 className="text-3xl font-light mb-2" style={{ color: colors.gray[900] }}>
             Enter Invite Code
           </h1>
-          <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+          <p className="text-sm" style={{ color: colors.gray[700] }}>
             Enter your invitation code to get started with moony
           </p>
         </div>
@@ -77,7 +80,7 @@ const InviteCodePage = () => {
               onChange={(e) => setInviteCode(e.target.value)}
               placeholder="Enter invite code"
               className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
-              style={{ color: '#1E1E1E' }}
+              style={{ color: colors.gray[900] }}
               required
             />
           </div>
@@ -93,7 +96,7 @@ const InviteCodePage = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="Enter phone number (e.g., +15551234567)"
               className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
-              style={{ color: '#1E1E1E' }}
+              style={{ color: colors.gray[900] }}
               required
             />
           </div>
@@ -104,7 +107,7 @@ const InviteCodePage = () => {
               disabled={!inviteCode.trim() || !phoneNumber.trim() || isLoading}
               isLoading={isLoading}
               className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
-              style={{ color: '#1E1E1E' }}
+              style={{ color: colors.gray[900] }}
               size="lg"
             >
               Continue
@@ -115,7 +118,7 @@ const InviteCodePage = () => {
               onClick={handleBack}
               variant="ghost"
               className="w-full hover:bg-white/20 rounded-lg"
-              style={{ color: '#1E1E1E' }}
+              style={{ color: colors.gray[900] }}
               size="lg"
             >
               Back to Home

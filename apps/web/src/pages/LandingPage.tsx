@@ -2,32 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import { Header, Footer, BankLogos, PhoneVideo } from '@/components';
-import type { BankLogo } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
-import { colors, animationDurations, easingStrings } from '@/design-system';
+import { colors, easingStrings } from '@/design-system';
 import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
-
-// Bank logos
-import chaseLogo from '@/assets/images/banks/chase.svg';
-import boaLogo from '@/assets/images/banks/bank-of-america.svg';
-import wellsFargoLogo from '@/assets/images/banks/wells-fargo.svg';
-import capitalOneLogo from '@/assets/images/banks/capital-one.svg';
-import citiLogo from '@/assets/images/banks/citi.svg';
-import amexLogo from '@/assets/images/banks/american-express.svg';
-import usBankLogo from '@/assets/images/banks/us-bank.svg';
-import schwabLogo from '@/assets/images/banks/schwab.svg';
-
-// Bank logos data structure
-const BANK_LOGOS: BankLogo[] = [
-  { src: chaseLogo, alt: 'Chase Bank' },
-  { src: boaLogo, alt: 'Bank of America' },
-  { src: wellsFargoLogo, alt: 'Wells Fargo' },
-  { src: capitalOneLogo, alt: 'Capital One' },
-  { src: citiLogo, alt: 'Citibank' },
-  { src: amexLogo, alt: 'American Express' },
-  { src: usBankLogo, alt: 'US Bank' },
-  { src: schwabLogo, alt: 'Charles Schwab' },
-];
+import { BANK_LOGOS } from '@/data/bankLogos';
 
 const LandingPage = () => {
   const navigate = useNavigate();
