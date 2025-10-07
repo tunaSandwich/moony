@@ -31,7 +31,7 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({ onSuccess, onError }) => {
         setIsConnecting(false);
       }
     }, [onSuccess, onError]),
-    onExit: useCallback((error) => {
+    onExit: useCallback((error: any) => {
       console.log('Plaid Link exited');
       if (error) {
         console.error('Plaid Link error:', error);

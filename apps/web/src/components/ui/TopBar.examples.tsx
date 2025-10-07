@@ -1,5 +1,5 @@
 import React from 'react';
-import { TopBar, withTopBar } from './TopBar';
+import { TopBar } from './TopBar';
 
 // Example usage demonstrations
 
@@ -76,12 +76,14 @@ const BudgetCard: React.FC<{ title: string; amount: string }> = ({ title, amount
   </div>
 );
 
-const BudgetCardWithTopBar = withTopBar(BudgetCard, { radiusMode: 'inherit' });
-
+// HOC pattern not implemented - use TopBar component directly
 export const HOCExample = () => (
   <div>
-    <h2>Higher-Order Component Usage</h2>
-    <BudgetCardWithTopBar title="Monthly Spending" amount="$1,234.56" />
+    <h2>Component Composition Usage</h2>
+    <div className="relative">
+      <TopBar radiusMode="inherit" />
+      <BudgetCard title="Monthly Spending" amount="$1,234.56" />
+    </div>
   </div>
 );
 
