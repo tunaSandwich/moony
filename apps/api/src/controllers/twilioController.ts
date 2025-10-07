@@ -454,4 +454,56 @@ export class TwilioController {
       });
     }
   };
+
+  /**
+   * Resend welcome message for verified users
+   * Allows users to request the welcome message again if they missed it
+   */
+  public resendWelcomeMessage = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError('Invalid or expired token', 401);
+    }
+
+    try {
+      logger.info('Resending welcome message for user', { userId });
+
+      // Look up user from database and verify they are phone verified
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { phoneVerified: true },
+      });
+
+      if (!user) {
+        throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, 404);
+      }
+
+      if (!user.phoneVerified) {
+        throw new AppError('Phone number must be verified before receiving messages', 403);
+      }
+
+      // Use the existing sendWelcomeSMS method
+      await this.sendWelcomeSMS(userId);
+
+      logger.info('Welcome message resent successfully', { userId });
+
+      res.status(200).json({
+        message: 'Welcome message sent successfully',
+      });
+
+    } catch (error: any) {
+      logger.error('Failed to resend welcome message', { 
+        userId, 
+        error: error.message 
+      });
+
+      // For any other errors, return a generic message
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
+      throw new AppError('Failed to resend message. Please try again.', 502);
+    }
+  });
 }

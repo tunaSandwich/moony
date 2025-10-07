@@ -115,10 +115,10 @@ const PhoneVerificationPage = () => {
       await twilioApi.verifyPhoneNumber(state.verificationCode);
       updateState({ isVerified: true, isLoading: false });
       
-      // Navigate to success/dashboard after successful verification
+      // Navigate to bridge screen after successful verification
       setTimeout(() => {
-        navigate('/welcome');
-      }, 4000);
+        navigate('/check-phone');
+      }, 4000); // Extended to 4 seconds so user can read the success message
     } catch (error) {
       updateState({ 
         error: error instanceof Error ? error.message : 'Invalid verification code', 
@@ -154,20 +154,28 @@ const PhoneVerificationPage = () => {
 
   if (state.isVerified) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
-          <div className="text-center space-y-6">
-            <div className="text-6xl">🎉</div>
-            <h1 className="text-3xl font-light text-white">
-              Welcome to moony!
-            </h1>
-            <p className="text-white/90 text-sm">
-              Your phone number has been verified successfully. You'll receive a welcome message with your spending analytics shortly.
-            </p>
-            <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-              <p className="text-green-200 text-sm">
-                ✅ SMS notifications are now active
+      <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+        <Header />
+        
+        <div className="flex items-center justify-center px-6" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
+            <TopBar radiusMode="inherit" />
+            
+            <div className="text-center space-y-6">
+              <div className="text-6xl">📱</div>
+              <h1 className="text-2xl font-light" style={{ color: '#1E1E1E' }}>
+                Phone Verified!
+              </h1>
+              <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                Setting up your spending tracker...
               </p>
+              
+              <div className="flex justify-center">
+                <svg className="animate-spin h-6 w-6" style={{ color: '#1E1E1E' }} viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

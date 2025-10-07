@@ -25,4 +25,12 @@ router.post(
   twilioController.verifyNumber
 );
 
+// Resend welcome message for verified users
+router.post(
+  '/resend-welcome',
+  plaidRateLimit, // Reuse existing rate limiter for SMS endpoints
+  authenticateJWT,
+  twilioController.resendWelcomeMessage
+);
+
 export default router;

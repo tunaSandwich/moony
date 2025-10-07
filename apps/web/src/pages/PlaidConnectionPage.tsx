@@ -29,14 +29,9 @@ const PlaidConnectionPage = () => {
         // Clear link token to prevent re-launch bug
         setLinkToken(null);
         
-        // Show success message and navigate
+        // Show success message
         setIsConnecting(false);
         setShowSuccess(true);
-        
-        // Navigate to phone verification after 1 second
-        setTimeout(() => {
-          navigate('/phone-verification');
-        }, 4000);
         
       } catch (error) {
         console.error('Failed to connect bank account:', error);
@@ -168,15 +163,26 @@ const PlaidConnectionPage = () => {
           )}
 
           {showSuccess && (
-            <div className="text-center space-y-4">
-              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                <div className="flex items-center justify-center space-x-3">
-                  <svg className="h-5 w-5" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
+            <div className="text-center space-y-6">
+              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <svg className="h-8 w-8" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm font-medium" style={{ color: '#1E1E1E' }}>Bank connected! Redirecting...</span>
                 </div>
+                <p className="text-lg font-medium" style={{ color: '#1E1E1E' }}>
+                  Bank connected successfully!
+                </p>
               </div>
+              
+              <Button
+                onClick={() => navigate('/phone-verification')}
+                className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                style={{ color: '#1E1E1E' }}
+                size="lg"
+              >
+                Next
+              </Button>
             </div>
           )}
         </div>

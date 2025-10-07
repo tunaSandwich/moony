@@ -21,7 +21,7 @@ const WelcomePage = () => {
   const [state, setState] = useState<WelcomeState>({
     user: null,
     loadingUser: true,
-    showFallback: false,
+    showFallback: true, // Always show manual goal setting on this page
     manualGoal: '',
     isSubmitting: false,
     error: null,
@@ -57,16 +57,6 @@ const WelcomePage = () => {
     fetchUserData();
   }, [navigate]);
 
-  // Show fallback after 30 seconds
-  useEffect(() => {
-    if (state.user && !state.goalSet) {
-      const timer = setTimeout(() => {
-        updateState({ showFallback: true });
-      }, 30000); // 30 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [state.user, state.goalSet]);
 
   const validateGoal = (goal: string): boolean => {
     const amount = parseFloat(goal);
@@ -226,85 +216,52 @@ const WelcomePage = () => {
               </div>
             )}
 
-            {/* Messaging Instructions */}
-            {!state.showFallback ? (
+            {/* Manual Goal Setting - User came here via fallback */}
+            <div className="space-y-4">
               <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>📱 Check Your Phone</h2>
-                <div className="space-y-2 text-sm" style={{ color: '#1E1E1E' }}>
-                  <p>We've sent a message to your phone with:</p>
-                  <ul className="list-disc list-inside ml-2 space-y-1">
-                    <li>Your spending summary</li>
-                    <li>Instructions to set your goal</li>
-                  </ul>
-                  <p className="mt-3 font-medium">
-                    Simply reply to that message (SMS or WhatsApp) with your monthly spending goal (example: 3000).
-                  </p>
-                  <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
-                    <p className="text-xs" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-                      💡 The message may arrive via SMS or WhatsApp depending on availability. Check both!
+                <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>Set Your Goal</h2>
+                <p className="text-sm mb-4" style={{ color: '#1E1E1E' }}>
+                  Enter your monthly spending goal to complete setup:
+                </p>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="manualGoal" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
+                      Monthly Spending Goal
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg" style={{ color: '#1E1E1E', opacity: 0.6 }}>$</span>
+                      <input
+                        id="manualGoal"
+                        type="number"
+                        value={state.manualGoal}
+                        onChange={(e) => updateState({ manualGoal: e.target.value, error: null })}
+                        placeholder="3000"
+                        min="100"
+                        max="20000"
+                        className="w-full pl-8 pr-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
+                        style={{ color: '#1E1E1E' }}
+                        disabled={state.isSubmitting}
+                      />
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+                      Enter an amount between $100 and $20,000
                     </p>
                   </div>
+
+                  <Button
+                    onClick={handleManualGoalSubmit}
+                    disabled={!state.manualGoal.trim() || state.isSubmitting}
+                    isLoading={state.isSubmitting}
+                    className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                    style={{ color: '#1E1E1E' }}
+                    size="lg"
+                  >
+                    {state.isSubmitting ? 'Setting Goal...' : 'Set Goal'}
+                  </Button>
                 </div>
               </div>
-            ) : (
-              /* Fallback Content */
-              <div className="space-y-4">
-                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                  <h2 className="text-lg font-semibold mb-3" style={{ color: '#1E1E1E' }}>Haven't received the message yet?</h2>
-                  <p className="text-sm mb-4" style={{ color: '#1E1E1E' }}>
-                    📋 Set your goal here instead:
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <label htmlFor="manualGoal" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
-                        Monthly Spending Goal
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg" style={{ color: '#1E1E1E', opacity: 0.6 }}>$</span>
-                        <input
-                          id="manualGoal"
-                          type="number"
-                          value={state.manualGoal}
-                          onChange={(e) => updateState({ manualGoal: e.target.value, error: null })}
-                          placeholder="3000"
-                          min="100"
-                          max="20000"
-                          className="w-full pl-8 pr-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
-                          style={{ color: '#1E1E1E' }}
-                          disabled={state.isSubmitting}
-                        />
-                      </div>
-                      <p className="text-xs mt-1" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-                        Enter an amount between $100 and $20,000
-                      </p>
-                    </div>
-
-                    <Button
-                      onClick={handleManualGoalSubmit}
-                      disabled={!state.manualGoal.trim() || state.isSubmitting}
-                      isLoading={state.isSubmitting}
-                      className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
-                      style={{ color: '#1E1E1E' }}
-                      size="lg"
-                    >
-                      {state.isSubmitting ? 'Setting Goal...' : 'Set Goal'}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Troubleshooting Tips */}
-                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                  <h3 className="text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>💡 Message Troubleshooting Tips:</h3>
-                  <ul className="text-xs space-y-1" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-                    <li>• Check both SMS and WhatsApp messages</li>
-                    <li>• Look in spam/blocked message folders</li>
-                    <li>• Make sure you have cell or internet service</li>
-                    <li>• The message may take a few minutes to arrive</li>
-                  </ul>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
