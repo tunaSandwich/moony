@@ -53,7 +53,7 @@ export const BankLogos = ({
   className = '',
 }: BankLogosProps) => {
   return (
-    <div className={`mb-16 ${className}`}>
+    <div className={`mb-0 ${className}`}>
       {/* Horizontal Divider */}
       {showTopDivider && <div className="w-full h-px bg-gray-300 mb-12"></div>}
       
@@ -74,7 +74,7 @@ export const BankLogos = ({
       </p>
       
       {/* Bank Logos Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto mb-5">
         {logos.map((bank, index) => (
           <div 
             key={index}

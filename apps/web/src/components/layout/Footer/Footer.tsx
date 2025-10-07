@@ -1,4 +1,3 @@
-import logo from '@/assets/icons/logo.png';
 import { colors } from '@/design-system';
 
 export interface FooterLink {
@@ -21,11 +20,6 @@ export interface FooterProps {
    * Additional CSS classes
    */
   className?: string;
-  
-  /**
-   * Show or hide the logo
-   */
-  showLogo?: boolean;
 }
 
 const DEFAULT_LINKS: FooterLink[] = [
@@ -48,10 +42,9 @@ export const Footer = ({
   description,
   links = DEFAULT_LINKS,
   className = '',
-  showLogo = true,
 }: FooterProps) => {
   return (
-    <footer className={`relative z-20 py-16 px-4 ${className}`}>
+    <footer className={`relative z-20 py-10 px-4 ${className}`}>
       <div className="max-w-4xl mx-auto text-center">
         {/* Description */}
         {description && (
@@ -61,17 +54,6 @@ export const Footer = ({
           >
             {description}
           </p>
-        )}
-
-        {/* Logo */}
-        {showLogo && (
-          <div className="mb-8">
-            <img
-              src={logo}
-              alt="moony Logo"
-              className="w-16 h-16 mx-auto"
-            />
-          </div>
         )}
 
         {/* Horizontal Divider */}

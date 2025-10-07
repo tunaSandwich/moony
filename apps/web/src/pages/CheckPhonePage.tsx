@@ -116,23 +116,12 @@ const CheckPhonePage = () => {
                 </div>
 
                 {/* Troubleshooting tips */}
-                <div className="bg-white/5 rounded-lg p-4 border border-white/10 text-left space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-3" style={{ color: '#1E1E1E' }}>
-                      🔍 Troubleshooting tips:
-                    </h3>
-                    <ul className="text-xs space-y-2" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-                      <li>• Check both SMS and WhatsApp messages</li>
-                      <li>• Look in spam/blocked message folders</li>
-                      <li>• Make sure you have cell signal or internet</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-white/10">
-                    <p className="text-xs text-center" style={{ color: '#1E1E1E', opacity: 0.7 }}>
-                      Still having trouble? Contact gonzalezgarza.lucas@gmail.com
-                    </p>
-                  </div>
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10 text-left space-y-4">                  
+                  <p className="text-xs text-center" style={{ color: '#1E1E1E', opacity: 0.7 }}>
+                    Still having trouble?
+                    <br />
+                    Contact gonzalezgarza.lucas@gmail.com
+                  </p>
                 </div>
               </div>
             )}

@@ -29,13 +29,13 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
     return (
       <header
         ref={ref}
-        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-strong h-[60px] ${className}`}
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur h-[60px] ${className}`}
         style={{
           background: 'var(--header-gradient)',
         }}
       >
         {/* Logo */}
-        <Link to="/" className="absolute top-10 left-10 z-10" aria-label="Go to home">
+        <Link to="/" className="absolute top-5 left-10 z-10" aria-label="Go to home">
           <img
             src={logoText}
             alt="moony Logo"

@@ -6,6 +6,7 @@ import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import { colors, easingStrings } from '@/design-system';
 import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
 import { BANK_LOGOS } from '@/data/bankLogos';
+import logo from '@/assets/icons/logo.png';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -170,7 +171,7 @@ const LandingPage = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="relative z-20 py-16 px-4">
+      <div className="relative z-20 py-10 px-4">
         <div className="max-w-4xl mx-auto text-center">
           {/* Description */}
           <p className="text-sm sm:text-lg mb-10 leading-relaxed font-bold" style={{ color: colors.gray[700] }}>
@@ -189,8 +190,16 @@ const LandingPage = () => {
         </div>
       </div>
 
+      <div>
+        <img
+          src={logo}
+          alt="moony Logo"
+          className="w-16 h-16 mx-auto"
+        />
+      </div>
+
       {/* Footer */}
-      <Footer showLogo={true} />
+      <Footer />
 
       {/* Background decorative elements */}
       <div className="absolute top-20 left-4 sm:left-10 w-16 sm:w-20 h-16 sm:h-20 bg-coral-300 rounded-full opacity-20 blur-xl animate-pulse"></div>
