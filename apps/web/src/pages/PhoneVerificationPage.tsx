@@ -118,7 +118,7 @@ const PhoneVerificationPage = () => {
       // Navigate to success/dashboard after successful verification
       setTimeout(() => {
         navigate('/welcome');
-      }, 2000);
+      }, 4000);
     } catch (error) {
       updateState({ 
         error: error instanceof Error ? error.message : 'Invalid verification code', 

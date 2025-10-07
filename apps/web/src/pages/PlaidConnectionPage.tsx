@@ -36,7 +36,7 @@ const PlaidConnectionPage = () => {
         // Navigate to phone verification after 1 second
         setTimeout(() => {
           navigate('/phone-verification');
-        }, 2500);
+        }, 4000);
         
       } catch (error) {
         console.error('Failed to connect bank account:', error);
