@@ -59,8 +59,7 @@ const CheckPhonePage = () => {
             {/* Icon with pulse indicator */}
             <div className="flex justify-center">
               <div className="relative inline-block">
-                <div className="text-7xl animate-bounce-slow">📱</div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <div className="text-7xl animate-bounce-slow mt-5">📱</div>
               </div>
             </div>
 

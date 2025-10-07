@@ -39,7 +39,8 @@ const PlaidConnectionPage = () => {
         setError(errorMessage);
         setIsConnecting(false);
       }
-    }, [navigate]),
+    }, []),
+
     onExit: useCallback((error: unknown) => {
       console.log('Plaid Link exited');
       setIsConnecting(false);
@@ -89,11 +90,13 @@ const PlaidConnectionPage = () => {
         <TopBar radiusMode="inherit" />
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light mb-2" style={{ color: '#1E1E1E' }}>
-            Connect Your Bank
+            {showSuccess ? 'Bank Connected Successfully!' : 'Connect Your Bank'}
           </h1>
-          <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-            Securely connect your bank account to start tracking your daily spending
-          </p>
+          {!showSuccess && (
+            <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
+              Securely connect your bank account to start tracking your daily spending
+            </p>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -103,7 +106,7 @@ const PlaidConnectionPage = () => {
             </div>
           )}
 
-          {!linkToken && !isConnecting && (
+          {!linkToken && !isConnecting && !showSuccess && (
             <div className="space-y-4">
               <div className="bg-white/10 rounded-lg p-4 border border-white/20">
                 <div className="flex items-center text-sm space-x-2 mb-3" style={{ color: '#1E1E1E' }}>
@@ -163,18 +166,17 @@ const PlaidConnectionPage = () => {
           )}
 
           {showSuccess && (
-            <div className="text-center space-y-6">
-              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-6">
-                <div className="flex items-center justify-center mb-4">
-                  <svg className="h-8 w-8" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
+            <div className="text-center space-y-8 animate-fade-in">
+              {/* Success Icon with subtle scale animation */}
+              <div className="flex justify-center">
+                <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center animate-scale-in">
+                  <svg className="w-10 h-10" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-lg font-medium" style={{ color: '#1E1E1E' }}>
-                  Bank connected successfully!
-                </p>
               </div>
-              
+
+              {/* Next Button */}
               <Button
                 onClick={() => navigate('/phone-verification')}
                 className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"

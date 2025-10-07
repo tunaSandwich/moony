@@ -220,3 +220,18 @@ html {
 .animate-fade-in {
   animation: fade-in 0.5s ease-out;
 }
+
+@keyframes scale-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out;
+}
