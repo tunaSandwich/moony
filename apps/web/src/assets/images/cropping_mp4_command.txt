@@ -1,1 +1,1 @@
-ffmpeg -i /Users/tuna/appDev/budget_pal/apps/web/src/assets/images/hand_and_phone_3.mp4 -filter:v "crop=in_w:in_h-187:0:187" -c:a copy /Users/tuna/appDev/budget_pal/apps/web/src/assets/images/hand_and_phone_crop.mp4
+ffmpeg -i /Users/tuna/appDev/budget_pal/apps/web/src/assets/images/hand_and_phone_4.mp4 -filter:v "crop=in_w:in_h-187:0:187" -c:a copy /Users/tuna/appDev/budget_pal/apps/web/src/assets/images/hand_and_phone_crop.mp4
