@@ -125,6 +125,16 @@ export class TwilioController {
         throw new AppError(ERROR_MESSAGES.TWILIO_ERROR, 502);
       }
 
+      // Development mode bypass
+      if (process.env.NODE_ENV === 'local') {
+        logger.info('Development mode: Skipping Twilio verification, use code 000000', { userId });
+        
+        res.status(200).json({
+          message: 'Development mode: Use code 000000 to verify',
+        });
+        return;
+      }
+
       // Call Twilio Verify API to send verification code
       await this.twilioClient.verify.v2
         .services(verifyServiceSid)
@@ -222,6 +232,38 @@ export class TwilioController {
       if (!verifyServiceSid) {
         logger.error('Twilio Verify Service SID not configured');
         throw new AppError(ERROR_MESSAGES.VERIFICATION_ERROR, 502);
+      }
+
+      // Development mode bypass
+      if (process.env.NODE_ENV === 'local') {
+        if (code.trim() === '000000') {
+          logger.info('Development mode: Accepting bypass code 000000', { userId });
+          
+          // Use database transaction to ensure data consistency
+          await prisma.$transaction(async (tx) => {
+            // Update user's phoneVerified field to true
+            await tx.user.update({
+              where: { id: userId },
+              data: { 
+                phoneVerified: true,
+              },
+            });
+
+            logger.info('Phone number verified successfully (dev mode)', { userId });
+          });
+
+          // Send welcome SMS with analytics data
+          this.sendWelcomeSMS(userId);
+
+          res.status(200).json({
+            message: ERROR_MESSAGES.VERIFICATION_SUCCESS,
+            twilioStatus: 'verified',
+          });
+          return;
+        } else {
+          logger.warn('Development mode: Invalid bypass code', { userId, providedCode: code });
+          throw new AppError(ERROR_MESSAGES.INVALID_CODE, 400);
+        }
       }
 
       // Call Twilio Verify API to check verification code
