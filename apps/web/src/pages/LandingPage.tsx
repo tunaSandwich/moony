@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { Header, Footer, BankLogos } from '@/components';
+import { Header, Footer, BankLogos, PhoneVideo } from '@/components';
 import type { BankLogo } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import { colors, animationDurations, easingStrings } from '@/design-system';
@@ -41,7 +41,6 @@ const LandingPage = () => {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const phoneRef = useRef<HTMLVideoElement>(null);
   
   // Initialize hooks
   useSmoothScroll({ disabled: prefersReducedMotion });
@@ -58,7 +57,7 @@ const LandingPage = () => {
 
   // Set initial styles immediately on mount
   useEffect(() => {
-    if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !phoneRef.current) return;
+    if (!titleRef.current || !subtitleRef.current || !buttonRef.current) return;
 
     // Set initial styles immediately to prevent flash
     const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
@@ -66,36 +65,15 @@ const LandingPage = () => {
       el.style.opacity = '0.1';
       el.style.transform = 'translateY(20px) scale(0.95)';
     });
-
-    phoneRef.current.style.opacity = '0';
-    phoneRef.current.style.transform = 'translateY(40px)';
   }, []);
 
-  // Start video playback on first scroll instead of on load
-  useEffect(() => {
-    if (!phoneRef.current || prefersReducedMotion) return;
-    let hasStarted = false;
-
-    const handleFirstScroll = () => {
-      if (hasStarted || !phoneRef.current) return;
-      hasStarted = true;
-      const playPromise = phoneRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {});
-      }
-      window.removeEventListener('scroll', handleFirstScroll);
-    };
-
-    window.addEventListener('scroll', handleFirstScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleFirstScroll);
-  }, [prefersReducedMotion]);
 
   // Page load animations
   useEffect(() => {
     const executeAnimation = () => {
-      if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !phoneRef.current) return;
+      if (!titleRef.current || !subtitleRef.current || !buttonRef.current) return;
 
-      const duration = prefersReducedMotion ? animationDurations.instant : animationDurations.pageLoad;
+      const duration = prefersReducedMotion ? 100 : 1500;
       
       // Set transition properties
       const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
@@ -103,16 +81,12 @@ const LandingPage = () => {
         el.style.transition = prefersReducedMotion ? 'none' : `all 0.6s ${easingStrings.default}`;
       });
 
-      phoneRef.current.style.transition = prefersReducedMotion ? 'none' : `all 0.4s ${easingStrings.spring}`;
-
       if (prefersReducedMotion) {
         // Instant appearance for reduced motion
         elements.forEach(el => {
           el.style.opacity = '1';
           el.style.transform = 'translateY(0px) scale(1)';
         });
-        phoneRef.current.style.opacity = '1';
-        phoneRef.current.style.transform = 'translateY(0px)';
         setAnimationsComplete(true);
         return;
       }
@@ -124,14 +98,6 @@ const LandingPage = () => {
           el.style.transform = 'translateY(0px) scale(1)';
         });
       }, 100);
-
-      // Phase 2: Phone spring animation (starts after 0.5s delay)
-      setTimeout(() => {
-        if (phoneRef.current) {
-          phoneRef.current.style.opacity = '1';
-          phoneRef.current.style.transform = 'translateY(0px)';
-        }
-      }, 1100); // 600ms text + 500ms delay
 
       // Mark animations complete
       setTimeout(() => {
@@ -216,23 +182,12 @@ const LandingPage = () => {
           </div>
 
           {/* iPhone Mockup - Exactly 40px below button */}
-          <div className="flex justify-center">
-            <video
-              ref={phoneRef}
-              src={phoneVideo}
-              aria-label="Budget tracking on mobile"
-              className="w-full max-w-3xl h-auto mx-auto relative z-10 phone-fade-mask"
-              style={{ 
-                maxWidth: '1200px',
-                width: 'min(90vw, 900px)',
-                opacity: 0,
-              }}
-              loop
-              muted
-              playsInline
-              preload="auto"
-            />
-          </div>
+          <PhoneVideo
+            videoSrc={phoneVideo}
+            ariaLabel="Budget tracking on mobile"
+            maxWidth="1200px"
+            playOnScroll={true}
+          />
         </div>
       </div>
 

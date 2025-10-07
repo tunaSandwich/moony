@@ -7,5 +7,5 @@ export { Header, Footer } from './layout';
 export type { FooterLink, FooterProps } from './layout';
 
 // Section components
-export { BankLogos } from './sections';
-export type { BankLogosProps, BankLogo } from './sections';
+export { BankLogos, PhoneVideo } from './sections';
+export type { BankLogosProps, BankLogo, PhoneVideoProps } from './sections';
