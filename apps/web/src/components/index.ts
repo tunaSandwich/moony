@@ -5,3 +5,7 @@ export * from './ui/Button';
 // Layout components
 export { Header, Footer } from './layout';
 export type { FooterLink, FooterProps } from './layout';
+
+// Section components
+export { BankLogos } from './sections';
+export type { BankLogosProps, BankLogo } from './sections';

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { Header, Footer } from '@/components';
+import { Header, Footer, BankLogos } from '@/components';
+import type { BankLogo } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import { colors, animationDurations, easingStrings } from '@/design-system';
 import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
@@ -17,7 +18,7 @@ import usBankLogo from '@/assets/images/banks/us-bank.svg';
 import schwabLogo from '@/assets/images/banks/schwab.svg';
 
 // Bank logos data structure
-const BANK_LOGOS = [
+const BANK_LOGOS: BankLogo[] = [
   { src: chaseLogo, alt: 'Chase Bank' },
   { src: boaLogo, alt: 'Bank of America' },
   { src: wellsFargoLogo, alt: 'Wells Fargo' },
@@ -245,38 +246,13 @@ const LandingPage = () => {
             Stay on budget with daily text updates.
           </p>
 
-          {/* Bank Compatibility Section - Will extract in Phase 2C */}
-          <div className="mb-16">
-            {/* Horizontal Divider */}
-            <div className="w-full h-px bg-gray-300 mb-12"></div>
-            
-            {/* Section Heading */}
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center" style={{ color: colors.gray[900] }}>
-              Works with your bank
-            </h2>
-            {/* Subtext */}
-            <p className="text-sm mb-10 text-center" style={{ color: colors.gray[500] }}>
-              Powered by Plaid • 11,000+ banks supported
-            </p>
-            
-            {/* Bank Logos Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto mb-6">
-              {BANK_LOGOS.map((bank, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center justify-center p-4"
-                >
-                  <img
-                    src={bank.src}
-                    alt={bank.alt}
-                    className="h-9 w-auto object-contain opacity-70 hover:opacity-90 transition-opacity duration-200"
-                    loading="lazy"
-                    style={{ filter: 'grayscale(100%)' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Bank Compatibility Section */}
+          <BankLogos 
+            logos={BANK_LOGOS}
+            heading="Works with your bank"
+            subtext="Powered by Plaid • 11,000+ banks supported"
+            showTopDivider={true}
+          />
         </div>
       </div>
 
