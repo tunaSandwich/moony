@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 import logoText from '@/assets/icons/logo_text.png';
 
 interface HeaderProps {
@@ -34,13 +35,13 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
         }}
       >
         {/* Logo */}
-        <div className="absolute top-10 left-10 z-10">
+        <Link to="/" className="absolute top-10 left-10 z-10" aria-label="Go to home">
           <img
             src={logoText}
             alt="moony Logo"
             className="w-23 h-auto"
           />
-        </div>
+        </Link>
 
         {/* Future: Navigation items will go here when showNav is true */}
         {showNav && (
