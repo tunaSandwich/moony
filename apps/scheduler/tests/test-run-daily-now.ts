@@ -1,11 +1,14 @@
+// apps/scheduler/tests/test-run-daily-now.ts
 import dotenv from 'dotenv';
 import { SchedulerService } from '@services/schedulerService';
 import { logger } from '@logger';
 
-dotenv.config();
+// Load environment-specific configuration (same pattern as scheduler/index.ts)
+const nodeEnv = process.env.NODE_ENV;
+logger.info('[TestRun] Loading environment', { nodeEnv });
+dotenv.config({ path: `.env.${nodeEnv}` });
 
 async function main() {
-  logger.info('[TestRun] Triggering daily job immediately');
   const scheduler = new SchedulerService();
   await scheduler.runDailyJob();
   logger.info('[TestRun] Done');
@@ -15,5 +18,3 @@ main().catch((err) => {
   logger.error('[TestRun] Failed', err);
   process.exit(1);
 });
-
-
