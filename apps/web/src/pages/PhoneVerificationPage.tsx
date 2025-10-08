@@ -5,6 +5,9 @@ import { TopBar } from '@/components/ui/TopBar';
 import { twilioApi, userApi } from '@/api';
 import type { User } from '@/api/types';
 import { Header } from '@/components';
+import { PhoneInput } from '@/components/forms/PhoneInput';
+import { parseE164, validatePhoneForCountry } from '@/utils/phoneFormatters';
+import { countries } from '@/components/forms/PhoneInput/countryData';
 
 interface VerificationState {
   smsConsentGiven: boolean;
@@ -63,37 +66,29 @@ const PhoneVerificationPage = () => {
     fetchUserData();
   }, [navigate]);
 
-  const validatePhoneNumber = (phone: string): boolean => {
-    // US phone number validation (allows various formats)
-    const phoneRegex = /^[+]?[1]?[\s\-()]?[0-9]{3}[\s\-()]?[0-9]{3}[\s-]?[0-9]{4}$/;
-    return phoneRegex.test(phone.replace(/\D/g, ''));
-  };
-
-  const formatPhoneNumber = (phone: string): string => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 10) {
-      return `+1${cleaned}`;
-    } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-      return `+${cleaned}`;
-    }
-    return phone;
-  };
 
   const handleSendCode = async () => {
-    if (!validatePhoneNumber(state.phoneNumber)) {
-      updateState({ error: 'Please enter a valid US phone number' });
+    if (!state.phoneNumber || state.phoneNumber.length < 8) {
+      updateState({ error: 'Please enter a valid phone number' });
+      return;
+    }
+
+    // Validate using new phone utilities
+    const { dialCode, number } = parseE164(state.phoneNumber);
+    const country = countries.find(c => c.dialCode === dialCode);
+    
+    if (!country || !validatePhoneForCountry(number, country)) {
+      updateState({ error: 'Please enter a valid phone number for the selected country' });
       return;
     }
 
     updateState({ isLoading: true, error: null });
 
     try {
-      const formattedPhone = formatPhoneNumber(state.phoneNumber);
-      await twilioApi.sendVerificationCode(formattedPhone);
+      await twilioApi.sendVerificationCode(state.phoneNumber); // Already in E.164 format from PhoneInput
       updateState({ 
         verificationCodeSent: true, 
-        isLoading: false,
-        phoneNumber: formattedPhone
+        isLoading: false
       });
     } catch (error) {
       updateState({ 
@@ -237,18 +232,15 @@ const PhoneVerificationPage = () => {
           {/* Phone Number Input */}
           {state.smsConsentGiven && (
             <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2" style={{ color: '#1E1E1E' }}>
                 Phone Number
               </label>
-              <input
-                id="phoneNumber"
-                type="tel"
+              <PhoneInput
                 value={state.phoneNumber}
-                onChange={(e) => updateState({ phoneNumber: e.target.value, error: null })}
-                placeholder="Enter your phone number (e.g., +15551234567)"
-              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
-              style={{ color: '#1E1E1E' }}
+                onChange={(value) => updateState({ phoneNumber: value, error: null })}
+                error={state.error && state.error.includes('phone') ? state.error : undefined}
                 disabled={state.verificationCodeSent || state.isLoading}
+                placeholder="Enter your phone number"
               />
             </div>
           )}

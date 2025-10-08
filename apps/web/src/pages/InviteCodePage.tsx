@@ -5,6 +5,8 @@ import { TopBar } from '@/components/ui/TopBar';
 import { Header } from '@/components';
 import { authApi } from '@/api';
 import { colors } from '@/design-system';
+import { PhoneInput } from '@/components/forms/PhoneInput';
+import { validatePhoneNumber } from '@/utils/validators';
 
 const InviteCodePage = () => {
   const [inviteCode, setInviteCode] = useState('');
@@ -15,7 +17,15 @@ const InviteCodePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteCode.trim() || !phoneNumber.trim()) return;
+    if (!inviteCode.trim() || !phoneNumber.trim()) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      setError('Please enter a valid phone number');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
@@ -89,22 +99,18 @@ const InviteCodePage = () => {
             <label htmlFor="phoneNumber" className="sr-only">
               Phone Number
             </label>
-            <input
-              id="phoneNumber"
-              type="tel"
+            <PhoneInput
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Enter phone number (e.g., +15551234567)"
-              className="w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent backdrop-blur-sm"
-              style={{ color: colors.gray[900] }}
-              required
+              onChange={setPhoneNumber}
+              placeholder="Enter your phone number"
+              disabled={isLoading}
             />
           </div>
 
           <div className="space-y-3">
             <Button
               type="submit"
-              disabled={!inviteCode.trim() || !phoneNumber.trim() || isLoading}
+              disabled={!inviteCode.trim() || !phoneNumber.trim() || !validatePhoneNumber(phoneNumber) || isLoading}
               isLoading={isLoading}
               className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
               style={{ color: colors.gray[900] }}
