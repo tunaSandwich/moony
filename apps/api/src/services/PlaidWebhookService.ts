@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { PlaidAnalyticsService } from './plaidAnalyticsService.js';
 import { logger } from '@logger';
+import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 
 interface PlaidWebhookPayload {
   webhook_type: string;
@@ -23,10 +25,12 @@ interface WebhookProcessingResult {
 export class PlaidWebhookService {
   private prisma: PrismaClient;
   private analyticsService: PlaidAnalyticsService;
+  private keyCache: Map<string, { pem: string; expiredAt: string | null }>; // cache Plaid verification keys by kid
 
   constructor() {
     this.prisma = new PrismaClient();
     this.analyticsService = new PlaidAnalyticsService();
+    this.keyCache = new Map();
   }
 
   /**
@@ -46,7 +50,7 @@ export class PlaidWebhookService {
       });
 
       // Verify webhook signature for security
-      if (!this.verifySignature(rawBody, signature)) {
+      if (!(await this.verifySignature(rawBody, signature))) {
         logger.error('Plaid webhook signature verification failed', {
           item_id: payload.item_id
         });
@@ -244,64 +248,134 @@ export class PlaidWebhookService {
   /**
    * Verify Plaid webhook signature for security
    */
-  // DONT DEPLOY TO PRODUCTION UNTIL WE HAVE JWT VERIFICATION
-  private verifySignature(_rawBody: string, _signature: string): boolean {
-    // TODO: Implement JWT verification before production scale
-    // Temporarily disabled for MVP launch to allow webhook processing
-    logger.warn('Webhook signature verification temporarily disabled for MVP launch');
-    return true;
-
-    // Original implementation commented out for reference:
-    /*
+  private async verifySignature(rawBody: string, signedJwt: string): Promise<boolean> {
     try {
-      const webhookSecret = process.env.PLAID_WEBHOOK_SECRET;
-      if (!webhookSecret) {
-        logger.error('PLAID_WEBHOOK_SECRET not configured');
+      if (!signedJwt || typeof signedJwt !== 'string') {
+        logger.error('Missing Plaid-Verification JWT');
         return false;
       }
 
-      // Plaid sends signature in format: t=timestamp,v1=signature
-      const signatureParts = signature.split(',');
-      const timestampPart = signatureParts.find(part => part.startsWith('t='));
-      const signaturePart = signatureParts.find(part => part.startsWith('v1='));
-
-      if (!timestampPart || !signaturePart) {
-        logger.error('Invalid signature format', { signature });
+      // Decode JWT header (unverified) to get kid and alg
+      const [encodedHeader] = signedJwt.split('.');
+      if (!encodedHeader) {
+        logger.error('Invalid JWT structure in Plaid-Verification header');
         return false;
       }
 
-      const timestamp = timestampPart.split('=')[1];
-      const providedSignature = signaturePart.split('=')[1];
+      const headerJson = JSON.parse(Buffer.from(encodedHeader, 'base64url').toString('utf8')) as { alg?: string; kid?: string };
+      const { alg, kid } = headerJson;
 
-      // Create expected signature
-      const payload = timestamp + '.' + rawBody;
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(payload, 'utf8')
-        .digest('hex');
-
-      // Timing-safe comparison
-      const isValid = crypto.timingSafeEqual(
-        Buffer.from(providedSignature, 'hex'),
-        Buffer.from(expectedSignature, 'hex')
-      );
-
-      if (!isValid) {
-        logger.error('Webhook signature verification failed', {
-          expected: expectedSignature.substring(0, 10) + '...',
-          provided: providedSignature.substring(0, 10) + '...'
-        });
+      if (alg !== 'ES256') {
+        logger.error('Unexpected JWT alg for Plaid webhook', { alg });
+        return false;
+      }
+      if (!kid) {
+        logger.error('Missing kid in Plaid webhook JWT header');
+        return false;
       }
 
-      return isValid;
+      // Resolve PEM public key for kid (cached)
+      const pem = await this.getPemForKeyId(kid);
+      if (!pem) {
+        return false; // errors already logged
+      }
 
+      // Verify JWT signature and decode claims
+      const decoded = jwt.verify(signedJwt, pem, { algorithms: ['ES256'] }) as any;
+
+      // Validate issued-at freshness (within 5 minutes)
+      const nowSec = Math.floor(Date.now() / 1000);
+      const iat = typeof decoded.iat === 'number' ? decoded.iat : 0;
+      const ageSec = nowSec - iat;
+      if (ageSec < -300 || ageSec > 300) { // allow small clock skew in both directions
+        logger.error('Plaid webhook JWT iat outside acceptable window', { iat, nowSec });
+        return false;
+      }
+
+      // Validate request_body_sha256
+      const claimHash = typeof decoded.request_body_sha256 === 'string' ? decoded.request_body_sha256.toLowerCase() : '';
+      const bodyHash = crypto.createHash('sha256').update(rawBody, 'utf8').digest('hex').toLowerCase();
+
+      if (claimHash.length !== bodyHash.length) {
+        logger.error('Plaid webhook body hash length mismatch');
+        return false;
+      }
+
+      const equal = crypto.timingSafeEqual(Buffer.from(bodyHash, 'utf8'), Buffer.from(claimHash, 'utf8'));
+      if (!equal) {
+        logger.error('Plaid webhook body hash mismatch');
+        return false;
+      }
+
+      return true;
     } catch (error: any) {
-      logger.error('Error verifying webhook signature', {
-        error: error.message
-      });
+      logger.error('Plaid webhook JWT verification failed', { error: error.message });
       return false;
     }
-    */
+  }
+
+  private async getPemForKeyId(kid: string): Promise<string | null> {
+    try {
+      const cached = this.keyCache.get(kid);
+      if (cached) {
+        if (!cached.expiredAt) {
+          return cached.pem;
+        }
+        // Expired key -> evict and refresh
+        this.keyCache.delete(kid);
+      }
+
+      const clientId = process.env.PLAID_CLIENT_ID;
+      const secret = process.env.PLAID_SECRET;
+      const env = (process.env.PLAID_ENV || 'sandbox').toLowerCase();
+      if (!clientId || !secret) {
+        logger.error('PLAID_CLIENT_ID/PLAID_SECRET not configured');
+        return null;
+      }
+
+      const baseUrl = env === 'production'
+        ? 'https://production.plaid.com'
+        : env === 'development'
+          ? 'https://development.plaid.com'
+          : 'https://sandbox.plaid.com';
+
+      const url = `${baseUrl}/webhook_verification_key/get`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          secret,
+          key_id: kid
+        })
+      });
+
+      if (!response.ok) {
+        logger.error('Failed to fetch Plaid verification key', { status: response.status, kid });
+        return null;
+      }
+
+      const data = await response.json() as { key?: { pem?: string; expired_at?: string | null } };
+      const key = data.key;
+      if (!key || !key.pem) {
+        logger.error('Invalid key response from Plaid', { kid });
+        return null;
+      }
+
+      if (key.expired_at) {
+        logger.error('Received expired Plaid verification key', { kid, expired_at: key.expired_at });
+        return null;
+      }
+
+      this.keyCache.set(kid, { pem: key.pem, expiredAt: key.expired_at ?? null });
+      return key.pem;
+    } catch (error: any) {
+      logger.error('Failed to resolve Plaid verification key', { error: error.message, kid });
+      return null;
+    }
   }
 
   /**

@@ -36,10 +36,18 @@ export const createApp = (): express.Application => {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 
-  // Request parsing
+  // Request parsing (capture raw body for webhook verification)
   app.use(express.json({ 
     limit: '10mb',
     strict: true,
+    verify: (req, _res, buf) => {
+      try {
+        // Store raw body for routes that need it (e.g., Plaid webhook verification)
+        (req as any).rawBody = buf.toString('utf8');
+      } catch {
+        // noop
+      }
+    }
   }));
   
   app.use(express.urlencoded({ 

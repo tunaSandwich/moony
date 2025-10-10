@@ -438,7 +438,7 @@ Reply STOP to opt out anytime.`;
    */
   public handlePlaidWebhook = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const startTime = Date.now();
-    const signature = req.headers['plaid-verification'] as string;
+    const signature = (req.headers['plaid-verification'] || req.headers['Plaid-Verification']) as string;
     
     try {
       logger.info('Plaid webhook received', {
@@ -455,8 +455,8 @@ Reply STOP to opt out anytime.`;
         return;
       }
 
-      // Get raw body for signature verification
-      const rawBody = JSON.stringify(req.body);
+      // Get raw body for signature verification (captured by express.json verify)
+      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
       // Process webhook asynchronously
       const result = await this.plaidWebhookService.handleWebhook(
