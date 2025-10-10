@@ -121,7 +121,7 @@ const LandingPage = () => {
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gradient font-light leading-relaxed whitespace-nowrap"
               style={{ marginBottom: '40px' }}
             >
-              Simple daily texts keeps you on budget.
+              Simple daily texts to keep you on budget.
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ const LandingPage = () => {
             className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light leading-relaxed opacity-0 pointer-events-none whitespace-nowrap"
             style={{ marginBottom: '40px' }}
           >
-            Simple daily texts keeps you on budget.
+            Simple daily texts to keep you on budget.
           </p>
           
           {/* CTA Button - Exactly 40px below subtitle */}
