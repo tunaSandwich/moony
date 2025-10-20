@@ -1,5 +1,5 @@
 {
-  "name": "budget-pal",
+  "name": "moony",
   "version": "1.0.0",
   "description": "Automated daily spending limit SMS tracker with US Bank integration",
   "main": "apps/scheduler/index.js",
