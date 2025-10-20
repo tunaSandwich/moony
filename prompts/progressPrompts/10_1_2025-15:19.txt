@@ -1,6 +1,6 @@
-Context Transfer Document: Budget Pal SMS Budgeting Application
+Context Transfer Document: moony SMS Budgeting Application
 PROJECT OVERVIEW
-Core Project: Budget Pal (moony) - SMS-based daily spending guidance app
+Core Project: moony (moony) - SMS-based daily spending guidance app
 
 Architecture: React/Vite frontend (onboarding only), Node.js/Express/TypeScript backend, PostgreSQL/Prisma, Plaid (transactions), Twilio (SMS)
 User Flow: Invite code → Plaid bank connection → Phone verification → Goal setting via SMS → Daily spending notifications

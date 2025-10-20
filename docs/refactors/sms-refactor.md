@@ -1,5 +1,5 @@
 AWS SNS Migration Plan - Complete Reference Document
-Project: Budget Pal - Twilio to AWS End User Messaging Migration
+Project: moony - Twilio to AWS End User Messaging Migration
 Date: October 10, 2025
 Status: Planning Phase Complete - Ready for Implementation
 
@@ -654,7 +654,7 @@ Create: docs/AWS_MESSAGING_GUIDE.md
 markdown# AWS Messaging Implementation
 
 ## Overview
-Budget Pal uses a hybrid approach:
+moony uses a hybrid approach:
 - **Twilio Verify**: Phone number verification only
 - **AWS End User Messaging**: All operational SMS (welcome, daily, two-way)
 
@@ -736,7 +736,7 @@ Service: AWS End User Messaging SMS
 Request Type: Move out of SMS Sandbox
 
 1. Website URL or App Name:
-   Budget Pal (https://budgetpal.app)
+   moony (https://budgetpal.app)
 
 2. Type of Messages:
    ☑ Transactional
@@ -770,7 +770,7 @@ Request Type: Move out of SMS Sandbox
    "Got it! Your budget is set to $XXX for October."
 
 7. Use Case Description:
-   Budget Pal is a personal finance app that sends daily SMS 
+   moony is a personal finance app that sends daily SMS 
    reminders to help users stay within their monthly spending budget. 
    Users link their bank accounts, set a monthly budget, and receive 
    daily text messages with their remaining budget for the day.
@@ -1443,7 +1443,7 @@ What to watch:
 
 Questions? Reply here or ping me on Slack.
 External (Users - if needed):
-SMS: Budget Pal Update
+SMS: moony Update
 
 We've upgraded our messaging system! You may see texts from a new 
 number: +1-XXX-XXX-XXXX. Save this number - it's us! 
