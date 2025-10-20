@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db.js';
 import { PlaidWebhookService } from './PlaidWebhookService.js';
 import { logger } from '@logger';
 
@@ -8,11 +8,10 @@ import { logger } from '@logger';
  * even if webhook delivery fails
  */
 export class WebhookFallbackService {
-  private prisma: PrismaClient;
+  private prisma = prisma;
   private plaidWebhookService: PlaidWebhookService;
 
   constructor() {
-    this.prisma = new PrismaClient();
     this.plaidWebhookService = new PlaidWebhookService();
   }
 
@@ -124,7 +123,6 @@ export class WebhookFallbackService {
    * Cleanup method for closing connections
    */
   public async disconnect(): Promise<void> {
-    await this.prisma.$disconnect();
     await this.plaidWebhookService.disconnect();
   }
 }

@@ -1,11 +1,11 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { ApiResponse } from '../types/index.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 export class GoalsController {
   public setSpendingGoal = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {

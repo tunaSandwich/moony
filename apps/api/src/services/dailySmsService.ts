@@ -1,4 +1,5 @@
 import { PrismaClient, User, SpendingGoal, UserSpendingAnalytics } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { format as formatDate } from 'date-fns';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { MessagingService } from './messagingService.js';
@@ -23,7 +24,7 @@ export class DailySmsService {
   private messagingService: MessagingService;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
     this.calculationService = new CalculationService();
     this.messagingService = new MessagingService();
   }

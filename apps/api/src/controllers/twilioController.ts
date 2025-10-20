@@ -1,13 +1,13 @@
 import { Response } from 'express';
 import twilio from 'twilio';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { format, subMonths } from 'date-fns';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { MessagingService } from '../services/messagingService.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 // Constants for better maintainability
 const TWILIO_ERROR_TYPES = {

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import twilio from 'twilio';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
@@ -9,7 +9,7 @@ import { CalculationService } from '../../../../packages/services/calculationSer
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 import { PlaidWebhookService } from '../services/PlaidWebhookService.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 // Constants for business rules
 const SPENDING_GOAL_LIMITS = {

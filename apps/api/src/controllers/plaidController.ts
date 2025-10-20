@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { PlaidApi, Configuration, PlaidEnvironments } from 'plaid';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { PlaidService } from '@services/plaidService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
@@ -11,7 +11,7 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { encrypt, validateEncryptionKey } from '../utils/encryption.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 // Constants for better maintainability
 const PLAID_ERROR_TYPES = {

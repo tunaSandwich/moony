@@ -1,5 +1,5 @@
 import { PlaidApi, Configuration, PlaidEnvironments, Transaction } from 'plaid';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db.js';
 import { logger } from '@logger';
 import { decrypt, validateEncryptionKey } from '../utils/encryption.js';
 import { 
@@ -14,7 +14,7 @@ import { startOfMonth, endOfMonth, subMonths, format, parseISO } from 'date-fns'
 
 export class PlaidAnalyticsService {
   private plaidClient: PlaidApi;
-  private prisma: PrismaClient;
+  private prisma = prisma;
 
   constructor() {
     // Initialize Plaid client
@@ -28,7 +28,6 @@ export class PlaidAnalyticsService {
       },
     });
     this.plaidClient = new PlaidApi(configuration);
-    this.prisma = new PrismaClient();
   }
 
   /**
