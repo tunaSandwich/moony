@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-import { config } from 'dotenv';
+import '../src/config/loadEnv.js';
 import readline from 'readline';
 import { AWSSMSService } from '../src/services/aws/smsService.js';
 import { prisma } from '../src/db.js';
 
 // Load environment based on NODE_ENV
 const env = process.env.NODE_ENV || 'local';
-config({ path: `.env.${env}` });
 
 console.log(`🧪 Testing AWS SMS Service (${env} environment)\n`);
+
 
 const rl = readline.createInterface({
   input: process.stdin,

@@ -20,9 +20,10 @@ class AWSConfig {
   }
 
   private loadConfig() {
-    // Determine environment from NODE_ENV
-    const environment = (process.env.NODE_ENV as 'local' | 'staging' | 'production') || 'local';
-
+    // Determine environment from NODE_ENV, mapping 'development' to 'local'
+    const nodeEnv = process.env.NODE_ENV || 'local';
+    const environment = nodeEnv === 'development' ? 'local' : nodeEnv as 'local' | 'staging' | 'production';
+    
     // Parse and validate using zod
     return awsConfigSchema.parse({
       region: process.env.AWS_REGION,
