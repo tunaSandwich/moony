@@ -57,6 +57,8 @@
     "run:now:remote": "curl -sS -X POST $APP_URL/api/run-now"
   },
   "dependencies": {
+    "@aws-sdk/client-pinpoint-sms-voice-v2": "^3.913.0",
+    "@aws-sdk/client-sns": "^3.913.0",
     "@prisma/client": "^6.16.2",
     "@types/jsonwebtoken": "^9.0.10",
     "concurrently": "^9.2.1",
