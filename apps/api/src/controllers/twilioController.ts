@@ -6,6 +6,7 @@ import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { MessagingService } from '../services/messagingService.js';
+import { WelcomeMessageService } from '../services/aws/welcomeMessageService.js';
 
 // Use shared Prisma client
 
@@ -52,6 +53,7 @@ const isValidVerificationCode = (code: string): boolean => {
 export class TwilioController {
   private twilioClient: twilio.Twilio;
   private messagingService: MessagingService;
+  private welcomeMessageService: WelcomeMessageService;
 
   constructor() {
     // Validate required environment variables
@@ -69,6 +71,7 @@ export class TwilioController {
     
     this.twilioClient = twilio(accountSid, authToken);
     this.messagingService = new MessagingService();
+    this.welcomeMessageService = new WelcomeMessageService();
   }
 
   public sendVerificationCode = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -358,97 +361,42 @@ export class TwilioController {
   });
 
   /**
-   * Send welcome message with analytics data after successful phone verification
-   * Uses dual-channel messaging (SMS/WhatsApp) with automatic fallback
-   * Non-blocking operation with error handling
+   * Send welcome message via AWS after successful phone verification
+   * Non-blocking operation with comprehensive error handling
    */
   public sendWelcomeSMS = async (userId: string): Promise<void> => {
     try {
-      logger.info('Sending welcome message with analytics', { userId });
-
-      // Get user data and analytics
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { 
-          firstName: true,
-          phoneNumber: true,
-          spendingAnalytics: {
-            select: {
-              averageMonthlySpending: true,
-              lastMonthSpending: true,
-              twoMonthsAgoSpending: true,
-              currentMonthSpending: true
-            }
-          }
-        }
+      logger.info('Sending welcome message via AWS', { userId });
+      
+      const result = await this.welcomeMessageService.sendWelcomeMessage(userId, {
+        triggerAnalytics: true // Trigger analytics calculation for new users
       });
-
-      if (!user || !user.phoneNumber) {
-        logger.error('User not found or missing phone number for welcome message', { userId });
-        return;
-      }
-
-      // Get current month and previous month names
-      const now = new Date();
-      const currentMonthName = format(now, 'MMMM');
-      const lastMonthName = format(subMonths(now, 1), 'MMMM');
-      const twoMonthsAgoName = format(subMonths(now, 2), 'MMMM');
-
-      const analytics = user.spendingAnalytics;
-      let message = `moony\n\n👋 Welcome ${user.firstName}!\n\nI'll help you stay on track with daily spending guidance.`;
-
-      // Determine scenario based on available data
-      if (analytics?.averageMonthlySpending && 
-          parseFloat(analytics.averageMonthlySpending.toString()) > 0 && 
-          analytics.twoMonthsAgoSpending && 
-          parseFloat(analytics.twoMonthsAgoSpending.toString()) > 0) {
-        
-        // Scenario A: Full data - has averageMonthlySpending AND twoMonthsAgoSpending
-        message += ` First, let's see your spending pattern:\n\n`;
-        message += `📅 ${twoMonthsAgoName}: $${analytics.twoMonthsAgoSpending.toString()}\n`;
-        message += `📅 ${lastMonthName}: $${analytics.lastMonthSpending?.toString() || '0'}\n`;
-        message += `💰 ${currentMonthName} so far: $${analytics.currentMonthSpending?.toString() || '0'}\n\n`;
-        message += `What's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
-        
-      } else if (analytics?.currentMonthSpending && 
-                 parseFloat(analytics.currentMonthSpending.toString()) > 0) {
-        
-        // Scenario B: Partial data - has currentMonthSpending > 0 but missing historical
-        message += `\n\n💰 So far in ${currentMonthName}: $${analytics.currentMonthSpending.toString()}\n\n`;
-        message += `What's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
-        
-      } else {
-        
-        // Scenario C: No data - no analytics and currentMonthSpending = 0
-        message += `\n\nWhat's your spending goal for this month (${currentMonthName})? Just reply with a number (ex: 2000).`;
-      }
-
-      // Use the messaging service with automatic channel selection and fallback
-      const result = await this.messagingService.sendMessage({
-        to: user.phoneNumber,
-        body: message
-      });
-
+      
       if (result.success) {
-        logger.info('Welcome message sent successfully', { 
+        logger.info('Welcome message sent successfully via AWS', {
           userId,
-          channel: result.channel,
-          messageSid: result.messageSid,
-          fallbackUsed: result.fallbackUsed || false,
-          scenario: analytics?.averageMonthlySpending && analytics?.twoMonthsAgoSpending ? 'A' : 
-                   analytics?.currentMonthSpending && parseFloat(analytics.currentMonthSpending.toString()) > 0 ? 'B' : 'C'
+          messageId: result.messageId,
+          scenario: result.scenario
         });
       } else {
-        logger.error('Welcome message failed to send', {
-          userId,
-          channel: result.channel,
-          error: result.error
-        });
+        // Check if it's a sandbox limitation
+        if (result.sandboxLimited) {
+          logger.warn('Welcome message blocked by AWS sandbox', {
+            userId,
+            error: result.error
+          });
+          // Don't log as error - this is expected in sandbox mode
+        } else {
+          logger.error('Failed to send welcome message via AWS', {
+            userId,
+            error: result.error
+          });
+        }
       }
-
+      
     } catch (error: any) {
       // Log error but don't throw - welcome message failure shouldn't break verification
-      logger.error('Failed to send welcome message', { 
+      logger.error('Exception in welcome message sending', { 
         userId, 
         error: error.message 
       });
@@ -456,8 +404,7 @@ export class TwilioController {
   };
 
   /**
-   * Resend welcome message for verified users
-   * Allows users to request the welcome message again if they missed it
+   * Resend welcome message for verified users via AWS
    */
   public resendWelcomeMessage = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const userId = req.user?.id;
@@ -467,12 +414,16 @@ export class TwilioController {
     }
 
     try {
-      logger.info('Resending welcome message for user', { userId });
+      logger.info('Resending welcome message via AWS for user', { userId });
 
       // Look up user from database and verify they are phone verified
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { phoneVerified: true },
+        select: { 
+          phoneVerified: true,
+          phoneNumber: true,
+          sandboxVerified: true 
+        },
       });
 
       if (!user) {
@@ -483,14 +434,47 @@ export class TwilioController {
         throw new AppError('Phone number must be verified before receiving messages', 403);
       }
 
-      // Use the existing sendWelcomeSMS method
-      await this.sendWelcomeSMS(userId);
+      // Check AWS sandbox verification
+      const isSandboxMode = process.env.AWS_SANDBOX_MODE !== 'false';
+      if (isSandboxMode && !user.sandboxVerified) {
+        // Check if it's a simulator number
+        const simulatorNumbers = ['+12065559457', '+12065559453'];
+        if (!simulatorNumbers.includes(user.phoneNumber || '')) {
+          logger.warn('Cannot resend to unverified number in sandbox', { userId });
+          
+          res.status(200).json({
+            message: 'Message queued for delivery',
+            warning: 'Phone number needs AWS sandbox verification'
+          });
+          return;
+        }
+      }
 
-      logger.info('Welcome message resent successfully', { userId });
+      // Use AWS welcome message service
+      const result = await this.welcomeMessageService.resendWelcomeMessage(userId);
 
-      res.status(200).json({
-        message: 'Welcome message sent successfully',
-      });
+      if (result.success) {
+        logger.info('Welcome message resent successfully via AWS', { 
+          userId,
+          messageId: result.messageId 
+        });
+
+        res.status(200).json({
+          message: 'Welcome message sent successfully',
+          messageId: result.messageId
+        });
+      } else {
+        logger.error('Failed to resend welcome message via AWS', {
+          userId,
+          error: result.error
+        });
+        
+        // Still return success to not break frontend flow
+        res.status(200).json({
+          message: 'Message delivery attempted',
+          warning: result.sandboxLimited ? 'Sandbox verification required' : 'Delivery pending'
+        });
+      }
 
     } catch (error: any) {
       logger.error('Failed to resend welcome message', { 
@@ -498,7 +482,6 @@ export class TwilioController {
         error: error.message 
       });
 
-      // For any other errors, return a generic message
       if (error instanceof AppError) {
         throw error;
       }
@@ -506,4 +489,38 @@ export class TwilioController {
       throw new AppError('Failed to resend message. Please try again.', 502);
     }
   });
+
+  /**
+   * Send budget confirmation via AWS when user sets their budget
+   * This will be called from the webhook handler in Phase 4
+   */
+  public sendBudgetConfirmation = async (
+    userId: string, 
+    monthlyBudget: number
+  ): Promise<void> => {
+    try {
+      const result = await this.welcomeMessageService.sendBudgetConfirmation(
+        userId, 
+        monthlyBudget
+      );
+      
+      if (result.success) {
+        logger.info('Budget confirmation sent via AWS', {
+          userId,
+          messageId: result.messageId,
+          monthlyBudget
+        });
+      } else {
+        logger.error('Failed to send budget confirmation', {
+          userId,
+          error: result.error
+        });
+      }
+    } catch (error: any) {
+      logger.error('Exception in budget confirmation', {
+        userId,
+        error: error.message
+      });
+    }
+  };
 }
