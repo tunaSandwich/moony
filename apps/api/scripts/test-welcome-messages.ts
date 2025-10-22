@@ -149,7 +149,11 @@ class WelcomeMessageTester {
           { name: 'Data error message', value: 'error' }
         ]
       }
-    ]);
+    ]) as {
+      phoneNumber: string;
+      isVerified: boolean;
+      scenario: 'A' | 'B' | 'C' | 'reconnection' | 'budget' | 'budget-update' | 'error';
+    };
     
     // Create test user
     const user = await this.createOrGetTestUser({
@@ -161,10 +165,16 @@ class WelcomeMessageTester {
     switch (answers.scenario) {
       case 'A':
       case 'B':
-      case 'C':
-        await this[`setupScenario${answers.scenario}`](user.id);
+      case 'C': {
+        const setupMap: Record<'A' | 'B' | 'C', (userId: string) => Promise<void>> = {
+          A: this.setupScenarioA.bind(this),
+          B: this.setupScenarioB.bind(this),
+          C: this.setupScenarioC.bind(this)
+        };
+        await setupMap[answers.scenario](user.id);
         await this.testWelcomeMessage(user.id, answers.scenario);
         break;
+      }
       case 'reconnection':
         await this.testReconnection(user.id);
         break;
