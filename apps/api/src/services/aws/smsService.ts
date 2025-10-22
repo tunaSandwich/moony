@@ -30,6 +30,42 @@ export class AWSSMSService {
       return { success: false, error: 'Invalid phone number format', retryable: false };
     }
 
+    // Check if this is a simulator number
+    const simulatorNumbers = ['+12065559457', '+12065559453'];
+    if (simulatorNumbers.includes(to)) {
+      const messageId = `SIM_${Date.now()}`;
+      logger.info('[AWSSMSService] Simulated send to AWS simulator number', {
+        to: this.maskPhoneNumber(to),
+        messageId,
+        userId,
+      });
+      
+      // Track in database even for simulated sends
+      if (userId) {
+        try {
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              lastSmsMessageId: messageId,
+              lastSmsSentAt: new Date(),
+            } as any,
+          });
+        } catch (e: any) {
+          logger.error('[AWSSMSService] Failed to update user SMS tracking fields for simulator', {
+            userId,
+            error: e.message,
+          });
+        }
+      }
+      
+      return {
+        success: true,
+        messageId,
+        retryable: false,
+        sandboxSkipped: false,
+      };
+    }
+
     // Sandbox behavior: skip unverified recipients
     if (awsConfig.isSandbox) {
       const verified = await this.isNumberVerifiedInSandbox(to);
