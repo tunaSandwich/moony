@@ -1,11 +1,9 @@
 import { Response } from 'express';
 import twilio from 'twilio';
 import { prisma } from '../../src/db.js';
-import { format, subMonths } from 'date-fns';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
-import { MessagingService } from '../services/messagingService.js';
 import { WelcomeMessageService } from '../services/aws/welcomeMessageService.js';
 
 // Use shared Prisma client
@@ -52,7 +50,6 @@ const isValidVerificationCode = (code: string): boolean => {
 
 export class TwilioController {
   private twilioClient: twilio.Twilio;
-  private messagingService: MessagingService;
   private welcomeMessageService: WelcomeMessageService;
 
   constructor() {
@@ -70,7 +67,6 @@ export class TwilioController {
     }
     
     this.twilioClient = twilio(accountSid, authToken);
-    this.messagingService = new MessagingService();
     this.welcomeMessageService = new WelcomeMessageService();
   }
 
@@ -421,8 +417,7 @@ export class TwilioController {
         where: { id: userId },
         select: { 
           phoneVerified: true,
-          phoneNumber: true,
-          sandboxVerified: true 
+          phoneNumber: true
         },
       });
 
@@ -436,7 +431,7 @@ export class TwilioController {
 
       // Check AWS sandbox verification
       const isSandboxMode = process.env.AWS_SANDBOX_MODE !== 'false';
-      if (isSandboxMode && !user.sandboxVerified) {
+      if (isSandboxMode) {
         // Check if it's a simulator number
         const simulatorNumbers = ['+12065559457', '+12065559453'];
         if (!simulatorNumbers.includes(user.phoneNumber || '')) {

@@ -49,6 +49,8 @@
     "test:account": "NODE_ENV=local tsx tests/test-account.ts",
     "test:whatsapp": "NODE_ENV=local tsx apps/scheduler/tests/test-whatsapp.ts",
     "test:whatsapp:staging": "NODE_ENV=staging tsx apps/scheduler/tests/test-whatsapp.ts",
+    "test:welcome": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/test-welcome-messages.ts",
+    "test:welcome:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/test-welcome-messages.ts",
     "test:calculations": "NODE_ENV=local node tests/calculations.test.js",
 
     "dev": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run scheduler:dev\"",
@@ -85,7 +87,9 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.1",
     "@types/supertest": "^6.0.3",
+    "chalk": "^5.0.0",
     "dotenv-cli": "^10.0.0",
+    "inquirer": "^9.0.0",
     "jest": "^30.1.3",
     "node-cron": "^4.2.1",
     "nodemon": "^3.0.2",
