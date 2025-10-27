@@ -12,19 +12,16 @@
     "scheduler:start:production": "NODE_ENV=production tsx apps/scheduler/index.ts",
     "scheduler:now": "NODE_ENV=local tsx apps/scheduler/tests/test-run-daily-now.ts",
     "scheduler:now:staging": "NODE_ENV=staging tsx apps/scheduler/tests/test-run-daily-now.ts",
-
     "api:dev": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx watch apps/api/server.ts",
     "api:dev:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx watch apps/api/server.ts",
     "api:start": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/server.ts",
     "api:start:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/server.ts",
     "api:start:production": "NODE_ENV=production node scripts/sync-prisma-env.mjs && NODE_ENV=production tsx apps/api/server.ts",
-
     "web:dev": "npm --prefix apps/web run dev",
     "web:build": "npm --prefix apps/web run build",
     "web:start": "npm --prefix apps/web run start",
     "web:test": "npm --prefix apps/web run test",
     "web:lint": "npm --prefix apps/web run lint",
-
     "db:studio": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma studio --schema=apps/api/prisma/schema.prisma",
     "db:studio:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && npx prisma studio --schema=apps/api/prisma/schema.prisma",
     "db:migrate": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma migrate dev --schema=apps/api/prisma/schema.prisma",
@@ -37,10 +34,8 @@
     "db:seed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts",
     "db:seed:clear": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear",
     "db:seed:clearAndSeed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear && tsx apps/api/prisma/seed.ts",
-
     "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/create-user.ts",
     "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/create-user.ts",
-
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
     "test:plaid:staging": "NODE_ENV=staging tsx tests/test.plaid.ts",
@@ -54,7 +49,10 @@
     "test:simulator": "NODE_ENV=local tsx apps/api/scripts/test-simulator-sms.ts",
     "test:simulator:staging": "NODE_ENV=staging tsx apps/api/scripts/test-simulator-sms.ts",
     "test:calculations": "NODE_ENV=local node tests/calculations.test.js",
-
+    "setup:webhook": "NODE_ENV=local tsx apps/api/scripts/setup-sns-webhook.ts",
+    "setup:webhook:staging": "NODE_ENV=staging tsx apps/api/scripts/setup-sns-webhook.ts",
+    "test:2way": "NODE_ENV=local tsx apps/api/scripts/test-two-way-sms.ts",
+    "test:2way:staging": "NODE_ENV=staging tsx apps/api/scripts/test-two-way-sms.ts",
     "dev": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run scheduler:dev\"",
     "dev:staging": "NODE_ENV=staging concurrently \"npm run api:dev:staging\" \"npm run scheduler:dev:staging\"",
     "dev:all": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run web:dev\"",
@@ -63,7 +61,6 @@
     "start:staging": "NODE_ENV=staging concurrently \"npm run api:start:staging\" \"npm run scheduler:start:staging\"",
     "setup": "NODE_ENV=local node scripts/setup.js",
     "tree": "node scripts/print-tree.js .",
-
     "run:now:local": "curl -sS -X POST http://localhost:3000/api/run-now",
     "run:now:remote": "curl -sS -X POST $APP_URL/api/run-now"
   },
@@ -72,11 +69,13 @@
     "@aws-sdk/client-sns": "^3.913.0",
     "@prisma/client": "^6.16.2",
     "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.13.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.0.3",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "plaid": "^11.0.0",
     "prisma": "^6.16.2",

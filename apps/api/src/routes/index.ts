@@ -5,6 +5,7 @@ import jobRoutes from './jobs.js';
 import inviteRoutes from './invite.js';
 import twilioRoutes from './twilio.js';
 import webhookRoutes from './webhooks.js';
+import awsWebhooksRoutes from './aws-webhooks.js';
 import userRoutes from './user.js';
 import goalsRoutes from './goals.js';
 
@@ -15,6 +16,7 @@ router.use('/', healthRoutes);
 router.use('/api/plaid', plaidRoutes);
 router.use('/api/twilio', twilioRoutes);
 router.use('/api/webhooks', webhookRoutes);
+router.use('/api/webhooks/aws', awsWebhooksRoutes);
 router.use('/api/user', userRoutes);
 router.use('/api/goals', goalsRoutes);
 router.use('/api', jobRoutes);
