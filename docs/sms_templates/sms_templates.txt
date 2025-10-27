@@ -1,0 +1,114 @@
+(First Time Setup:)
+moony
+
+IMPORTANT!
+For core sms (daily, or w/e cadence is) see ./core_sms.txt
+
+--------
+
+👋 Welcome {name}!
+
+I'll help you stay on track with daily spending guidance. First, let's see your spending pattern:
+
+📅 Two months ago: $23,971
+📅 Last month: $4,660
+💰 This month so far: $4,377
+
+What's your spending goal for this month? Just reply with a number (ex: 2000).
+
+—————————
+(First Message after set up)
+
+moony
+
+✅ Perfect! Your $2,000 monthly budget is all set.
+
+🎯 Today's spending target: $67
+Progress: $0 spent of $2,000
+
+You'll get a daily text like this each morning to help you stay on track. Your budget resets on the 1st of every month.
+
+Reply STOP to opt out anytime.
+
+—————————
+(daily text)
+moony
+
+☀️ Good Morning Lucas!
+
+🎯 Today's spending target: $145
+October so far: $347 of $4,500 used
+
+Recent purchases may take a day to show
+
+Reply STOP to opt out
+
+—————————
+(Fridays)
+moony
+
+☀️ Good morning Lucas!
+🎯 Today's spending target: $67
+
+This week so far: $234 spent
+Weekend plan: Keep it under $130 total ✨
+
+Yesterday: $45 spent ✅
+Progress: $1,245 of $3,000 used
+
+Reply STOP to opt out
+
+—————————
+(Sunday)
+moony
+
+☀️ Good morning Lucas!
+🎯 Today's spending target: $52
+
+Week recap: $291 spent (target was $322)
+Nice work - you're $31 ahead! 🎉
+
+Yesterday: $38 spent ✅  
+Progress: $1,456 of $3,000 used
+
+Reply STOP to opt out
+—————————
+
+(Data Issue Fallback)
+🛠️ moony 🛠️
+
+We had trouble getting data. We're looking into it.
+
+—————————
+
+(Under Budget)
+
+moony
+
+🎉 Amazing work, Lucas! You crushed it this month.
+
+You spent $2,850 of your $3,000 goal - that's $150 saved! 💰
+
+Ready to set next month's goal? Just reply with a number (ex: 3000) or ignore this to keep your current goal.
+
+—————————
+
+(Over Budget)
+
+moony
+
+📊 Hey Lucas, here's your month wrap-up:
+
+You spent $3,150 against your $3,000 goal ($150 over). No worries - every month is a fresh start! 
+
+What's your goal for next month? Reply with a number (ex: 3000) or ignore this to stick with $3,000.
+
+—————————
+
+🙏 moony 🙏
+
+For support email gonzalezgarza.lucas@gmail.com.
+
+To opt out, reply STOP.
+
+—————————
