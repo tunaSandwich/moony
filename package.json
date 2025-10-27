@@ -51,6 +51,8 @@
     "test:whatsapp:staging": "NODE_ENV=staging tsx apps/scheduler/tests/test-whatsapp.ts",
     "test:welcome": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/test-welcome-messages.ts",
     "test:welcome:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/test-welcome-messages.ts",
+    "test:simulator": "NODE_ENV=local tsx apps/api/scripts/test-simulator-sms.ts",
+    "test:simulator:staging": "NODE_ENV=staging tsx apps/api/scripts/test-simulator-sms.ts",
     "test:calculations": "NODE_ENV=local node tests/calculations.test.js",
 
     "dev": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run scheduler:dev\"",

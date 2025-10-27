@@ -11,7 +11,6 @@ type UserWithAnalytics = {
   phoneNumber: string;
   phoneVerified?: boolean;
   plaidItemId?: string | null;
-  sandboxVerified?: boolean;
   spendingAnalytics?: {
     averageMonthlySpending?: any;
     lastMonthSpending?: any;
@@ -59,7 +58,6 @@ export class WelcomeMessageService {
         select: ({ 
           firstName: true,
           phoneNumber: true,
-          sandboxVerified: true,
           phoneVerified: true,
           plaidItemId: true,
           spendingAnalytics: {
@@ -82,19 +80,26 @@ export class WelcomeMessageService {
         };
       }
       
-      // Check sandbox verification
+      // Check if this is a simulator number in sandbox mode
       const isSandboxMode = process.env.AWS_SANDBOX_MODE !== 'false';
-      if (isSandboxMode && !this.isSimulatorNumber(user.phoneNumber) && !user.sandboxVerified) {
-        logger.warn('Cannot send to unverified number in sandbox mode', {
+      const useSimulatorOverride = process.env.AWS_USE_SIMULATOR_OVERRIDE === 'true';
+      const isSimulator = this.isSimulatorNumber(user.phoneNumber);
+      
+      if (isSandboxMode) {
+        logger.info('AWS sandbox mode active', {
           userId,
-          phoneNumber: this.maskPhoneNumber(user.phoneNumber)
+          isSimulatorNumber: isSimulator,
+          useSimulatorOverride,
+          originalNumber: this.maskPhoneNumber(user.phoneNumber)
         });
-        return {
-          success: false,
-          error: 'Phone number not verified in AWS sandbox',
-          scenario: 'C',
-          sandboxLimited: true
-        };
+        
+        if (useSimulatorOverride && !isSimulator) {
+          logger.info('Real number will be overridden with simulator in sandbox', {
+            userId,
+            originalNumber: this.maskPhoneNumber(user.phoneNumber),
+            simulatorDestination: process.env.AWS_SIMULATOR_DESTINATION
+          });
+        }
       }
       
       // Handle reconnection scenario
@@ -292,7 +297,6 @@ export class WelcomeMessageService {
         where: { id: userId },
         select: ({
           phoneNumber: true,
-          sandboxVerified: true,
           phoneVerified: true,
           spendingAnalytics: {
             select: { currentMonthSpending: true }
@@ -361,7 +365,6 @@ export class WelcomeMessageService {
         where: { id: userId },
         select: ({
           phoneNumber: true,
-          sandboxVerified: true,
           phoneVerified: true,
           spendingAnalytics: {
             select: { currentMonthSpending: true }
@@ -429,7 +432,6 @@ export class WelcomeMessageService {
         where: { id: userId },
         select: ({
           phoneNumber: true,
-          sandboxVerified: true,
           phoneVerified: true
         } as any)
       })) as UserWithAnalytics | null;
@@ -473,7 +475,22 @@ export class WelcomeMessageService {
   }
   
   private isSimulatorNumber(phoneNumber: string): boolean {
-    const simulatorNumbers = ['+12065559457', '+12065559453'];
+    const simulatorNumbers = [
+      // Origination simulators
+      '+12065559457',
+      '+12065559453', 
+      // Destination simulators
+      '+14254147755',
+      '+14254147156',
+      '+14254147266',
+      '+14254147489',
+      '+14254147499',
+      '+14254147511',
+      '+14254147600',
+      '+14254147633',
+      '+14254147654',
+      '+14254147688'
+    ];
     return simulatorNumbers.includes(phoneNumber);
   }
   
