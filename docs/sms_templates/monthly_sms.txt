@@ -1,0 +1,326 @@
+# MONTHLY SMS MESSAGING SYSTEM - MOONY
+
+## Overview
+This document defines the monthly SMS messaging system for Moony. Monthly messages serve as major milestone moments that celebrate achievements, provide insights, and set up users for continued success.
+
+## Core Psychology Principles
+- **Peak-End Rule (#91)**: The month-end message creates lasting impression
+- **Endowment Effect (#94)**: Users value the money they've saved more when it's framed as "theirs"
+- **Fresh Start Effect (#61)**: New month represents major reset opportunity
+- **Goal Gradient Effect (#51)**: Shows completion and motivates next goal
+- **Loss Aversion (#65)**: Frame savings as money they get to keep
+
+## Message Timing
+- **When**: Last day of month at 7 PM local time
+- **Why**: Evening allows reflection, morning of 1st is for fresh start
+- **Follow-up**: If no response, reuse last month's and send gentle reminder
+
+## Message Templates
+
+### Under Budget - Crushed It! 🎉
+```
+🎉 Amazing work, {name}! {month} wrap-up:
+
+You spent ${total_spent} of your ${budget_goal} goal
+💰 That's ${amount_saved} saved! 
+
+Your money, your choice. That's:
+• {comparison_1} (e.g., "3 nice dinners out")
+• {comparison_2} (e.g., "2 months of gym membership")
+• {comparison_3} (e.g., "$2,400 saved yearly at this rate!")
+
+Top win: {biggest_improvement}
+
+Ready for {next_month}? 
+Reply with your new goal or we'll keep it at ${current_goal}.
+```
+
+### Under Budget - Close Call 😅
+```
+✅ Nice job, {name}! {month} wrap-up:
+
+You spent ${total_spent} of your ${budget_goal} goal
+💪 Saved ${amount_saved} by staying disciplined
+
+Closest call: {riskiest_day_story}
+MVP move: {best_decision}
+
+Want to aim higher for {next_month}? 
+Reply with your new goal or we'll keep it at ${current_goal}.
+```
+
+### Over Budget - Small Miss 📊
+```
+📊 Hey {name}, here's your {month} wrap-up:
+
+You spent ${total_spent} against your ${budget_goal} goal
+That's ${amount_over} over (${percent_over}%)
+
+But check this out:
+✨ Best week: {best_week_dates} - only ${best_week_amount}
+💡 If every week matched that: ${projected_savings}
+
+What's your goal for {next_month}? Fresh start tomorrow!
+Reply with a number or we'll stick with ${current_goal}.
+```
+
+### Over Budget - Significant Miss 🔄
+```
+📊 {month} wrap-up, {name}:
+
+Total spent: ${total_spent} (Goal was ${budget_goal})
+
+Here's what happened:
+• {top_category}: ${category_amount} ({category_percent}% of total)
+• Biggest day: {date} - ${amount}
+
+One change for {next_month}: {specific_recommendation}
+
+New month = clean slate. What's your {next_month} goal?
+Reply with a number (maybe ${suggested_goal} to start?)
+```
+
+### First Month Complete 🎊
+```
+🎊 First month done, {name}!
+
+{month} stats:
+• Spent: ${total_spent} of ${budget_goal}
+• Daily average: ${daily_average}
+• Most on: {top_category}
+
+You've built the habit - that's the hardest part! 
+
+{next_month} goal? Reply with a number or keep ${current_goal}.
+
+P.S. Users who complete month 2 save an average of $400/month 📈
+```
+
+## Monthly Insight Generation
+
+### Success Insights (Under Budget)
+Focus on celebration and optimization:
+
+```python
+success_insights = {
+    'category_win': "Dining down 40% - your meal prep paid off!",
+    'behavior_change': "12 no-spend days vs 3 last month 🔥",
+    'smart_swaps': "Switching to morning coffee at home saved $127",
+    'weekend_warrior': "Weekend spending controlled - that's where most people fail",
+    'consistency': "Most consistent month yet - only 3 days over target"
+}
+```
+
+### Recovery Insights (Over Budget)
+Focus on specific, actionable improvements:
+
+```python
+recovery_insights = {
+    'category_focus': "Uber/Lyft was 30% of budget. Try the subway challenge?",
+    'time_pattern': "Thursdays averaged $120. Pre-plan those days.",
+    'subscription_audit': "Found $67/month in unused subscriptions",
+    'one_change': "Cook dinner 2 more nights = back on track",
+    'small_wins': "You had 8 great days under $50. Build from there."
+}
+```
+
+### Comparative Insights
+Make savings tangible:
+
+```python
+def generate_savings_comparisons(amount_saved):
+    comparisons = []
+    
+    # Local experiences
+    if amount_saved >= 150:
+        comparisons.append(f"{amount_saved // 50} nice dinners out")
+    
+    # Monthly services  
+    if amount_saved >= 100:
+        comparisons.append("2 months of gym membership")
+    
+    # Annual projection
+    yearly = amount_saved * 12
+    comparisons.append(f"${yearly:,} saved yearly at this rate!")
+    
+    # Fun alternatives
+    if amount_saved >= 300:
+        comparisons.append("A weekend trip")
+    
+    return comparisons[:3]  # Best 3 options
+```
+
+## Implementation Details
+
+### Monthly Metrics Calculation
+```python
+monthly_metrics = {
+    'total_spent': float,
+    'budget_goal': float,
+    'amount_saved_or_over': float,
+    'percent_variance': float,
+    'daily_average': float,
+    'category_breakdown': {
+        'dining': {'amount': float, 'percent': float},
+        'transport': {'amount': float, 'percent': float},
+        'shopping': {'amount': float, 'percent': float},
+        # ... other categories
+    },
+    'best_week': {
+        'dates': str,  # "Jan 8-14"
+        'amount': float
+    },
+    'worst_day': {
+        'date': str,
+        'amount': float,
+        'primary_merchant': str
+    },
+    'no_spend_days': int,
+    'over_target_days': int,
+    'biggest_improvement': str,  # vs last month
+    'subscription_total': float,
+    'weekend_avg': float,
+    'weekday_avg': float
+}
+```
+
+### Message Generation Pipeline
+```python
+def generate_monthly_message(user_id, month_end_date):
+    # Step 1: Calculate comprehensive metrics
+    metrics = calculate_monthly_metrics(user_id, month_end_date)
+    
+    # Step 2: Compare to previous months
+    trends = analyze_monthly_trends(user_id, metrics)
+    
+    # Step 3: Determine performance category
+    performance = categorize_monthly_performance(metrics)
+    
+    # Step 4: Select template and generate insights
+    template = select_monthly_template(performance, user_id)
+    insights = generate_monthly_insights(metrics, trends, performance)
+    
+    # Step 5: Create savings comparisons if under budget
+    if performance in ['crushed_it', 'close_call']:
+        comparisons = generate_savings_comparisons(metrics['amount_saved'])
+    else:
+        comparisons = None
+    
+    # Step 6: Calculate suggested goal for next month
+    suggested_goal = calculate_suggested_goal(metrics, performance)
+    
+    # Step 7: Build final message
+    return build_monthly_message(template, metrics, insights, comparisons, suggested_goal)
+```
+
+### Performance Categories
+```python
+def categorize_monthly_performance(metrics):
+    variance = metrics['total_spent'] / metrics['budget_goal']
+    
+    if variance <= 0.85:
+        return 'crushed_it'  # 15%+ under
+    elif variance <= 1.0:
+        return 'close_call'  # 0-15% under
+    elif variance <= 1.10:
+        return 'small_miss'  # 0-10% over
+    else:
+        return 'significant_miss'  # 10%+ over
+```
+
+### Goal Suggestion Logic
+```python
+def calculate_suggested_goal(metrics, performance):
+    current_spent = metrics['total_spent']
+    current_goal = metrics['budget_goal']
+    
+    if performance == 'crushed_it':
+        # Suggest slightly lower for continued wins
+        return round(current_spent * 1.05, -1)  # 5% above actual
+    
+    elif performance == 'close_call':
+        # Keep same goal
+        return current_goal
+    
+    elif performance == 'small_miss':
+        # Realistic increase
+        return round(current_spent * 0.95, -1)  # 5% below actual
+    
+    else:  # significant_miss
+        # Achievable stepping stone
+        return round(current_spent * 0.90, -1)  # 10% reduction
+```
+
+## Special Cases
+
+### No Response to Goal Setting
+**Day 2 Reminder:**
+```
+👋 Quick reminder, {name}!
+
+Your {current_month} budget is still set to ${current_goal}.
+
+Reply with a new number to update, or ignore this to keep it the same.
+```
+
+### Changed Mind / Update Goal
+```
+✅ Got it! Updated your {month} goal to ${new_goal}.
+
+That's ${daily_amount}/day for the remaining {days_left} days.
+
+You've got this! 💪
+```
+
+### Huge Improvement Month
+```
+🏆 PERSONAL RECORD, {name}!
+
+{month}: ${total_spent}
+Previous best: ${previous_best_month} 
+
+You improved by ${improvement_amount} ({improvement_percent}%)!
+
+Whatever you did this month... bottle it up! 🌟
+
+{next_month} goal? (Stick with what worked: ${current_goal}?)
+```
+
+### December Special
+```
+🎄 December wrap-up, {name}!
+
+Holiday spending: ${total_spent} of ${budget_goal}
+{performance_message}
+
+🎊 Year total: You saved ${yearly_saved} with Moony!
+
+Ready to make {next_year} even better?
+January goal? Reply with a number.
+```
+
+## Analytics & Optimization
+
+### Track Key Metrics
+1. **Goal Update Rate**: % who set new goal vs keep same
+2. **Response Time**: How quickly users reply
+3. **Goal Realism**: Correlation between suggested vs chosen goals
+4. **Churn Points**: Do over-budget users drop off?
+5. **Success Correlation**: Which message elements drive next month success
+
+### A/B Test Opportunities
+1. **Comparison Styles**: Tangible items vs pure numbers
+2. **Insight Selection**: Data-driven vs emotional
+3. **Goal Suggestion**: Show suggestion vs let them choose
+4. **Message Length**: Concise vs detailed
+5. **Celebration Style**: Emojis vs professional
+
+## Future Enhancements
+
+1. **Year-in-Review**: Annual summary with trends and totals
+2. **Milestone Rewards**: "6 months under budget!" celebrations  
+3. **Predictive Insights**: "Based on trends, next month looks..."
+4. **Social Comparison**: "You saved more than 73% of users"
+5. **Goal Recommendations**: ML-based optimal goal setting
+6. **Category Challenges**: "Can you beat last month's dining spending?"
+7. **Savings Visualization**: Simple ASCII chart of progress
