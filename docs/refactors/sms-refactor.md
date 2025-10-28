@@ -482,7 +482,6 @@ Success Criteria:
 
 
 Phase 5: Daily SMS Migration
-Duration: 1 day
 Goal: Switch daily spending messages to AWS
 Files to Modify:
 1. apps/api/src/services/dailySmsService.ts

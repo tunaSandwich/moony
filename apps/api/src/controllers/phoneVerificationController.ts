@@ -48,7 +48,7 @@ const isValidVerificationCode = (code: string): boolean => {
   return codeRegex.test(code.trim());
 };
 
-export class TwilioController {
+export class PhoneVerificationController {
   private twilioClient: twilio.Twilio;
   private welcomeMessageService: WelcomeMessageService;
 

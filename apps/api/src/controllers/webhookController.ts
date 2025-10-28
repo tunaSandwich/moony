@@ -4,7 +4,8 @@ import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { MessagingService } from '../services/messagingService.js';
+import { AWSSMSService } from '../services/aws/smsService.js';
+import { WebhookParser } from '../utils/webhookParser.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 import { PlaidWebhookService } from '../services/PlaidWebhookService.js';
@@ -108,35 +109,33 @@ const calculatePeriodDates = (monthStartDay?: number): { periodStart: Date, peri
   return { periodStart, periodEnd, actualMonthStartDay };
 };
 
-// Utility function to send response message (SMS or WhatsApp)
+// Utility function to send response message via AWS SMS
 const sendResponse = async (to: string, message: string, preferredChannel?: 'sms' | 'whatsapp'): Promise<void> => {
   try {
-    const messagingService = new MessagingService();
+    const awsSmsService = new AWSSMSService();
     
-    const result = await messagingService.sendMessage({
+    const result = await awsSmsService.sendMessage({
       to,
       body: message,
-      forceChannel: preferredChannel
+      messageType: 'TRANSACTIONAL'
     });
 
     if (result.success) {
-      logger.info('Response message sent successfully', { 
-        to: `${to.substring(0, 4)}...`,
-        channel: result.channel,
-        messageSid: result.messageSid,
+      logger.info('Response message sent successfully via AWS', { 
+        to: WebhookParser.maskPhoneNumber(to),
+        messageId: result.messageId,
         messageLength: message.length,
-        fallbackUsed: result.fallbackUsed || false
+        provider: 'AWS'
       });
     } else {
-      logger.error('Failed to send response message', {
-        to: `${to.substring(0, 4)}...`,
-        channel: result.channel,
+      logger.error('Failed to send response message via AWS', {
+        to: WebhookParser.maskPhoneNumber(to),
         error: result.error
       });
     }
   } catch (error) {
     logger.error('Failed to send response message', { 
-      to: `${to.substring(0, 4)}...`,
+      to: WebhookParser.maskPhoneNumber(to),
       error: (error as Error).message 
     });
     // Don't throw error - we still want to return TwiML
@@ -156,13 +155,11 @@ const formatCurrency = (amount: number): string => {
 // Note: Welcome message analytics are handled in TwilioController after phone verification
 
 export class WebhookController {
-  private messagingService: MessagingService;
   private calculationService: CalculationService;
   private plaidAnalyticsService: PlaidAnalyticsService;
   private plaidWebhookService: PlaidWebhookService;
 
   constructor() {
-    this.messagingService = new MessagingService();
     this.calculationService = new CalculationService();
     this.plaidAnalyticsService = new PlaidAnalyticsService();
     this.plaidWebhookService = new PlaidWebhookService();
@@ -179,8 +176,8 @@ export class WebhookController {
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    // Parse incoming message using the messaging service
-    const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+    // Parse incoming message using webhook parser
+    const messageInfo = WebhookParser.parseIncomingMessage(req.body);
     const { phoneNumber, messageBody, channel, messageSid } = messageInfo;
 
     // Validate required webhook data
@@ -425,7 +422,7 @@ Reply STOP to opt out anytime.`;
       }
 
       // For unexpected errors, send generic error message and return TwiML
-      const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+      const messageInfo = WebhookParser.parseIncomingMessage(req.body);
       await sendResponse(messageInfo.phoneNumber, 'Sorry, there was an error processing your message. Please try again later.', messageInfo.channel);
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
