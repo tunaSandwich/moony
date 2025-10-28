@@ -1,5 +1,5 @@
 import { SendTextMessageCommand } from '@aws-sdk/client-pinpoint-sms-voice-v2';
-import { logger } from 'packages/utils/logger.js';
+import { logger } from '@logger';
 import { AWSClients } from './clients/awsClients.js';
 import { awsConfig } from '../../config/aws.js';
 import { prisma } from '../../db.js';
