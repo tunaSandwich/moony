@@ -9,6 +9,7 @@ import { WebhookParser } from '../utils/webhookParser.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 import { PlaidWebhookService } from '../services/PlaidWebhookService.js';
+import { metricsLogger } from '../utils/metricsLogger.js';
 
 // Use shared Prisma client
 
@@ -166,6 +167,11 @@ export class WebhookController {
   }
 
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const startTime = Date.now();
+    
+    // Log webhook reception
+    metricsLogger.logWebhookReceived('twilio');
+    
     // Validate Twilio signature for security
     if (!validateTwilioSignature(req)) {
       logger.warn('Invalid Twilio signature attempt', { 
@@ -173,6 +179,7 @@ export class WebhookController {
         userAgent: req.get('User-Agent'),
         signature: req.headers['x-twilio-signature'] ? 'present' : 'missing'
       });
+      metricsLogger.logWebhookProcessed('twilio', false);
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
@@ -403,6 +410,12 @@ Reply STOP to opt out anytime.`;
 
       await sendResponse(phoneNumber, confirmationMessage, channel);
 
+      // Log successful webhook processing
+      const processingTime = Date.now() - startTime;
+      metricsLogger.logWebhookProcessed('twilio', true);
+      metricsLogger.logWebhookLatency(processingTime, 'twilio');
+      metricsLogger.logDailySms('budget');
+
       // Return empty TwiML response as per Twilio webhook requirements
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
@@ -415,6 +428,12 @@ Reply STOP to opt out anytime.`;
         error: error.message,
         stack: error.stack
       });
+
+      // Log failed webhook processing
+      const processingTime = Date.now() - startTime;
+      metricsLogger.logWebhookProcessed('twilio', false);
+      metricsLogger.logWebhookLatency(processingTime, 'twilio');
+      metricsLogger.logProcessingError('webhook_processing', error.message);
 
       // If this is an AppError, we've already sent appropriate SMS
       if (error instanceof AppError) {
@@ -436,6 +455,9 @@ Reply STOP to opt out anytime.`;
   public handlePlaidWebhook = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const startTime = Date.now();
     const signature = (req.headers['plaid-verification'] || req.headers['Plaid-Verification']) as string;
+    
+    // Log webhook reception
+    metricsLogger.logWebhookReceived('plaid');
     
     try {
       logger.info('Plaid webhook received', {
@@ -473,6 +495,10 @@ Reply STOP to opt out anytime.`;
         processingTimeMs: processingTime
       });
 
+      // Log metrics for Plaid webhook processing
+      metricsLogger.logWebhookProcessed('plaid', result.success);
+      metricsLogger.logWebhookLatency(processingTime, 'plaid');
+
       // Return success response quickly (within 10 seconds as required by Plaid)
       if (result.success) {
         res.status(200).json({ 
@@ -497,6 +523,11 @@ Reply STOP to opt out anytime.`;
         error: error.message,
         processingTimeMs: processingTime
       });
+
+      // Log failed webhook processing
+      metricsLogger.logWebhookProcessed('plaid', false);
+      metricsLogger.logWebhookLatency(processingTime, 'plaid');
+      metricsLogger.logProcessingError('plaid_webhook', error.message);
 
       // Return 500 to trigger Plaid retry
       res.status(500).json({ 

@@ -8,6 +8,7 @@ import webhookRoutes from './webhooks.js';
 import awsWebhooksRoutes from './aws-webhooks.js';
 import userRoutes from './user.js';
 import goalsRoutes from './goals.js';
+import simulatorRoutes from './dev/simulatorRoutes.js';
 
 const router = Router();
 
@@ -21,5 +22,10 @@ router.use('/api/user', userRoutes);
 router.use('/api/goals', goalsRoutes);
 router.use('/api', jobRoutes);
 router.use('/api/invite-codes', inviteRoutes);
+
+// Development-only routes
+if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
+  router.use('/api/dev/simulator', simulatorRoutes);
+}
 
 export default router;

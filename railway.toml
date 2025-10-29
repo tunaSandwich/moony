@@ -1,0 +1,38 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "npm run start:production"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
+
+[environments.production]
+NODE_ENV = "production"
+
+[environments.staging]
+NODE_ENV = "staging"
+
+# Railway deployment configuration
+[services.api]
+source = "."
+build.buildCommand = "npm install && npx prisma generate && npm run build"
+build.watchPatterns = ["apps/api/**", "packages/**", "package.json"]
+
+[services.api.deploy]
+startCommand = "npm run start:production"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
+
+# Environment-specific overrides
+[environments.production.services.api.deploy]
+replicas = 2
+restartPolicyMaxRetries = 5
+
+[environments.staging.services.api.deploy]
+replicas = 1
+restartPolicyMaxRetries = 3

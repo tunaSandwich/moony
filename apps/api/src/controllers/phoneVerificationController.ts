@@ -5,6 +5,7 @@ import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { WelcomeMessageService } from '../services/aws/welcomeMessageService.js';
+import { DevModeService } from '../services/dev/devModeService.js';
 
 // Use shared Prisma client
 
@@ -251,6 +252,33 @@ export class PhoneVerificationController {
             logger.info('Phone number verified successfully (dev mode)', { userId });
           });
 
+          // Initialize development tools if SMS simulator is enabled
+          if (process.env.SMS_SIMULATOR === 'true') {
+            try {
+              const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { phoneNumber: true }
+              });
+              
+              if (user?.phoneNumber) {
+                logger.info('[DevMode] Attempting to initialize development tools', {
+                  phoneNumber: user.phoneNumber,
+                  nodeEnv: process.env.NODE_ENV,
+                  smsSimulator: process.env.SMS_SIMULATOR
+                });
+                await DevModeService.initializeForUser(user.phoneNumber);
+                // Give simulator time to launch before sending welcome message
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              }
+            } catch (devError: any) {
+              // Don't fail verification if dev tools fail
+              logger.warn('Failed to initialize development tools (dev mode)', {
+                userId,
+                error: devError.message
+              });
+            }
+          }
+
           // Send welcome SMS with analytics data
           this.sendWelcomeSMS(userId);
 
@@ -291,6 +319,35 @@ export class PhoneVerificationController {
             twilioVerificationId: verificationCheck.sid 
           });
         });
+
+        // Initialize development tools if in development mode
+        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+          if (process.env.SMS_SIMULATOR === 'true') {
+            try {
+              const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { phoneNumber: true }
+              });
+              
+              if (user?.phoneNumber) {
+                logger.info('[DevMode] Attempting to initialize development tools', {
+                  phoneNumber: user.phoneNumber,
+                  nodeEnv: process.env.NODE_ENV,
+                  smsSimulator: process.env.SMS_SIMULATOR
+                });
+                await DevModeService.initializeForUser(user.phoneNumber);
+                // Give simulator time to launch before sending welcome message
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              }
+            } catch (devError: any) {
+              // Don't fail verification if dev tools fail
+              logger.warn('Failed to initialize development tools', {
+                userId,
+                error: devError.message
+              });
+            }
+          }
+        }
 
         // Send welcome SMS with analytics data
         this.sendWelcomeSMS(userId);

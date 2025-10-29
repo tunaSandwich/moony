@@ -4,6 +4,7 @@ import { format as formatDate } from 'date-fns';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { AWSSMSService } from './aws/smsService.js';
 import { logger } from '@logger';
+import { metricsLogger } from '../utils/metricsLogger.js';
 
 interface DailySmsResult {
   totalUsers: number;
@@ -88,6 +89,9 @@ export class DailySmsService {
           // Process this user
           await this.processUser(user, activeGoal, analytics);
           result.successCount++;
+          
+          // Log metrics for daily SMS
+          metricsLogger.logDailySms('daily');
 
           // Rate limiting for AWS SMS (to stay within AWS limits)
           await this.delay(100); // 100ms delay between messages

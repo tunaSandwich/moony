@@ -3,6 +3,7 @@ import { logger } from '@logger';
 import { AWSClients } from './clients/awsClients.js';
 import { awsConfig } from '../../config/aws.js';
 import { prisma } from '../../db.js';
+import { metricsLogger } from '../../utils/metricsLogger.js';
 
 export interface SendSMSParams {
   to: string;           // E.164 format from database
@@ -123,12 +124,32 @@ export class AWSSMSService {
         userId
       });
       
+      // Log metrics for successful delivery
+      if (messageId) {
+        metricsLogger.logDeliverySuccess(messageId, 'sms');
+      }
+      
       // Log the actual message content in development for debugging
       if (this.sandboxMode && this.useSimulatorOverride) {
         logger.debug('[AWSSMSService] Simulator message content', {
           messageId,
           body: body.substring(0, 100) + (body.length > 100 ? '...' : '') // Log first 100 chars
         });
+      }
+      
+      // Send to SMS simulator in development mode
+      if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') && 
+          process.env.SMS_SIMULATOR === 'true') {
+        try {
+          const { addSimulatorMessage } = await import('../../routes/dev/simulatorRoutes.js');
+          addSimulatorMessage(destinationNumber, body, this.originationNumber);
+        } catch (simulatorError: any) {
+          // Don't fail SMS sending if simulator fails
+          logger.debug('Failed to send message to simulator', {
+            error: simulatorError.message,
+            messageId
+          });
+        }
       }
       
       // Update DB tracking on success when userId present
@@ -167,6 +188,10 @@ export class AWSSMSService {
         sandboxMode: this.sandboxMode,
         userId
       });
+      
+      // Log metrics for delivery failure
+      metricsLogger.logDeliveryFailure(error.message, 'sms');
+      metricsLogger.logProcessingError('sms_send', error.message);
       
       return {
         success: false,

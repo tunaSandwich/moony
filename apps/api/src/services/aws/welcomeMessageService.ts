@@ -5,6 +5,7 @@ import { TemplateService } from '../templateService.js';
 import { WELCOME_TEMPLATES, BUDGET_TEMPLATES, ERROR_TEMPLATES } from '../../templates/smsTemplates.js';
 import { logger } from 'packages/utils/logger.js';
 import { format, subMonths } from 'date-fns';
+import { metricsLogger } from '../../utils/metricsLogger.js';
 
 type UserWithAnalytics = {
   firstName?: string | null;
@@ -152,6 +153,9 @@ export class WelcomeMessageService {
           scenario,
           messageId: result.messageId
         });
+        
+        // Log metrics for welcome message
+        metricsLogger.logDailySms('welcome');
       }
       
       return {
@@ -331,6 +335,11 @@ export class WelcomeMessageService {
         messageType: 'TRANSACTIONAL',
         userId: userId
       });
+      
+      // Log metrics for budget confirmation
+      if (result.success && result.messageId) {
+        metricsLogger.logDailySms('budget');
+      }
       
       return {
         success: result.success,
