@@ -9,22 +9,22 @@ const PrivacyPolicyPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-pink-200 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-pink-bg py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/20">
+        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-light text-white mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Privacy Policy
             </h1>
-            <p className="text-white/80 text-sm">
+            <p className="text-gray-600 text-sm">
               moony - How We Protect Your Information
             </p>
           </div>
 
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 text-white/90 space-y-6 max-h-96 overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 text-gray-700 space-y-6 max-h-96 overflow-y-auto border border-gray-100">
             
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">1. Information We Collect</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Information We Collect</h2>
               <p className="text-sm leading-relaxed mb-3">
                 moony collects the following types of information to provide our services:
               </p>
@@ -37,7 +37,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">2. How We Use Your Information</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">2. How We Use Your Information</h2>
               <p className="text-sm leading-relaxed mb-3">
                 We use your information to:
               </p>
@@ -50,8 +50,8 @@ const PrivacyPolicyPage = () => {
               </ul>
             </section>
 
-            <section className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-white mb-3">3. Mobile Information Protection</h2>
+            <section className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Mobile Information Protection</h2>
               <p className="text-sm leading-relaxed font-medium">
                 <strong>Mobile information will not be shared with third parties for marketing or promotional purposes.</strong>
               </p>
@@ -62,7 +62,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">4. Financial Data Security</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Financial Data Security</h2>
               <p className="text-sm leading-relaxed">
                 Your financial data is protected through multiple layers of security:
               </p>
@@ -76,7 +76,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">5. Data Sharing and Disclosure</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Data Sharing and Disclosure</h2>
               <p className="text-sm leading-relaxed mb-3">
                 We do not sell, rent, or trade your personal information. We may share your information only in these limited circumstances:
               </p>
@@ -92,7 +92,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">6. SMS and Communication Privacy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">6. SMS and Communication Privacy</h2>
               <p className="text-sm leading-relaxed">
                 Regarding SMS and electronic communications:
               </p>
@@ -106,7 +106,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">7. Data Retention</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Data Retention</h2>
               <p className="text-sm leading-relaxed">
                 We retain your information for as long as necessary to provide services:
               </p>
@@ -119,7 +119,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">8. Your Rights and Choices</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Your Rights and Choices</h2>
               <p className="text-sm leading-relaxed mb-3">
                 You have the right to:
               </p>
@@ -134,7 +134,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">9. Children's Privacy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Children's Privacy</h2>
               <p className="text-sm leading-relaxed">
                 moony is not intended for use by children under 18. We do not knowingly collect personal information from children under 18. 
                 If we become aware that we have collected such information, we will take steps to delete it promptly.
@@ -142,7 +142,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">10. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Changes to This Policy</h2>
               <p className="text-sm leading-relaxed">
                 We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. 
                 We will notify you of significant changes via email or SMS. Your continued use of moony after changes indicates acceptance of the updated policy.
@@ -150,7 +150,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-3">11. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Contact Us</h2>
               <p className="text-sm leading-relaxed">
                 If you have questions about this Privacy Policy or how we handle your information:
               </p>
@@ -161,7 +161,7 @@ const PrivacyPolicyPage = () => {
               </ul>
             </section>
 
-            <p className="text-xs text-white/70 mt-6 pt-4 border-t border-white/20">
+            <p className="text-xs text-gray-500 mt-6 pt-4 border-t border-gray-200">
               Last updated: {new Date().toLocaleDateString()}
             </p>
           </div>
@@ -170,7 +170,7 @@ const PrivacyPolicyPage = () => {
             <Button
               onClick={handleBack}
               variant="secondary"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm rounded-lg font-medium"
+              className="w-full bg-transparent text-black border border-black hover:bg-gray-50 rounded-lg font-medium"
               size="lg"
             >
               Back
