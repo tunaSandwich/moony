@@ -3,6 +3,7 @@ import { prisma } from '../../src/db.js';
 import { format as formatDate } from 'date-fns';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { AWSSMSService } from './aws/smsService.js';
+import { TwilioSMSService } from './twilio/smsService.js';
 import { logger } from '@logger';
 import { metricsLogger } from '../utils/metricsLogger.js';
 
@@ -18,13 +19,23 @@ interface DailySmsResult {
 export class DailySmsService {
   private prisma: PrismaClient;
   private calculationService: CalculationService;
-  private smsService: AWSSMSService;
+  private smsService: AWSSMSService | TwilioSMSService;
+  private provider: string;
 
   constructor() {
     this.prisma = prisma;
     this.calculationService = new CalculationService();
-    this.smsService = new AWSSMSService();
-    logger.info('[DailySmsService] Using AWS SMS provider');
+    
+    // Determine SMS provider based on environment variable
+    this.provider = process.env.SMS_PROVIDER || 'twilio'; // Default to Twilio
+    
+    if (this.provider === 'twilio') {
+      this.smsService = new TwilioSMSService();
+      logger.info('[DailySmsService] Using Twilio SMS provider');
+    } else {
+      this.smsService = new AWSSMSService();
+      logger.info('[DailySmsService] Using AWS SMS provider');
+    }
   }
 
   async sendDailyMessages(): Promise<DailySmsResult> {
@@ -57,7 +68,7 @@ export class DailySmsService {
 
       logger.info('[DailySmsService] Starting daily message job', {
         totalUsers: result.totalUsers,
-        smsProvider: 'AWS'
+        smsProvider: this.provider.toUpperCase()
       });
 
       // Process each user
@@ -93,7 +104,7 @@ export class DailySmsService {
           // Log metrics for daily SMS
           metricsLogger.logDailySms('daily');
 
-          // Rate limiting for AWS SMS (to stay within AWS limits)
+          // Rate limiting for SMS providers (to stay within limits)
           await this.delay(100); // 100ms delay between messages
 
         } catch (error: any) {
@@ -175,7 +186,7 @@ export class DailySmsService {
       const logData: any = {
         userId: user.id,
         userName: `${user.firstName} ${user.lastName}`,
-        provider: 'AWS',
+        provider: this.provider.toUpperCase(),
         todaysTarget,
         messageId: (result as any).messageId
       };
