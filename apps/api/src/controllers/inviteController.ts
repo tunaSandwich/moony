@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 export class InviteController {
   public validateInviteCode = asyncHandler(async (req: Request, res: Response): Promise<void> => {

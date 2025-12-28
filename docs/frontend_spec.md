@@ -324,7 +324,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((state) => ({ isComplete: true, currentStep: 4 })),
     }),
     {
-      name: 'budget-pal-onboarding',
+      name: 'moony-onboarding',
       partialize: (state) => ({
         goalAmount: state.goalAmount,
         bankConnection: state.bankConnection,

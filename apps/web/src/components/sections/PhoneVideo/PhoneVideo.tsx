@@ -57,34 +57,62 @@ export const PhoneVideo = forwardRef<HTMLVideoElement, PhoneVideoProps>(
   ) => {
     const prefersReducedMotion = useReducedMotion();
     const internalRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
     
     // Use forwarded ref or internal ref
     const videoRef = (ref as React.RefObject<HTMLVideoElement>) || internalRef;
 
-    // Play video on first scroll
+    // Autoplay video when user scrolls AND video enters viewport
     useEffect(() => {
       if (!playOnScroll || !videoRef.current || prefersReducedMotion) return;
       
-      let hasStarted = false;
-
-      const handleFirstScroll = () => {
-        if (hasStarted || !videoRef.current) return;
-        hasStarted = true;
-        
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Video play was prevented (e.g., browser autoplay policy)
-            // Silently handle - not a critical error
-          });
-        }
-        
-        window.removeEventListener('scroll', handleFirstScroll);
-      };
-
-      window.addEventListener('scroll', handleFirstScroll, { passive: true });
+      const currentVideoRef = videoRef.current;
+      let hasScrolled = false;
+      let hasPlayed = false;
+      let observer: IntersectionObserver | null = null;
       
-      return () => window.removeEventListener('scroll', handleFirstScroll);
+      // Wait for first scroll before enabling video autoplay
+      const handleScroll = () => {
+        if (!hasScrolled) {
+          hasScrolled = true;
+          
+          // Now that user has scrolled, set up intersection observer
+          observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting && videoRef.current && !hasPlayed) {
+                  hasPlayed = true;
+                  const playPromise = videoRef.current.play();
+                  if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                      // Video play was prevented (e.g., browser autoplay policy)
+                      // Silently handle - not a critical error
+                    });
+                  }
+                }
+              });
+            },
+            {
+              threshold: 0.5 // Trigger when 50% of the video is in viewport
+            }
+          );
+          
+          observer.observe(currentVideoRef);
+          
+          // Remove scroll listener after first scroll
+          window.removeEventListener('scroll', handleScroll);
+        }
+      };
+      
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        if (observer) {
+          observer.unobserve(currentVideoRef);
+        }
+      };
     }, [playOnScroll, prefersReducedMotion, videoRef]);
 
     // Set initial styles on mount
@@ -123,23 +151,72 @@ export const PhoneVideo = forwardRef<HTMLVideoElement, PhoneVideoProps>(
       return () => clearTimeout(timer);
     }, [prefersReducedMotion, videoRef]);
 
+    // Mobile tap controls behavior
+    useEffect(() => {
+      if (!videoRef.current) return;
+      
+      const video = videoRef.current;
+      const isMobile = 'ontouchstart' in window;
+      
+      if (!isMobile) return;
+      
+      // Initially hide controls
+      video.removeAttribute('controls');
+      
+      const showControls = () => {
+        video.setAttribute('controls', 'true');
+        
+        // Clear existing timer
+        if (hideControlsTimer.current) {
+          clearTimeout(hideControlsTimer.current);
+        }
+        
+        // Hide after 3 seconds
+        hideControlsTimer.current = setTimeout(() => {
+          video.removeAttribute('controls');
+        }, 3000);
+      };
+      
+      const handleTap = (e: Event) => {
+        e.preventDefault();
+        if (video.hasAttribute('controls')) {
+          video.removeAttribute('controls');
+          if (hideControlsTimer.current) {
+            clearTimeout(hideControlsTimer.current);
+          }
+        } else {
+          showControls();
+        }
+      };
+      
+      video.addEventListener('click', handleTap);
+      
+      return () => {
+        video.removeEventListener('click', handleTap);
+        if (hideControlsTimer.current) {
+          clearTimeout(hideControlsTimer.current);
+        }
+      };
+    }, [videoRef]);
+
     return (
-      <div className={`flex justify-center ${className}`}>
-        <video
-          ref={videoRef}
-          src={videoSrc}
-          aria-label={ariaLabel}
-          className="w-full h-auto mx-auto relative z-10 phone-fade-mask"
-          style={{
-            maxWidth,
-            width: 'min(90vw, 900px)',
-            opacity: 0, // Initial state
-          }}
-          loop
-          muted
-          playsInline
-          preload="auto"
-        />
+      <div className={`flex justify-center ${className}`} ref={containerRef}>
+        <div className="relative video-container" style={{ maxWidth, width: 'min(90vw, 900px)' }}>
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            aria-label={ariaLabel}
+            className="w-full h-auto mx-auto relative z-10 phone-fade-mask video-hover-controls"
+            style={{
+              opacity: 0, // Initial state
+            }}
+            controls
+            controlsList="nodownload"
+            muted
+            playsInline
+            preload="auto"
+          />
+        </div>
       </div>
     );
   }

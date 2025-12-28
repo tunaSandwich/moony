@@ -53,7 +53,7 @@ const PhoneVerificationPage = () => {
         // Redirect if already verified
         if (user.twilioStatus === 'verified') {
           await new Promise(resolve => setTimeout(resolve, 2000));
-          navigate('/welcome');
+          navigate('/dashboard');
           return;
         }
       } catch (error) {
@@ -219,11 +219,13 @@ const PhoneVerificationPage = () => {
                 <label htmlFor="smsConsent" className="text-sm leading-relaxed" style={{ color: '#1E1E1E' }}>
                   <strong>I consent to receive daily spending notifications via SMS from moony.</strong>
                   <br />
-                  Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
-                  <br />
-                  Mobile information will not be shared with third parties for marketing purposes.
-                  <br />
+                  <label htmlFor="smsConsent" className="text-sm leading-relaxed" style={{ color: '#8B869E' }}>
+                    Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
+                    <br />
+                    Mobile information will not be shared with third parties for marketing purposes.
+                    <br />
                   Reply <strong>STOP</strong> to opt out. Reply <strong>HELP</strong> for help.
+                  </label>
                 </label>
               </div>
             </div>

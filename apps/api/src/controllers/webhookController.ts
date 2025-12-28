@@ -1,15 +1,17 @@
 import { Request, Response } from 'express';
 import twilio from 'twilio';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { MessagingService } from '../services/messagingService.js';
+import { AWSSMSService } from '../services/aws/smsService.js';
+import { WebhookParser } from '../utils/webhookParser.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
 import { PlaidWebhookService } from '../services/PlaidWebhookService.js';
+import { metricsLogger } from '../utils/metricsLogger.js';
 
-const prisma = new PrismaClient();
+// Use shared Prisma client
 
 // Constants for business rules
 const SPENDING_GOAL_LIMITS = {
@@ -108,35 +110,33 @@ const calculatePeriodDates = (monthStartDay?: number): { periodStart: Date, peri
   return { periodStart, periodEnd, actualMonthStartDay };
 };
 
-// Utility function to send response message (SMS or WhatsApp)
+// Utility function to send response message via AWS SMS
 const sendResponse = async (to: string, message: string, preferredChannel?: 'sms' | 'whatsapp'): Promise<void> => {
   try {
-    const messagingService = new MessagingService();
+    const awsSmsService = new AWSSMSService();
     
-    const result = await messagingService.sendMessage({
+    const result = await awsSmsService.sendMessage({
       to,
       body: message,
-      forceChannel: preferredChannel
+      messageType: 'TRANSACTIONAL'
     });
 
     if (result.success) {
-      logger.info('Response message sent successfully', { 
-        to: `${to.substring(0, 4)}...`,
-        channel: result.channel,
-        messageSid: result.messageSid,
+      logger.info('Response message sent successfully via AWS', { 
+        to: WebhookParser.maskPhoneNumber(to),
+        messageId: result.messageId,
         messageLength: message.length,
-        fallbackUsed: result.fallbackUsed || false
+        provider: 'AWS'
       });
     } else {
-      logger.error('Failed to send response message', {
-        to: `${to.substring(0, 4)}...`,
-        channel: result.channel,
+      logger.error('Failed to send response message via AWS', {
+        to: WebhookParser.maskPhoneNumber(to),
         error: result.error
       });
     }
   } catch (error) {
     logger.error('Failed to send response message', { 
-      to: `${to.substring(0, 4)}...`,
+      to: WebhookParser.maskPhoneNumber(to),
       error: (error as Error).message 
     });
     // Don't throw error - we still want to return TwiML
@@ -156,19 +156,22 @@ const formatCurrency = (amount: number): string => {
 // Note: Welcome message analytics are handled in TwilioController after phone verification
 
 export class WebhookController {
-  private messagingService: MessagingService;
   private calculationService: CalculationService;
   private plaidAnalyticsService: PlaidAnalyticsService;
   private plaidWebhookService: PlaidWebhookService;
 
   constructor() {
-    this.messagingService = new MessagingService();
     this.calculationService = new CalculationService();
     this.plaidAnalyticsService = new PlaidAnalyticsService();
     this.plaidWebhookService = new PlaidWebhookService();
   }
 
   public handleIncomingMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const startTime = Date.now();
+    
+    // Log webhook reception
+    metricsLogger.logWebhookReceived('twilio');
+    
     // Validate Twilio signature for security
     if (!validateTwilioSignature(req)) {
       logger.warn('Invalid Twilio signature attempt', { 
@@ -176,11 +179,12 @@ export class WebhookController {
         userAgent: req.get('User-Agent'),
         signature: req.headers['x-twilio-signature'] ? 'present' : 'missing'
       });
+      metricsLogger.logWebhookProcessed('twilio', false);
       throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401);
     }
 
-    // Parse incoming message using the messaging service
-    const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+    // Parse incoming message using webhook parser
+    const messageInfo = WebhookParser.parseIncomingMessage(req.body);
     const { phoneNumber, messageBody, channel, messageSid } = messageInfo;
 
     // Validate required webhook data
@@ -406,6 +410,12 @@ Reply STOP to opt out anytime.`;
 
       await sendResponse(phoneNumber, confirmationMessage, channel);
 
+      // Log successful webhook processing
+      const processingTime = Date.now() - startTime;
+      metricsLogger.logWebhookProcessed('twilio', true);
+      metricsLogger.logWebhookLatency(processingTime, 'twilio');
+      metricsLogger.logDailySms('budget');
+
       // Return empty TwiML response as per Twilio webhook requirements
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
@@ -419,13 +429,19 @@ Reply STOP to opt out anytime.`;
         stack: error.stack
       });
 
+      // Log failed webhook processing
+      const processingTime = Date.now() - startTime;
+      metricsLogger.logWebhookProcessed('twilio', false);
+      metricsLogger.logWebhookLatency(processingTime, 'twilio');
+      metricsLogger.logProcessingError('webhook_processing', error.message);
+
       // If this is an AppError, we've already sent appropriate SMS
       if (error instanceof AppError) {
         throw error;
       }
 
       // For unexpected errors, send generic error message and return TwiML
-      const messageInfo = this.messagingService.parseIncomingMessage(req.body);
+      const messageInfo = WebhookParser.parseIncomingMessage(req.body);
       await sendResponse(messageInfo.phoneNumber, 'Sorry, there was an error processing your message. Please try again later.', messageInfo.channel);
       res.set('Content-Type', 'application/xml');
       res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
@@ -439,6 +455,9 @@ Reply STOP to opt out anytime.`;
   public handlePlaidWebhook = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const startTime = Date.now();
     const signature = (req.headers['plaid-verification'] || req.headers['Plaid-Verification']) as string;
+    
+    // Log webhook reception
+    metricsLogger.logWebhookReceived('plaid');
     
     try {
       logger.info('Plaid webhook received', {
@@ -476,6 +495,10 @@ Reply STOP to opt out anytime.`;
         processingTimeMs: processingTime
       });
 
+      // Log metrics for Plaid webhook processing
+      metricsLogger.logWebhookProcessed('plaid', result.success);
+      metricsLogger.logWebhookLatency(processingTime, 'plaid');
+
       // Return success response quickly (within 10 seconds as required by Plaid)
       if (result.success) {
         res.status(200).json({ 
@@ -500,6 +523,11 @@ Reply STOP to opt out anytime.`;
         error: error.message,
         processingTimeMs: processingTime
       });
+
+      // Log failed webhook processing
+      metricsLogger.logWebhookProcessed('plaid', false);
+      metricsLogger.logWebhookLatency(processingTime, 'plaid');
+      metricsLogger.logProcessingError('plaid_webhook', error.message);
 
       // Return 500 to trigger Plaid retry
       res.status(500).json({ 

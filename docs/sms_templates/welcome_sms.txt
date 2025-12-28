@@ -1,0 +1,54 @@
+👋 Welcome to Moony, {name}!
+
+After this, you'll have a personal spending coach in your pocket!
+
+Looking at your recent spending:
+💰 This month so far: ${current_month_spend}
+📊 Daily average: ${daily_average}
+
+Based on this, what's your spending goal for {month_name}? 
+
+Reply with a number (e.g., 3000) and I'll:
+✓ Calculate your daily budget
+✓ Send smart morning reminders  
+✓ Help you save an average of $400/month
+
+Just text me a number to start! 
+```
+
+## Psychology Principles Applied
+
+1. **Goal Gradient Effect (#51)** - "After this" shows how close they are to value
+2. **Anchoring Bias (#5)** - Start with current month (lowest number) as anchor
+3. **Aha! Moment (#47)** - Clearly states the value they'll get
+4. **Spark Effect (#26)** - "Just text me a number" - minimal effort required
+5. **Loss Aversion (#65)** - "$400/month" savings opportunity
+6. **Commitment & Consistency (#66)** - They choose their own goal
+
+## Alternative Approaches
+
+**For High Variance Cases** (like $23k → $4k):
+```
+👋 Welcome to Moony, {name}!
+
+I notice your spending varies quite a bit month to month. That's totally normal! 
+
+Your last 30 days: ${last_30_days}
+Daily average: ${daily_avg}
+
+What feels like a realistic monthly goal for {month_name}? I'll help you stick to it.
+
+Reply with any number - you can always adjust later!
+```
+
+**For New Month Starts**:
+```
+👋 Welcome to Moony, {name}!
+
+Perfect timing - it's a fresh month! 
+
+Based on your spending patterns, most people like you aim for ${suggested_budget} per month.
+
+What's your {month_name} goal? Reply with any number.
+
+I'll text you each morning with a simple spending limit to keep you on track. That's it!

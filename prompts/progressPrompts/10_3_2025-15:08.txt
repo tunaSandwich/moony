@@ -1,7 +1,7 @@
-Budget Pal - Context Transfer Document
+moony - Context Transfer Document
 PROJECT OVERVIEW
 Core Project Description
-Budget Pal (codename: "moony") is an SMS-based daily spending guidance application that helps users stay on budget through daily text message check-ins. Users connect their bank via Plaid, set monthly spending goals via SMS, and receive morning texts showing their daily spending target and progress.
+moony (codename: "moony") is an SMS-based daily spending guidance application that helps users stay on budget through daily text message check-ins. Users connect their bank via Plaid, set monthly spending goals via SMS, and receive morning texts showing their daily spending target and progress.
 Key Requirements
 
 Primary constraint: "Simple solutions over perfect engineering" - ship working features, iterate later

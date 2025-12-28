@@ -27,6 +27,11 @@ model User {
   spendingGoals     SpendingGoal[]
   spendingAnalytics UserSpendingAnalytics?
 
+  // AWS SMS tracking fields
+  lastSmsMessageId  String?               @map("last_sms_message_id")
+  lastSmsSentAt     DateTime?             @map("last_sms_sent_at")
+  sandboxVerified   Boolean               @default(false) @map("sandbox_verified")
+
   @@map("users")
 }
 

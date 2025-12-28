@@ -1,0 +1,252 @@
+# CORE SMS MESSAGING SYSTEM - MOONY
+
+## Overview
+This document defines the core SMS messaging system for Moony, a budgeting app that delivers personalized daily spending insights via text messages. The system combines behavioral psychology principles with financial data analysis to create actionable, personalized messages.
+
+## Core Message Architecture
+
+### Three-Part Structure
+Every daily message follows this format:
+```
+[PART 1: Status] Simple, scannable numbers
+[PART 2: Insight] ONE personalized, actionable observation  
+[PART 3: Nudge] Specific micro-action for today
+```
+
+### Key Principles
+- **Cognitive Load (#4)**: ONE insight only, never overwhelming
+- **Nudge (#6)**: Gentle, specific suggestions
+- **Priming (#3)**: Morning message sets day's intention  
+- **Spark Effect (#26)**: Small, achievable actions
+- **Personal relevance**: Uses user's actual data, not generic advice
+
+## Message Templates
+
+### Standard Daily Message
+```
+☀️ Good Morning {name}!
+
+🎯 Today's limit: ${daily_limit}
+📊 {context_metric}: ${context_value}
+
+💡 {personalized_insight}
+{optional_nudge}
+```
+
+### Friday Message (Weekend Prep)
+```
+☀️ Happy Friday {name}!
+
+🎯 Weekend challenge: Stay under ${weekend_total}
+📊 Your Friday average: ${friday_avg}
+
+💡 {weekend_specific_insight}
+{celebration_or_warning}
+```
+
+### Sunday Message (Week Recap)
+```
+☀️ Good morning {name}!
+
+🎯 Today's limit: ${daily_limit}
+📊 Week recap: ${week_spent} spent (target was ${week_target})
+
+💡 {weekly_insight}
+{next_week_prep}
+```
+
+## Implementation Architecture
+
+### 1. Data Pipeline
+
+#### Nightly Batch Job (2-3 AM)
+Analyzes all users' transaction patterns and stores results:
+
+```python
+user_patterns = {
+    'spending_personality': str,  # 'weekend_warrior', 'stress_spender', 'consistent', 'subscription_heavy'
+    'day_of_week_avg': dict,      # {'Monday': 45, 'Tuesday': 52, ..., 'Friday': 201}
+    'category_breakdown': dict,    # {'dining': 0.35, 'transport': 0.15, 'entertainment': 0.20}
+    'peak_spending_hours': list,   # [12, 13, 18, 19] (noon, 1pm, 6pm, 7pm)
+    'recurring_charges': list,     # [{'name': 'Netflix', 'amount': 15.99, 'day': 15}, ...]
+    'monthly_trajectory': dict,    # {'pace': 1.05, 'projected_total': 3150, 'days_left': 18}
+    'top_categories': list,        # ['dining', 'entertainment', 'shopping']
+    'unusual_patterns': dict       # {'stress_correlation': 0.7, 'weather_correlation': 0.3}
+}
+```
+
+#### Morning Cron Job (6-7 AM)
+Generates and sends personalized messages:
+
+```python
+def generate_daily_message(user_id):
+    # Load pre-computed patterns
+    patterns = load_user_patterns(user_id)
+    
+    # Calculate today's context
+    today_context = {
+        'date': datetime.today(),
+        'day_of_week': 'Friday',
+        'daily_limit': calculate_daily_limit(user_id),
+        'has_subscription': check_recurring_today(user_id),
+        'is_high_risk_day': is_historically_high_spend_day(patterns),
+        'month_progress': calculate_month_progress(user_id)
+    }
+    
+    # Determine insight type
+    insight_type = run_decision_tree(patterns, today_context)
+    
+    # Generate insight
+    insight = generate_llm_insight(insight_type, patterns, today_context)
+    
+    # Send message
+    send_sms(build_message(insight, today_context))
+```
+
+### 2. Decision Tree Logic
+
+Priority order for selecting daily insight:
+
+```
+1. URGENT/TIMELY (Highest Priority)
+   ├─ Subscription renewal today → Subscription reminder insight
+   └─ High-risk day (3x+ normal spend) → Pattern warning insight
+
+2. TRAJECTORY CHECK
+   ├─ >10% over budget pace → Overspend intervention
+   └─ <10% under budget pace → Encouragement + optimization tip
+
+3. PATTERN-BASED (Most Actionable)
+   ├─ Category >40% of spending → Category-specific advice
+   ├─ Time-based pattern detected → Time-specific intervention
+   └─ Behavioral pattern identified → Behavioral nudge
+
+4. DEFAULT
+   └─ General optimization for biggest spending opportunity
+```
+
+### 3. Insight Generation
+
+#### LLM Prompt Structure
+```python
+insight_prompt = {
+    'user_context': {
+        'spending_personality': patterns['spending_personality'],
+        'top_categories': patterns['top_categories'][:2],
+        'current_pattern': insight_type,
+        'goal_status': patterns['monthly_trajectory']
+    },
+    'today_context': {
+        'day': today_context['day_of_week'],
+        'predicted_spend': patterns['day_of_week_avg'][today],
+        'limit': today_context['daily_limit'],
+        'specific_risks': identify_risks(patterns, today_context)
+    },
+    'instruction': f"Generate ONE specific, actionable tip for {insight_type}. Max 30 words. Include specific dollar amount or time."
+}
+```
+
+#### Example Insights by Type
+
+**Subscription Reminder**
+"Your HBO Max renews today ($16). Quick check: Used it this week? No? That's $192/year to consider."
+
+**Pattern Warning**
+"You typically spend 3x more on Fridays ($201 avg). Pre-plan: Lunch $15, Happy hour $40, leaves $12 buffer."
+
+**Overspend Intervention**
+"You're $143 over pace. Skip today's usual $6 coffee and $12 lunch out = back on track by Monday."
+
+**Category Optimization**
+"Dining is 47% of spending. Try the 2-meal rule: Only eat out for 2 meals today, save $35."
+
+**Stress Spend Prevention**
+"Wednesday = your stress spending day. Pack snacks & set a $20 max for impulse buys today."
+
+### 4. Spending Personality Types
+
+**Weekend Warrior**
+- Spends 60%+ on Fri-Sun
+- Needs weekend prep and Monday celebration
+
+**Stress Spender**
+- Correlation between busy days and spending
+- Needs pre-emptive interventions
+
+**Subscription Accumulator**
+- High % on recurring charges
+- Needs regular subscription audits
+
+**Consistent Spender**
+- Steady daily spending
+- Needs category optimization
+
+**Impulse Buyer**
+- Many small transactions
+- Needs transaction friction tips
+
+### 5. Message Cadence Strategy
+
+**Weeks 1-2**: Daily messages (habit formation)
+
+**Week 3+**: Smart cadence
+- Daily if on track
+- Extra nudge if overspending detected  
+- Skip if no spending for 2+ days (avoid banner blindness)
+- Always send on Fridays (weekend prep)
+- Always send on Sundays (week recap)
+
+### 6. Context Metrics
+
+Choose ONE per message:
+- `3-day average`: For consistent spenders
+- `Yesterday`: For daily accountability  
+- `This week so far`: For milestone moments
+- `Category trend`: When category is spiking
+- `Vs. your average`: For pattern breaking
+
+## Technical Requirements
+
+### Data Needs from Plaid
+- 90 days transaction history
+- Merchant names and categories
+- Transaction timestamps
+- Transaction amounts
+
+### Database Schema
+```sql
+user_patterns (
+    user_id: uuid,
+    computed_at: timestamp,
+    patterns: jsonb,
+    version: int
+)
+
+daily_insights (
+    user_id: uuid,
+    date: date,
+    insight_type: string,
+    message_sent: text,
+    metrics: jsonb
+)
+```
+
+### LLM Requirements
+- Model: GPT-4 or Claude
+- Max tokens per request: ~100
+- Temperature: 0.7 (balanced creativity/consistency)
+- Daily cost estimate: ~$0.001 per user
+
+## Success Metrics
+- Message engagement (replies/actions)
+- Budget adherence improvement
+- Spending pattern changes
+- User retention
+- Goal achievement rate
+
+## Future Enhancements
+- Two-way conversation support
+- Image-based insights (charts)
+- Predictive alerts (before overspending)
+- Social comparison insights (optional)
+- Celebration messages for milestones

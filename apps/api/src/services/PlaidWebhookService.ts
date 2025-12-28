@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db.js';
 import { PlaidAnalyticsService } from './plaidAnalyticsService.js';
 import { logger } from '@logger';
 import crypto from 'node:crypto';
@@ -23,12 +23,11 @@ interface WebhookProcessingResult {
 }
 
 export class PlaidWebhookService {
-  private prisma: PrismaClient;
+  private prisma = prisma;
   private analyticsService: PlaidAnalyticsService;
   private keyCache: Map<string, { pem: string; expiredAt: string | null }>; // cache Plaid verification keys by kid
 
   constructor() {
-    this.prisma = new PrismaClient();
     this.analyticsService = new PlaidAnalyticsService();
     this.keyCache = new Map();
   }
@@ -453,7 +452,6 @@ export class PlaidWebhookService {
    * Cleanup method for closing connections
    */
   public async disconnect(): Promise<void> {
-    await this.prisma.$disconnect();
     await this.analyticsService.disconnect();
   }
 }

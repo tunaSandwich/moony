@@ -144,6 +144,26 @@ html {
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
 }
 
+/* Video controls hover behavior for desktop */
+@media (hover: hover) and (pointer: fine) {
+  /* Hide controls by default on desktop */
+  .video-hover-controls::-webkit-media-controls {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  /* Show controls on hover */
+  .video-container:hover .video-hover-controls::-webkit-media-controls {
+    opacity: 1;
+  }
+  
+  /* Also show when video is playing and user is interacting */
+  .video-hover-controls:focus::-webkit-media-controls,
+  .video-hover-controls:active::-webkit-media-controls {
+    opacity: 1;
+  }
+}
+
 /* Text gradient effect */
 .text-gradient {
   background: linear-gradient(90deg, #848484 0%, #1E1E1E 50%, #848484 100%);

@@ -1,0 +1,281 @@
+# WEEKLY SMS MESSAGING SYSTEM - MOONY
+
+## Overview
+This document defines the weekly SMS messaging system for Moony. Weekly messages serve as milestone moments that balance reflection on the past week with motivation for the upcoming week.
+
+## Core Psychology Principles
+- **Peak-End Rule (#91)**: How the week ends shapes user memory and motivation
+- **Goal Gradient Effect (#51)**: Showing progress increases motivation to continue
+- **Fresh Start Effect (#61)**: New week represents new opportunity for success
+- **Negativity Bias (#103)**: Frame over-budget weeks carefully to avoid discouragement
+
+## Message Timing Strategy
+
+### Primary: Sunday Morning (Recommended)
+- Sent at 9 AM local time
+- Reflects on completed week
+- Sets intentions for new week
+- Leverages Fresh Start Effect
+
+### Alternative: Friday Evening
+- Sent at 5 PM local time  
+- Prepares for weekend spending
+- Prevents weekend overspending
+- More tactical than reflective
+
+### Premium Option: Both
+- Friday: Weekend prep focus
+- Sunday: Week recap + fresh start
+- Only for highly engaged users
+
+## Message Templates
+
+### Sunday - On Track Template
+```
+☀️ Sunday check-in, {name}!
+
+This week's snapshot:
+📊 Spent: ${week_total} of ${week_budget}
+✨ Best day: {lowest_spend_day} (${lowest_amount})
+🎯 You're ${amount_ahead} under budget!
+
+Next week's target: ${daily_limit}/day
+Tip: {personalized_weekly_insight}
+
+Keep it up! 💪
+```
+
+### Sunday - Over Budget Template  
+```
+☀️ Sunday check-in, {name}!
+
+This week's snapshot:
+📊 Spent: ${week_total} (${amount_over} over target)
+📈 Biggest day: {highest_spend_day} (${highest_amount})
+
+Fresh start tomorrow! 
+🎯 New daily target: ${adjusted_daily_limit}
+
+One change for next week: {specific_suggestion}
+```
+
+### Sunday - Significantly Over Template
+```
+☀️ Hey {name}, weekly check-in time.
+
+This week: ${week_total} spent
+That's ${percentage_over}% over target, but every week is a fresh start.
+
+Focus on one thing: {single_concrete_change}
+
+You've got this! Reply PAUSE if you need a break from daily texts.
+```
+
+### Friday - Weekend Prep Template
+```
+☀️ Friday vibes, {name}!
+
+This week so far: ${weekday_total} spent
+Weekend budget: ${weekend_budget} remaining
+
+Your weekend spending tends to be ${weekend_multiplier}x higher.
+Plan for it: {weekend_strategy}
+
+Reply STOP to opt out
+```
+
+### Friday - Low Weekend Budget Template
+```
+⚠️ Weekend heads up, {name}!
+
+Only ${weekend_budget} left for Sat-Sun.
+Your typical weekend: ${weekend_average}
+
+Quick wins: {specific_weekend_savings}
+
+Make it a game - how creative can you get?
+```
+
+## Weekly Insight Generation
+
+### Insight Categories
+
+#### 1. Performance Insights (On Track Users)
+- "You kept dining under $50 all week - that's a new record!"
+- "Your no-spend Tuesday saved $47. Try for two days next week?"
+- "Coffee spending down 60% using your new routine!"
+
+#### 2. Pattern Recognition (All Users)
+- "Wednesday-Friday accounted for 70% of spending. Pre-plan those days."
+- "You spend 3x more when shopping with friends. Set a limit before you go?"
+- "Lunch delivery averaged $18/day. Meal prep Sunday could save $90/week."
+
+#### 3. Recovery Insights (Over Budget Users)
+- "Skip one food delivery this week = back on track"
+- "Your best day was Monday at $23. Start there again."
+- "Try the 24-hour rule for non-essentials over $20"
+
+#### 4. Weekend-Specific (Friday Messages)
+- "Eat before shopping - you spend 40% less"
+- "Set cash aside: $40 for meals, $20 for fun"
+- "Your Sunday brunch average is $45. Try cooking for friends?"
+
+### Insight Selection Logic
+
+```python
+def select_weekly_insight(user_data, week_performance):
+    if week_performance == 'significantly_under':
+        return generate_optimization_insight(user_data)
+    
+    elif week_performance == 'on_track':
+        return generate_encouragement_insight(user_data)
+    
+    elif week_performance == 'slightly_over':
+        return generate_gentle_correction_insight(user_data)
+    
+    else:  # significantly_over
+        return generate_single_focus_insight(user_data)
+```
+
+## Implementation Details
+
+### Data Requirements
+```python
+weekly_metrics = {
+    'week_total': float,
+    'week_budget': float,
+    'daily_breakdown': dict,  # {Mon: 45.23, Tue: 67.89, ...}
+    'category_breakdown': dict,  # {dining: 234.56, transport: 45.67, ...}
+    'best_day': {
+        'day_name': str,
+        'amount': float
+    },
+    'worst_day': {
+        'day_name': str,
+        'amount': float,
+        'merchants': list  # Top merchants that day
+    },
+    'weekend_ratio': float,  # Weekend vs weekday spending
+    'vs_last_week': float,  # Percentage change
+    'top_category': str,
+    'top_category_amount': float
+}
+```
+
+### Message Generation Pipeline
+
+```python
+def generate_weekly_message(user_id, message_type='sunday'):
+    # Step 1: Calculate week metrics
+    metrics = calculate_weekly_metrics(user_id)
+    
+    # Step 2: Determine performance tier
+    performance = categorize_performance(metrics)
+    
+    # Step 3: Select appropriate template
+    template = select_template(message_type, performance)
+    
+    # Step 4: Generate personalized insight
+    insight = generate_weekly_insight(
+        user_id, 
+        metrics, 
+        performance,
+        message_type
+    )
+    
+    # Step 5: Populate template
+    message = populate_template(template, metrics, insight)
+    
+    return message
+```
+
+### Performance Categorization
+
+```python
+def categorize_performance(metrics):
+    variance = metrics['week_total'] / metrics['week_budget']
+    
+    if variance <= 0.9:
+        return 'significantly_under'
+    elif variance <= 1.0:
+        return 'on_track'
+    elif variance <= 1.15:
+        return 'slightly_over'
+    else:
+        return 'significantly_over'
+```
+
+## Personalization by Spending Personality
+
+### Weekend Warrior
+- Friday messages emphasized
+- Weekend-specific strategies
+- Weekday wins celebrated
+
+### Stress Spender
+- Identify calm days
+- Stress pattern recognition
+- Coping strategies
+
+### Consistent Spender
+- Variance highlighting
+- Optimization opportunities
+- Consistency celebration
+
+### Subscription Heavy
+- Weekly subscription audit
+- Recurring charge reminders
+- Value questioning
+
+## A/B Testing Opportunities
+
+### Test Variables
+1. **Timing**: Sunday AM vs Friday PM vs Both
+2. **Metrics Shown**: Detailed vs Summary
+3. **Insight Style**: Data-driven vs Emotional
+4. **CTA Inclusion**: With vs Without action prompt
+
+### Success Metrics
+- Message engagement rate
+- Following week's performance
+- User retention
+- Goal achievement correlation
+
+## Edge Cases
+
+### No Spending Week
+```
+🌟 Wow {name}! 
+
+$0 spent this week! Whether intentional or coincidental, that's impressive.
+
+Ready to keep the momentum? Reply with next week's goal.
+```
+
+### First Week User
+```
+🎉 First week complete, {name}!
+
+You spent ${week_total} while learning the ropes.
+Average new user week 1: ${avg_first_week}
+
+Week 2 is where habits form. Your daily target: ${daily_limit}
+```
+
+### Vacation/Travel Detection
+```
+✈️ Looks like a travel week, {name}!
+
+Spent: ${week_total} (${travel_category_amount} on travel)
+Non-travel spending: ${regular_spending}
+
+Welcome back! Normal daily target resumes: ${daily_limit}
+```
+
+## Future Enhancements
+
+1. **Comparative Insights**: "You spent 20% less than others in {city}"
+2. **Predictive Warnings**: "Based on this week, month-end projection: ${amount}"
+3. **Achievement Unlocks**: "🏆 First 'under budget' week!"
+4. **Trend Visualization**: ASCII charts or spending graphs
+5. **Social Features**: "Challenge a friend to match your week?"

@@ -5,7 +5,6 @@ import ApiTestPage from './pages/ApiTestPage';
 import PlaidConnectionPage from './pages/PlaidConnectionPage';
 import PhoneVerificationPage from './pages/PhoneVerificationPage';
 import CheckPhonePage from './pages/CheckPhonePage';
-import WelcomePage from './pages/WelcomePage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
@@ -19,7 +18,6 @@ function App() {
         <Route path="/connect-bank" element={<PlaidConnectionPage />} />
         <Route path="/phone-verification" element={<PhoneVerificationPage />} />
         <Route path="/check-phone" element={<CheckPhonePage />} />
-        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/api-test" element={<ApiTestPage />} />

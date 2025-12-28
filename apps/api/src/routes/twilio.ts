@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { TwilioController } from '../controllers/twilioController.js';
+import { PhoneVerificationController } from '../controllers/phoneVerificationController.js';
 import { plaidRateLimit } from '../middleware/security.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { validateRequestBody } from '../middleware/validation.js';
 
 const router = Router();
-const twilioController = new TwilioController();
+const phoneVerificationController = new PhoneVerificationController();
 
 // Send verification code to user's phone number
 router.post(
@@ -13,7 +13,7 @@ router.post(
   plaidRateLimit, // Reuse existing rate limiter for SMS endpoints
   validateRequestBody,
   authenticateJWT,
-  twilioController.sendVerificationCode
+  phoneVerificationController.sendVerificationCode
 );
 
 // Verify phone number with verification code
@@ -22,7 +22,7 @@ router.post(
   plaidRateLimit, // Reuse existing rate limiter for SMS endpoints
   validateRequestBody,
   authenticateJWT,
-  twilioController.verifyNumber
+  phoneVerificationController.verifyNumber
 );
 
 // Resend welcome message for verified users
@@ -30,7 +30,7 @@ router.post(
   '/resend-welcome',
   plaidRateLimit, // Reuse existing rate limiter for SMS endpoints
   authenticateJWT,
-  twilioController.resendWelcomeMessage
+  phoneVerificationController.resendWelcomeMessage
 );
 
 export default router;
