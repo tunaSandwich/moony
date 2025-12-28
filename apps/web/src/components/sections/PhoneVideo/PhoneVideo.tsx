@@ -63,37 +63,55 @@ export const PhoneVideo = forwardRef<HTMLVideoElement, PhoneVideoProps>(
     // Use forwarded ref or internal ref
     const videoRef = (ref as React.RefObject<HTMLVideoElement>) || internalRef;
 
-    // Autoplay video when it enters viewport using Intersection Observer
+    // Autoplay video when user scrolls AND video enters viewport
     useEffect(() => {
       if (!playOnScroll || !videoRef.current || prefersReducedMotion) return;
       
       const currentVideoRef = videoRef.current;
+      let hasScrolled = false;
       let hasPlayed = false;
+      let observer: IntersectionObserver | null = null;
       
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting && videoRef.current && !hasPlayed) {
-              hasPlayed = true;
-              const playPromise = videoRef.current.play();
-              if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                  // Video play was prevented (e.g., browser autoplay policy)
-                  // Silently handle - not a critical error
-                });
-              }
+      // Wait for first scroll before enabling video autoplay
+      const handleScroll = () => {
+        if (!hasScrolled) {
+          hasScrolled = true;
+          
+          // Now that user has scrolled, set up intersection observer
+          observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting && videoRef.current && !hasPlayed) {
+                  hasPlayed = true;
+                  const playPromise = videoRef.current.play();
+                  if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                      // Video play was prevented (e.g., browser autoplay policy)
+                      // Silently handle - not a critical error
+                    });
+                  }
+                }
+              });
+            },
+            {
+              threshold: 0.5 // Trigger when 50% of the video is in viewport
             }
-          });
-        },
-        {
-          threshold: 0.5 // Trigger when 50% of the video is in viewport
+          );
+          
+          observer.observe(currentVideoRef);
+          
+          // Remove scroll listener after first scroll
+          window.removeEventListener('scroll', handleScroll);
         }
-      );
-
-      observer.observe(currentVideoRef);
+      };
+      
+      window.addEventListener('scroll', handleScroll, { passive: true });
       
       return () => {
-        observer.unobserve(currentVideoRef);
+        window.removeEventListener('scroll', handleScroll);
+        if (observer) {
+          observer.unobserve(currentVideoRef);
+        }
       };
     }, [playOnScroll, prefersReducedMotion, videoRef]);
 
