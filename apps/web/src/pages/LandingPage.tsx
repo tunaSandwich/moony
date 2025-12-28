@@ -32,6 +32,18 @@ const LandingPage = () => {
     navigate('/invite');
   };
 
+  const handleHowItWorks = () => {
+    const videoSection = document.getElementById('how-it-works');
+    if (videoSection) {
+      // Calculate scroll position with 100px offset from top
+      const offsetTop = videoSection.offsetTop + 25;
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  };
+
 
 
   // Set initial styles immediately on mount
@@ -107,7 +119,7 @@ const LandingPage = () => {
           <div className="pointer-events-auto">
           <h1 
             ref={titleRef}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient leading-tight whitespace-nowrap"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight whitespace-nowrap"
             style={{ marginBottom: '20px' }}
           >
             Fix your spending habits.
@@ -118,7 +130,7 @@ const LandingPage = () => {
           <div className="pointer-events-auto">
             <p 
               ref={subtitleRef}
-              className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gradient font-light leading-relaxed whitespace-nowrap"
+              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light leading-relaxed whitespace-nowrap"
               style={{ marginBottom: '40px' }}
             >
               Simple daily texts to keep you on budget.
@@ -154,19 +166,30 @@ const LandingPage = () => {
               onClick={handleGetStarted}
               variant="primary"
               size="xl"
-              className="bg-transparent text-black border border-black px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 min-h-[56px] touch-manipulation"
+              className="bg-[#1E1E1E] text-[#FFF8FC] px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 min-h-[56px] touch-manipulation mr-4"
             >
               Try it free
+            </Button>
+            <Button
+              // ref={buttonRef}
+              onClick={handleHowItWorks}
+              variant="secondary"
+              size="xl"
+              className="bg-transparent text-black border border-black px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 min-h-[56px] touch-manipulation"
+            >
+              How it works
             </Button>
           </div>
 
           {/* iPhone Mockup - Exactly 40px below button */}
-          <PhoneVideo
-            videoSrc={phoneVideo}
-            ariaLabel="Budget tracking on mobile"
-            maxWidth="1200px"
-            playOnScroll={true}
-          />
+          <div id="how-it-works">
+            <PhoneVideo
+              videoSrc={phoneVideo}
+              ariaLabel="Budget tracking on mobile"
+              maxWidth="1200px"
+              playOnScroll={true}
+            />
+          </div>
         </div>
       </div>
 
