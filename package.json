@@ -72,7 +72,7 @@
     "check:readiness": "NODE_ENV=local tsx apps/api/scripts/production-checklist.ts",
     "start:production": "NODE_ENV=production node scripts/sync-prisma-env.mjs && NODE_ENV=production tsx apps/api/server.ts",
 
-    "build": "NODE_ENV=production npx tsc",
+    "build": "npx prisma generate --schema=apps/api/prisma/schema.prisma",
     "deploy:staging": "railway up --environment staging",
     "deploy:production": "bash apps/api/scripts/deploy-production.sh",
     "sms:simulator": "NODE_ENV=local tsx apps/api/scripts/sms-simulator.ts",

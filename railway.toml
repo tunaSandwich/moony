@@ -15,10 +15,9 @@ NODE_ENV = "production"
 [environments.staging]
 NODE_ENV = "staging"
 
-# Railway deployment configuration
 [services.api]
 source = "."
-build.buildCommand = "npm install && npx prisma generate && npm run build"
+build.buildCommand = "npm install && npm run build"
 build.watchPatterns = ["apps/api/**", "packages/**", "package.json"]
 
 [services.api.deploy]
@@ -28,7 +27,6 @@ healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-# Environment-specific overrides
 [environments.production.services.api.deploy]
 replicas = 2
 restartPolicyMaxRetries = 5
