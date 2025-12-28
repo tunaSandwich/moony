@@ -20,6 +20,7 @@ const LandingPage = () => {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const secondaryButtonRef = useRef<HTMLButtonElement>(null);
   
   // Initialize hooks
   useSmoothScroll({ disabled: prefersReducedMotion });
@@ -48,26 +49,32 @@ const LandingPage = () => {
 
   // Set initial styles immediately on mount
   useEffect(() => {
-    if (!titleRef.current || !subtitleRef.current || !buttonRef.current) return;
-
-    // Set initial styles immediately to prevent flash
-    const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
-    elements.forEach(el => {
-      el.style.opacity = '0.1';
-      el.style.transform = 'translateY(20px) scale(0.95)';
-    });
+    // Set initial styles for main elements
+    if (titleRef.current && subtitleRef.current && buttonRef.current) {
+      const mainElements = [titleRef.current, subtitleRef.current, buttonRef.current];
+      mainElements.forEach(el => {
+        el.style.opacity = '0.1';
+        el.style.transform = 'translateY(20px) scale(0.95)';
+      });
+    }
+    
+    // Set initial styles for secondary button
+    if (secondaryButtonRef.current) {
+      secondaryButtonRef.current.style.opacity = '0.1';
+      secondaryButtonRef.current.style.transform = 'translateY(20px) scale(0.95)';
+    }
   }, []);
 
 
   // Page load animations
   useEffect(() => {
     const executeAnimation = () => {
-      if (!titleRef.current || !subtitleRef.current || !buttonRef.current) return;
+      if (!titleRef.current || !subtitleRef.current || !buttonRef.current || !secondaryButtonRef.current) return;
 
       const duration = prefersReducedMotion ? 100 : 1500;
       
       // Set transition properties
-      const elements = [titleRef.current, subtitleRef.current, buttonRef.current];
+      const elements = [titleRef.current, subtitleRef.current, buttonRef.current, secondaryButtonRef.current];
       elements.forEach(el => {
         el.style.transition = prefersReducedMotion ? 'none' : `all 0.6s ${easingStrings.default}`;
       });
@@ -171,7 +178,7 @@ const LandingPage = () => {
               Try it free
             </Button>
             <Button
-              // ref={buttonRef}
+              ref={secondaryButtonRef}
               onClick={handleHowItWorks}
               variant="secondary"
               size="xl"
