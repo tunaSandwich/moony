@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
 import { Header } from '@/components';
@@ -70,17 +71,33 @@ const InviteCodePage = () => {
     setError('');
     
     try {
-      // TODO: integrate EmailJS to notify admin
-      console.log({ firstName, lastName, requestPhoneNumber });
+      console.log('import.meta.env', import.meta.env);
+      console.log('import.meta.env.VITE_EMAILJS_SERVICE_ID', import.meta.env.VITE_EMAILJS_SERVICE_ID);
+      console.log('import.meta.env.VITE_EMAILJS_TEMPLATE_ID', import.meta.env.VITE_EMAILJS_TEMPLATE_ID);
+      console.log('import.meta.env.VITE_EMAILJS_PUBLIC_KEY', import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+      // Send email notification via EmailJS
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: requestPhoneNumber,
+        },
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Transition to confirmation state
+      // Transition to confirmation state on success
       setViewState('confirmation');
       
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      // Show user-friendly error message
+      setError('Something went wrong. Please try again.');
+      
+      // Log the actual error for debugging in development
+      if (import.meta.env.DEV) {
+        console.error('EmailJS error:', error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -269,7 +286,7 @@ const InviteCodePage = () => {
             <>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-light mb-2" style={{ color: colors.gray[900] }}>
-                  You're on the list 🎉
+                  Request Sent! 🎉
                 </h1>
                 <p className="text-sm" style={{ color: colors.gray[700] }}>
                   We'll text you when your invite is ready.

@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(() => {
+  return {
   plugins: [react()],
+  envDir: path.resolve(__dirname, '../../'),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -38,4 +40,4 @@ export default defineConfig({
     host: '0.0.0.0',
     strictPort: true,
   },
-})
+}})
