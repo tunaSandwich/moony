@@ -41,6 +41,9 @@
     "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/create-user.ts",
     "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/create-user.ts",
 
+    "send-sms:local": "curl -sS -X POST http://localhost:3000/api/run-now",
+    "send-sms:remote": "curl -sS -X POST $APP_URL/api/run-now",
+
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
     "test:plaid:staging": "NODE_ENV=staging tsx tests/test.plaid.ts",
@@ -80,10 +83,7 @@
     "start": "NODE_ENV=local concurrently \"npm run api:start\" \"npm run scheduler:start\"",
     "start:staging": "NODE_ENV=staging concurrently \"npm run api:start:staging\" \"npm run scheduler:start:staging\"",
     "setup": "NODE_ENV=local node scripts/setup.js",
-    "tree": "node scripts/print-tree.js .",
-
-    "test:daily-sms:local": "curl -sS -X POST http://localhost:3000/api/run-now",
-    "run:now:remote": "curl -sS -X POST $APP_URL/api/run-now"
+    "tree": "node scripts/print-tree.js ."
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.913.0",
