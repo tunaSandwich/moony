@@ -51,8 +51,6 @@
     "test:whatsapp:staging": "NODE_ENV=staging tsx apps/scheduler/tests/test-whatsapp.ts",
     "test:welcome": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/test-welcome-messages.ts",
     "test:welcome:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/test-welcome-messages.ts",
-    "test:simulator": "NODE_ENV=local tsx apps/api/scripts/test-simulator-sms.ts",
-    "test:simulator:staging": "NODE_ENV=staging tsx apps/api/scripts/test-simulator-sms.ts",
     "test:calculations": "NODE_ENV=local node tests/calculations.test.js",
 
     "setup:webhook": "NODE_ENV=local tsx apps/api/scripts/setup-sns-webhook.ts",
@@ -75,9 +73,6 @@
     "build": "npx prisma generate --schema=apps/api/prisma/schema.prisma",
     "deploy:staging": "railway up --environment staging",
     "deploy:production": "bash apps/api/scripts/deploy-production.sh",
-    "sms:simulator": "NODE_ENV=local tsx apps/api/scripts/sms-simulator.ts",
-    "dev:sms": "SMS_SIMULATOR=true npm run api:dev",
-    "test:sms-simulator": "NODE_ENV=local tsx apps/api/scripts/test-sms-simulator.ts",
     "dev": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run scheduler:dev\"",
     "dev:staging": "NODE_ENV=staging concurrently \"npm run api:dev:staging\" \"npm run scheduler:dev:staging\"",
     "dev:all": "NODE_ENV=local concurrently \"npm run api:dev\" \"npm run web:dev\"",
@@ -87,7 +82,7 @@
     "setup": "NODE_ENV=local node scripts/setup.js",
     "tree": "node scripts/print-tree.js .",
 
-    "run:now:local": "curl -sS -X POST http://localhost:3000/api/run-now",
+    "test:daily-sms:local": "curl -sS -X POST http://localhost:3000/api/run-now",
     "run:now:remote": "curl -sS -X POST $APP_URL/api/run-now"
   },
   "dependencies": {

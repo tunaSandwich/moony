@@ -4,6 +4,11 @@ import { prisma } from '../../db.js';
 import { metricsLogger } from '../../utils/metricsLogger.js';
 import { twilioConfig } from '../../config/twilio.js';
 
+// Message channel: 'sms' or 'whatsapp'
+// Set MESSAGE_CHANNEL=whatsapp in .env while waiting for 10DLC approval
+// Switch to MESSAGE_CHANNEL=sms once 10DLC is approved
+type MessageChannel = 'sms' | 'whatsapp';
+
 export interface SendSMSParams {
   to: string;           // E.164 format from database
   body: string;
@@ -19,6 +24,7 @@ export interface SendSMSResult {
   sandboxSkipped?: boolean;
   cost?: number;
   optedOut?: boolean;   // Twilio specific - detect if user opted out
+  channel?: MessageChannel;
 }
 
 export class TwilioSMSService {
@@ -28,6 +34,8 @@ export class TwilioSMSService {
   private readonly sandboxMode: boolean;
   private readonly originationNumber: string;
   private readonly messagingServiceSid?: string;
+  private readonly channel: MessageChannel;
+  private readonly whatsappFromNumber: string;
   
   constructor() {
     // Initialize Twilio client
@@ -43,11 +51,24 @@ export class TwilioSMSService {
     this.originationNumber = process.env.TWILIO_PHONE_NUMBER || '+16267623406';
     this.messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
     
+    // Message channel configuration
+    // Use 'whatsapp' while waiting for 10DLC approval, then switch to 'sms'
+    this.channel = (process.env.MESSAGE_CHANNEL as MessageChannel) || 'sms';
+    // Twilio WhatsApp Sandbox number (or your approved WhatsApp Business number)
+    this.whatsappFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886';
+    
     logger.info('[TwilioSMSService] Initialized', {
       originationNumber: this.originationNumber,
       sandboxMode: this.sandboxMode,
-      hasMessagingServiceSid: !!this.messagingServiceSid
+      hasMessagingServiceSid: !!this.messagingServiceSid,
+      channel: this.channel,
+      whatsappNumber: this.channel === 'whatsapp' ? this.whatsappFromNumber : 'N/A'
     });
+    
+    // Log helpful reminder for WhatsApp setup
+    if (this.channel === 'whatsapp') {
+      logger.info('[TwilioSMSService] 📱 WhatsApp mode enabled. Users must first opt-in by sending "join <sandbox-code>" to the Twilio WhatsApp number.');
+    }
   }
 
   async sendMessage(params: SendSMSParams): Promise<SendSMSResult> {
@@ -58,28 +79,41 @@ export class TwilioSMSService {
       return { success: false, error: 'Invalid phone number format', retryable: false };
     }
 
-    logger.info('[TwilioSMSService] Sending SMS via Twilio', {
-      from: this.originationNumber,
+    const channelLabel = this.channel === 'whatsapp' ? 'WhatsApp' : 'SMS';
+    
+    logger.info(`[TwilioSMSService] Sending ${channelLabel} via Twilio`, {
+      from: this.channel === 'whatsapp' ? this.whatsappFromNumber : this.originationNumber,
       to: this.maskPhoneNumber(to),
       bodyLength: body.length,
       messageType: messageType || 'TRANSACTIONAL',
-      sandboxMode: this.sandboxMode,
+      channel: this.channel,
       userId
     });
     
     try {
-      // Prepare message parameters
-      const messageParams: any = {
-        to,
-        body,
-        // Use Messaging Service SID if available (10DLC), otherwise use phone number
-        ...(this.messagingServiceSid 
-          ? { messagingServiceSid: this.messagingServiceSid }
-          : { from: this.originationNumber }
-        ),
-        // Add status callback for delivery tracking
-        statusCallback: process.env.TWILIO_STATUS_WEBHOOK_URL
-      };
+      // Prepare message parameters based on channel
+      let messageParams: any;
+      
+      if (this.channel === 'whatsapp') {
+        // WhatsApp: prefix numbers with 'whatsapp:'
+        messageParams = {
+          to: `whatsapp:${to}`,
+          from: this.whatsappFromNumber,
+          body,
+        };
+      } else {
+        // SMS: Use Messaging Service SID if available (10DLC), otherwise use phone number
+        messageParams = {
+          to,
+          body,
+          ...(this.messagingServiceSid 
+            ? { messagingServiceSid: this.messagingServiceSid }
+            : { from: this.originationNumber }
+          ),
+          // Add status callback for delivery tracking
+          statusCallback: process.env.TWILIO_STATUS_WEBHOOK_URL
+        };
+      }
       
       // Send the message
       const message = await this.client.messages.create(messageParams);
@@ -90,11 +124,11 @@ export class TwilioSMSService {
       // Check if user opted out (Twilio returns error code 21610)
       const optedOut = message.errorCode === 21610;
       
-      logger.info('[TwilioSMSService] SMS sent successfully', {
+      logger.info(`[TwilioSMSService] ${channelLabel} sent successfully`, {
         messageId,
         to: this.maskPhoneNumber(to),
         duration,
-        sandboxMode: this.sandboxMode,
+        channel: this.channel,
         status: message.status,
         optedOut,
         userId
@@ -102,21 +136,7 @@ export class TwilioSMSService {
       
       // Log metrics for successful delivery
       if (messageId) {
-        metricsLogger.logDeliverySuccess(messageId, 'sms');
-      }
-      
-      // Send to SMS simulator in development mode
-      if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') && 
-          process.env.SMS_SIMULATOR === 'true') {
-        try {
-          const { addSimulatorMessage } = await import('../../routes/dev/simulatorRoutes.js');
-          addSimulatorMessage(to, body, this.originationNumber);
-        } catch (simulatorError: any) {
-          logger.debug('Failed to send message to simulator', {
-            error: simulatorError.message,
-            messageId
-          });
-        }
+        metricsLogger.logDeliverySuccess(messageId, this.channel);
       }
       
       // Update DB tracking on success when userId present
@@ -152,24 +172,25 @@ export class TwilioSMSService {
         messageId,
         retryable: false,
         optedOut,
-        cost: this.estimateCost(to)
+        cost: this.estimateCost(to),
+        channel: this.channel
       };
       
     } catch (error: any) {
       const duration = Date.now() - startTime;
       
-      logger.error('[TwilioSMSService] Failed to send SMS', {
+      logger.error(`[TwilioSMSService] Failed to send ${channelLabel}`, {
         to: this.maskPhoneNumber(to),
         error: error.message,
         errorCode: error.code,
         duration,
-        sandboxMode: this.sandboxMode,
+        channel: this.channel,
         userId
       });
       
       // Log metrics for delivery failure
-      metricsLogger.logDeliveryFailure(error.message, 'sms');
-      metricsLogger.logProcessingError('sms_send', error.message);
+      metricsLogger.logDeliveryFailure(error.message, this.channel);
+      metricsLogger.logProcessingError(`${this.channel}_send`, error.message);
       
       // Handle Twilio-specific error codes
       if (error.code === 21610) {

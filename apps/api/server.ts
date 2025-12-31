@@ -38,9 +38,6 @@ async function startServer(): Promise<void> {
         const validation = DevModeService.validateDevEnvironment();
         if (validation.isValid) {
           logger.info('🛠️ Development tools ready');
-          if (process.env.SMS_SIMULATOR === 'true') {
-            logger.info('📱 SMS Simulator enabled - will auto-launch after phone verification');
-          }
         } else {
           logger.warn('⚠️ Development environment issues:', validation.issues);
         }

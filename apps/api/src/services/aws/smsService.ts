@@ -129,29 +129,6 @@ export class AWSSMSService {
         metricsLogger.logDeliverySuccess(messageId, 'sms');
       }
       
-      // Log the actual message content in development for debugging
-      if (this.sandboxMode && this.useSimulatorOverride) {
-        logger.debug('[AWSSMSService] Simulator message content', {
-          messageId,
-          body: body.substring(0, 100) + (body.length > 100 ? '...' : '') // Log first 100 chars
-        });
-      }
-      
-      // Send to SMS simulator in development mode
-      if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') && 
-          process.env.SMS_SIMULATOR === 'true') {
-        try {
-          const { addSimulatorMessage } = await import('../../routes/dev/simulatorRoutes.js');
-          addSimulatorMessage(destinationNumber, body, this.originationNumber);
-        } catch (simulatorError: any) {
-          // Don't fail SMS sending if simulator fails
-          logger.debug('Failed to send message to simulator', {
-            error: simulatorError.message,
-            messageId
-          });
-        }
-      }
-      
       // Update DB tracking on success when userId present
       if (userId && messageId) {
         try {
