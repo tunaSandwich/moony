@@ -2,7 +2,6 @@ import './src/config/loadEnv.js';
 import { createApp, getServerConfig } from './src/config/app.js';
 import { logger } from '@logger';
 import { getRegisteredRoutes, formatRoutesForLogging } from './src/utils/routeDiscovery.js';
-import { DevModeService } from './src/services/dev/devModeService.js';
 
 async function startServer(): Promise<void> {
   try {
@@ -29,19 +28,6 @@ async function startServer(): Promise<void> {
       
       // Also log a summary count
       logger.info(`📊 Total registered routes: ${routes.length}`);
-      
-      // Setup development mode services
-      DevModeService.setupDevModeListeners();
-      
-      // Log development tools status
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
-        const validation = DevModeService.validateDevEnvironment();
-        if (validation.isValid) {
-          logger.info('🛠️ Development tools ready');
-        } else {
-          logger.warn('⚠️ Development environment issues:', validation.issues);
-        }
-      }
     });
 
     // Graceful shutdown handling
