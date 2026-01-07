@@ -2,7 +2,6 @@
 
 **Daily spending guidance via SMS** — connects to your bank, calculates how much you can spend today, and texts you every morning.
 
-
 ## Architecture
 
 ```mermaid
@@ -20,21 +19,21 @@
           B --> F[Plaid API]
           C --> F
           C --> G[Twilio SMS/WhatsApp]
-          C --> H[AWS Pinpoint SMS]
           C --> I[Twilio Verify]
           J[Twilio SNS] --> C
       end
 
       E -->|8am daily| C
       C -->|Send SMS| G
-      C -->|Send SMS| H
       G -->|SMS/WhatsApp| K[📱 User]
-      H -->|SMS| K
       K -->|Reply| G
       K -->|Reply| J
       G -->|Webhook| C
       J -->|Webhook| C
 ```
+
+
+https://github.com/user-attachments/assets/61500fe9-2460-4f7c-a8e5-deaef9e80510
 
 **Key flows:**
 1. **Onboarding**: User connects bank via Plaid → verifies phone via Twilio → sets monthly budget via SMS reply
