@@ -2,12 +2,8 @@
 
 ## Overview
 
-moony uses a hybrid SMS approach optimized for cost, deliverability, and compliance:
+moony uses a Twilio SMS for welcome, daily updates, budget replies
 
-- **AWS End User Messaging**: All operational SMS (welcome, daily updates, budget replies)
-- **Twilio Verify API**: Phone number verification only
-
-This architecture separates transactional verification from operational messaging, providing the best of both platforms.
 
 ## Message Flow Architecture
 
@@ -17,7 +13,7 @@ This architecture separates transactional verification from operational messagin
 │                     │    │                      │    │                     │
 │  Phone Verification │───▶│  Welcome Messages    │───▶│  Budget Replies     │
 │  (Twilio Verify)    │    │  Daily Updates       │    │  Two-way Messaging  │
-│                     │    │  (AWS SNS)           │    │  (AWS SNS)          │
+│                     │    │  (Twilio SMS)        │    │  (Twilio SMS)       │
 └─────────────────────┘    └──────────────────────┘    └─────────────────────┘
 ```
 
@@ -56,17 +52,6 @@ This architecture separates transactional verification from operational messagin
 
 ### AWS SNS Integration
 
-```typescript
-// Example: Daily SMS via AWS
-const awsSmsService = new AWSSMSService();
-const result = await awsSmsService.sendMessage({
-  to: user.phoneNumber,
-  body: dailyMessage,
-  messageType: 'TRANSACTIONAL',
-  userId: user.id
-});
-```
-
 **Features:**
 - Sandbox mode for local development
 - Simulator-to-simulator messaging
@@ -76,15 +61,6 @@ const result = await awsSmsService.sendMessage({
 
 ### Twilio Verify Integration
 
-```typescript
-// Example: Phone verification via Twilio
-const verifyService = twilioClient.verify.v2.services(VERIFY_SERVICE_SID);
-const verification = await verifyService.verifications.create({
-  to: phoneNumber,
-  channel: 'sms'
-});
-```
-
 **Features:**
 - Automatic retry logic
 - International number support
@@ -93,7 +69,7 @@ const verification = await verifyService.verifications.create({
 
 ## Local Development & Testing
 
-### AWS Sandbox Testing
+### Twilio Sandbox Testing
 
 ```bash
 # Test daily SMS with AWS

@@ -22,7 +22,7 @@ const PlaidConnectionPage = () => {
       setError('');
       
       try {
-        const result = await plaidApi.connectAccount(publicToken);
+        await plaidApi.connectAccount(publicToken);
         
         // Clear link token to prevent re-launch bug
         setLinkToken(null);
