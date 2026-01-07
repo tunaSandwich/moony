@@ -8,7 +8,7 @@
 ```mermaid
   flowchart LR
       subgraph Frontend
-          A[React SPA] --> B[Plaid Link]
+          A[React] --> B[Plaid Link]
       end
 
       subgraph Backend
