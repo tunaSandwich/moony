@@ -204,8 +204,7 @@ router.post(
           });
         }
         
-        // TODO: Update database with delivery status if needed
-        // This would be useful for delivery analytics and debugging
+        // Future enhancement: Update database with delivery status for analytics
       }
       
       // Respond to Twilio

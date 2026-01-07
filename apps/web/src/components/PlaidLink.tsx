@@ -19,9 +19,7 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({ onSuccess, onError }) => {
     onSuccess: useCallback(async (publicToken: string) => {
       setIsConnecting(true);
       try {
-        console.log('Plaid Link success, exchanging token...');
         const result = await plaidApi.connectAccount(publicToken);
-        console.log('Bank connected successfully:', result);
         onSuccess(result.hasConnectedBank);
       } catch (error) {
         console.error('Failed to connect bank account:', error);
@@ -32,7 +30,6 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({ onSuccess, onError }) => {
       }
     }, [onSuccess, onError]),
     onExit: useCallback((error: any) => {
-      console.log('Plaid Link exited');
       if (error) {
         console.error('Plaid Link error:', error);
         onError(`Plaid Link error: ${error.error_message || 'Unknown error'}`);
@@ -43,9 +40,7 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({ onSuccess, onError }) => {
   const handleGetLinkToken = useCallback(async () => {
     setIsLoading(true);
     try {
-      console.log('Creating Plaid link token...');
       const tokenData = await plaidApi.createLinkToken();
-      console.log('Link token created successfully');
       setLinkToken(tokenData.link_token);
     } catch (error) {
       console.error('Failed to create link token:', error);
@@ -58,7 +53,6 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({ onSuccess, onError }) => {
 
   const handleOpenPlaidLink = useCallback(() => {
     if (ready && linkToken) {
-      console.log('Opening Plaid Link...');
       open();
     }
   }, [ready, linkToken, open]);

@@ -1,4 +1,5 @@
 import { TemplateVariables, MessageTemplate } from '../templates/smsTemplates.js';
+import { logger } from '@logger';
 
 export class TemplateService {
   /**
@@ -21,8 +22,8 @@ export class TemplateService {
     // Check for any unreplaced variables (indicates missing data)
     const unreplaced = rendered.match(/{[^}]+}/g);
     if (unreplaced) {
-      console.warn('Template has unreplaced variables', {
-        template: template.substring(0, 50), // Log first 50 chars
+      logger.warn('Template has unreplaced variables', {
+        template: template.substring(0, 50),
         unreplaced
       });
     }
@@ -41,7 +42,7 @@ export class TemplateService {
         const missing = messageTemplate.variables.filter(
           varName => variables[varName] === undefined || variables[varName] === null
         );
-        console.warn(`Missing required variables for template ${messageTemplate.id}:`, missing);
+        logger.warn('Missing required variables for template', { templateId: messageTemplate.id, missing });
       }
     }
 

@@ -128,45 +128,10 @@ export class PlaidAnalyticsService {
       // Process and filter transactions
       const processedTransactions = this.processTransactions(allTransactions);
 
-      // Calculate total amount for debug logging
-      const totalAmount = allTransactions.reduce((sum, t) => sum + t.amount, 0);
-
       logger.info('Transaction fetch completed', { 
         totalFetched: allTransactions.length,
         spendingTransactions: processedTransactions.length
       });
-
-
-      // Log transaction date distribution to see if we're missing months
-      const transactionsByMonth = new Map<string, number>();
-      const amountsByMonth = new Map<string, number>();
-      
-      allTransactions.forEach(transaction => {
-        const monthKey = transaction.date.substring(0, 7); // YYYY-MM format
-        transactionsByMonth.set(monthKey, (transactionsByMonth.get(monthKey) || 0) + 1);
-        amountsByMonth.set(monthKey, (amountsByMonth.get(monthKey) || 0) + transaction.amount);
-      });
-
-      // Sort months and display distribution
-      const sortedMonths = Array.from(transactionsByMonth.keys()).sort();
-
-      sortedMonths.forEach(month => {
-        const count = transactionsByMonth.get(month) || 0;
-        const amount = Math.abs(amountsByMonth.get(month) || 0);
-        console.log(`[PLAID DEBUG]   ${month}: ${count} transactions, $${amount.toFixed(2)}`);
-      });
-
-      // Show sample raw transactions for Lucas to analyze
-      const sampleTransactions = allTransactions
-        .filter(t => t.date.startsWith('2025-08') || t.date.startsWith('2025-09'))
-        .slice(0, 10);
-      
-      sampleTransactions.forEach(t => {
-        console.log(`[PLAID DEBUG]   ${t.date} | $${t.amount} | ${t.name || 'No name'} | ${t.category?.[0] || 'No category'} | ${t.merchant_name || 'No merchant'}`);
-      });
-
-      // Log what gets filtered out during processing
-      const filteredOutCount = allTransactions.length - processedTransactions.length;
 
       return processedTransactions;
 
@@ -201,93 +166,12 @@ export class PlaidAnalyticsService {
       t.date >= sixMonthsAgo
     );
 
-    // Debug log for date filtering
-    console.log(`[PLAID DEBUG] Date filtering - 6 months ago: ${format(sixMonthsAgo, 'yyyy-MM-dd')} | Current: ${format(now, 'yyyy-MM-dd')} | Total transactions: ${transactions.length} | Six-month transactions: ${sixMonthTransactions.length}`);
-
     // Calculate totals
     const currentMonthSpending = this.sumTransactions(currentMonthTransactions);
     const lastMonthSpending = this.sumTransactions(lastMonthTransactions);
 
-    // DETAILED DEBUG: Show step-by-step calculation verification
-    console.log(`[PLAID DEBUG] === STEP-BY-STEP CALCULATION VERIFICATION ===`);
-    console.log(`[PLAID DEBUG] Current month calculation - Date range: ${format(currentMonthStart, 'yyyy-MM-dd')} to ${format(now, 'yyyy-MM-dd')} | Transactions: ${currentMonthTransactions.length} | Total: $${currentMonthSpending.toFixed(2)}`);
-    console.log(`[PLAID DEBUG] Last month calculation - Date range: ${format(lastMonthStart, 'yyyy-MM-dd')} to ${format(lastMonthEnd, 'yyyy-MM-dd')} | Transactions: ${lastMonthTransactions.length} | Total: $${lastMonthSpending.toFixed(2)}`);
-    console.log(`[PLAID DEBUG] Six-month total: $${this.sumTransactions(sixMonthTransactions).toFixed(2)}`);
-    
-    // ENHANCED VERIFICATION: Manually verify sumTransactions method for last month
-    if (lastMonthTransactions.length > 0) {
-      console.log(`[PLAID DEBUG] === MANUAL VERIFICATION OF sumTransactions ===`);
-      
-      // Method 1: Using our sumTransactions method
-      const sumMethodResult = this.sumTransactions(lastMonthTransactions);
-      console.log(`[PLAID DEBUG] sumTransactions method result: $${sumMethodResult.toFixed(2)}`);
-      
-      // Method 2: Manual reduce to verify
-      const manualSum = lastMonthTransactions.reduce((sum, t) => sum + t.amount, 0);
-      console.log(`[PLAID DEBUG] Manual reduce result: $${manualSum.toFixed(2)}`);
-      
-      // Method 3: Loop-based sum for complete verification
-      let loopSum = 0;
-      lastMonthTransactions.forEach(t => {
-        loopSum += t.amount;
-      });
-      console.log(`[PLAID DEBUG] Loop-based sum result: $${loopSum.toFixed(2)}`);
-      
-      // Verify all methods match
-      const allMethodsMatch = (sumMethodResult === manualSum) && (manualSum === loopSum);
-      console.log(`[PLAID DEBUG] All calculation methods match: ${allMethodsMatch}`);
-      
-      if (!allMethodsMatch) {
-        console.log(`[PLAID DEBUG] ⚠️ CALCULATION MISMATCH DETECTED!`);
-        console.log(`[PLAID DEBUG]   sumTransactions: $${sumMethodResult.toFixed(2)}`);
-        console.log(`[PLAID DEBUG]   manual reduce: $${manualSum.toFixed(2)}`);
-        console.log(`[PLAID DEBUG]   loop sum: $${loopSum.toFixed(2)}`);
-      }
-    }
-    
-    // Show sample transactions from each period for verification
-    if (currentMonthTransactions.length > 0) {
-      console.log(`[PLAID DEBUG] Sample current month transactions (first 5):`);
-      currentMonthTransactions.slice(0, 5).forEach(t => {
-        console.log(`[PLAID DEBUG]   ${format(t.date, 'yyyy-MM-dd')} | $${t.amount} | ${t.merchantName || 'No merchant'}`);
-      });
-    }
-    
-    if (lastMonthTransactions.length > 0) {
-      console.log(`[PLAID DEBUG] Sample last month transactions (first 5):`);
-      lastMonthTransactions.slice(0, 5).forEach(t => {
-        console.log(`[PLAID DEBUG]   ${format(t.date, 'yyyy-MM-dd')} | $${t.amount} | ${t.merchantName || 'No merchant'}`);
-      });
-
-      // Complete transaction amount verification for last month (limit to 20 to avoid spam)
-      console.log(`[PLAID DEBUG] Complete amount verification for last month (first 20 transactions):`);
-      let runningSum = 0;
-      let totalTransactionsShown = Math.min(20, lastMonthTransactions.length);
-      
-      for (let i = 0; i < totalTransactionsShown; i++) {
-        const t = lastMonthTransactions[i];
-        runningSum += t.amount;
-        console.log(`[PLAID DEBUG]   ${i+1}. ${format(t.date, 'yyyy-MM-dd')} | $${t.amount.toFixed(2)} | Running sum: $${runningSum.toFixed(2)} | ${t.merchantName || 'No merchant'}`);
-      }
-      
-      if (lastMonthTransactions.length > 20) {
-        console.log(`[PLAID DEBUG]   ... and ${lastMonthTransactions.length - 20} more transactions`);
-      }
-      
-      console.log(`[PLAID DEBUG] Running sum for first ${totalTransactionsShown} transactions: $${runningSum.toFixed(2)}`);
-      console.log(`[PLAID DEBUG] Total from sumTransactions for ALL ${lastMonthTransactions.length} transactions: $${lastMonthSpending.toFixed(2)}`);
-    }
-    console.log(`[PLAID DEBUG] === END VERIFICATION ===`);
-
-    // Calculate spending metrics excluding current month
-    console.log(`[PLAID DEBUG] === IMPROVED ANALYTICS CALCULATION ===`);
-    
     // Filter out current month transactions for historical analysis
-    // Note: currentMonthStart already defined above
     const historicalTransactions = sixMonthTransactions.filter(t => t.date < currentMonthStart);
-    
-    console.log(`[PLAID DEBUG] Filtering out current month (${format(currentMonthStart, 'yyyy-MM')})`);
-    console.log(`[PLAID DEBUG] Historical transactions: ${historicalTransactions.length} (excluding current month)`);
     
     const monthlyTotals = this.groupTransactionsByMonth(historicalTransactions);
     
@@ -296,26 +180,17 @@ export class PlaidAnalyticsService {
       if (a.year !== b.year) return b.year - a.year;
       return b.month - a.month;
     });
-    
-    console.log(`[PLAID DEBUG] Sorted complete months (most recent first):`);
-    sortedMonths.forEach((month, index) => {
-      console.log(`[PLAID DEBUG]   ${index + 1}. ${month.year}-${month.month.toString().padStart(2, '0')}: $${month.totalSpending.toFixed(2)}`);
-    });
 
     // Calculate twoMonthsAgoSpending based on available data
     let twoMonthsAgoSpending: number | null = null;
     
     if (sortedMonths.length >= 1) {
-      // Edge case logic
       if (sortedMonths.length === 1) {
         twoMonthsAgoSpending = null; // Not enough data
-        console.log(`[PLAID DEBUG] Only 1 complete month available - twoMonthsAgoSpending = null`);
       } else if (sortedMonths.length === 2) {
         twoMonthsAgoSpending = sortedMonths[1].totalSpending; // Oldest month
-        console.log(`[PLAID DEBUG] 2 complete months - twoMonthsAgoSpending = oldest month: $${twoMonthsAgoSpending.toFixed(2)}`);
       } else {
         twoMonthsAgoSpending = sortedMonths[2].totalSpending; // 3rd most recent
-        console.log(`[PLAID DEBUG] 3+ complete months - twoMonthsAgoSpending = 3rd most recent: $${twoMonthsAgoSpending.toFixed(2)}`);
       }
     }
 
@@ -327,26 +202,18 @@ export class PlaidAnalyticsService {
       
       if (spendingAmounts.length === 1) {
         averageMonthlySpending = spendingAmounts[0];
-        console.log(`[PLAID DEBUG] Single month - using that value: $${averageMonthlySpending.toFixed(2)}`);
       } else {
         // Calculate median
         const midIndex = Math.floor(spendingAmounts.length / 2);
         if (spendingAmounts.length % 2 === 0) {
           // Even number of months - average of two middle values
           averageMonthlySpending = (spendingAmounts[midIndex - 1] + spendingAmounts[midIndex]) / 2;
-          console.log(`[PLAID DEBUG] Median of ${spendingAmounts.length} months: ($${spendingAmounts[midIndex - 1].toFixed(2)} + $${spendingAmounts[midIndex].toFixed(2)}) / 2 = $${averageMonthlySpending.toFixed(2)}`);
         } else {
           // Odd number of months - middle value
           averageMonthlySpending = spendingAmounts[midIndex];
-          console.log(`[PLAID DEBUG] Median of ${spendingAmounts.length} months: $${averageMonthlySpending.toFixed(2)}`);
         }
       }
     }
-
-    console.log(`[PLAID DEBUG] Final results:`);
-    console.log(`[PLAID DEBUG]   averageMonthlySpending (median): $${averageMonthlySpending.toFixed(2)}`);
-    console.log(`[PLAID DEBUG]   twoMonthsAgoSpending: ${twoMonthsAgoSpending ? '$' + twoMonthsAgoSpending.toFixed(2) : 'null'}`);
-    console.log(`[PLAID DEBUG] === END IMPROVED ANALYTICS CALCULATION ===`);
 
     const metrics: SpendingMetrics = {
       averageMonthlySpending: Number(averageMonthlySpending.toFixed(2)),
@@ -491,32 +358,16 @@ export class PlaidAnalyticsService {
    * Filter to spending transactions only
    */
   private processTransactions(transactions: Transaction[]): ProcessedTransaction[] {
-    const filteredOut = {
-      negative: 0,
-      belowThreshold: 0,
-      excludedCategory: 0,
-      excluded: [] as any[]
-    };
-
-    const result = transactions
+    return transactions
       .filter(transaction => {
-        // Track what gets filtered out
+        // Filter out non-spending transactions
         if (transaction.amount <= 0) {
-          filteredOut.negative++;
           return false;
         }
         if (transaction.amount <= ANALYTICS_CONSTANTS.SPENDING_TRANSACTION_THRESHOLD) {
-          filteredOut.belowThreshold++;
           return false;
         }
         if (this.isExcludedCategory(transaction.category)) {
-          filteredOut.excludedCategory++;
-          filteredOut.excluded.push({
-            date: transaction.date,
-            amount: transaction.amount,
-            category: transaction.category?.[0],
-            merchant: transaction.merchant_name
-          });
           return false;
         }
         return true;
@@ -529,20 +380,6 @@ export class PlaidAnalyticsService {
         category: transaction.category?.[0] || null,
         accountId: transaction.account_id
       }));
-
-    // Log what was filtered out
-    console.log(`[PLAID DEBUG] Transaction filtering results:`);
-    console.log(`[PLAID DEBUG]   Negative amounts (income/credits): ${filteredOut.negative}`);
-    console.log(`[PLAID DEBUG]   Below threshold ($${ANALYTICS_CONSTANTS.SPENDING_TRANSACTION_THRESHOLD}): ${filteredOut.belowThreshold}`);
-    console.log(`[PLAID DEBUG]   Excluded categories: ${filteredOut.excludedCategory}`);
-    if (filteredOut.excluded.length > 0) {
-      console.log(`[PLAID DEBUG]   Sample excluded transactions:`);
-      filteredOut.excluded.slice(0, 5).forEach(t => {
-        console.log(`[PLAID DEBUG]     ${t.date}: $${t.amount} - ${t.category} (${t.merchant || 'No merchant'})`);
-      });
-    }
-
-    return result;
   }
 
   /**
@@ -574,18 +411,7 @@ export class PlaidAnalyticsService {
    * Group transactions by month for averaging
    */
   private groupTransactionsByMonth(transactions: ProcessedTransaction[]): MonthlySpending[] {
-    console.log(`[PLAID DEBUG] === groupTransactionsByMonth DEBUG ===`);
-    console.log(`[PLAID DEBUG] Input transactions count: ${transactions.length}`);
-    
     const monthlyGroups = new Map<string, ProcessedTransaction[]>();
-
-    // Debug: Show date range of input transactions
-    if (transactions.length > 0) {
-      const dates = transactions.map(t => t.date).sort((a, b) => a.getTime() - b.getTime());
-      const firstDate = format(dates[0], 'yyyy-MM-dd');
-      const lastDate = format(dates[dates.length - 1], 'yyyy-MM-dd');
-      console.log(`[PLAID DEBUG] Transaction date range: ${firstDate} to ${lastDate}`);
-    }
 
     transactions.forEach(transaction => {
       const monthKey = format(transaction.date, 'yyyy-MM');
@@ -595,17 +421,9 @@ export class PlaidAnalyticsService {
       monthlyGroups.get(monthKey)!.push(transaction);
     });
 
-    // Debug: Show all unique months found
-    const sortedMonthKeys = Array.from(monthlyGroups.keys()).sort();
-    console.log(`[PLAID DEBUG] Unique months found: ${sortedMonthKeys.length}`);
-    console.log(`[PLAID DEBUG] Month keys: [${sortedMonthKeys.join(', ')}]`);
-
-    const result = Array.from(monthlyGroups.entries()).map(([monthKey, monthTransactions]) => {
+    return Array.from(monthlyGroups.entries()).map(([monthKey, monthTransactions]) => {
       const [year, month] = monthKey.split('-').map(Number);
       const totalSpending = this.sumTransactions(monthTransactions);
-      
-      // Debug: Show details for each month
-      console.log(`[PLAID DEBUG] Month ${monthKey}: ${monthTransactions.length} transactions, $${totalSpending.toFixed(2)}`);
       
       return {
         year,
@@ -614,11 +432,6 @@ export class PlaidAnalyticsService {
         transactionCount: monthTransactions.length
       };
     });
-
-    console.log(`[PLAID DEBUG] Final monthlyTotals.length: ${result.length}`);
-    console.log(`[PLAID DEBUG] === END groupTransactionsByMonth DEBUG ===`);
-
-    return result;
   }
 
   /**

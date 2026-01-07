@@ -38,8 +38,8 @@ export class PlaidController {
     // Initialize PlaidService only if it exists (for backward compatibility)
     try {
       this.plaidService = new PlaidService();
-    } catch (error) {
-      console.error('PlaidService import failed:', error);
+    } catch (error: any) {
+      logger.error('PlaidService import failed', { error: error.message });
       this.plaidService = null;
     }
     

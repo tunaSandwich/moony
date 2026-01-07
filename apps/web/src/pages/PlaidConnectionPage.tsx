@@ -22,9 +22,7 @@ const PlaidConnectionPage = () => {
       setError('');
       
       try {
-        console.log('Plaid Link success, exchanging token...');
         const result = await plaidApi.connectAccount(publicToken);
-        console.log('Bank connected successfully:', result);
         
         // Clear link token to prevent re-launch bug
         setLinkToken(null);
@@ -42,7 +40,6 @@ const PlaidConnectionPage = () => {
     }, []),
 
     onExit: useCallback((error: unknown) => {
-      console.log('Plaid Link exited');
       setIsConnecting(false);
       setLinkToken(null);  // Clear link token to return to initial state
       setError('');        // Clear any error messages
@@ -57,9 +54,7 @@ const PlaidConnectionPage = () => {
     setError('');
     
     try {
-      console.log('Creating Plaid link token...');
       const tokenData = await plaidApi.createLinkToken();
-      console.log('Link token created successfully');
       setLinkToken(tokenData.link_token);
     } catch (error) {
       console.error('Failed to create link token:', error);
@@ -73,7 +68,6 @@ const PlaidConnectionPage = () => {
   // Auto-open Plaid Link when token is ready
   useEffect(() => {
     if (ready && linkToken && !isConnecting) {
-      console.log('Opening Plaid Link...');
       open();
     }
   }, [ready, linkToken, isConnecting, open]);
