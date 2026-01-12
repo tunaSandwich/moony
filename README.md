@@ -75,8 +75,9 @@ npm install
 # Set up environment (see .env.example)
 cp .env.example .env
 
-# Database
-npx prisma migrate dev
+# Database (requires Docker)
+docker-compose -f apps/api/docker-compose.yml up -d postgres
+npm run db:migrate
 
 # Run
 npm run dev        # API + scheduler
