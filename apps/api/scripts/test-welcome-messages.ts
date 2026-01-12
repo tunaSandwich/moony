@@ -1,9 +1,15 @@
 #!/usr/bin/env node
+/**
+ * Welcome Message Testing Suite
+ * 
+ * Updated January 2026: Now uses Twilio instead of AWS for SMS/WhatsApp.
+ * Respects MESSAGE_CHANNEL env var for SMS vs WhatsApp mode.
+ */
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { prisma } from '../src/db.js';
-import { WelcomeMessageService } from '../src/services/aws/welcomeMessageService.js';
-import { AWSSMSService } from '../src/services/aws/smsService.js';
+import { TwilioWelcomeMessageService } from '../src/services/twilio/welcomeMessageService.js';
+import { TwilioSMSService } from '../src/services/twilio/smsService.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { format } from 'date-fns';
@@ -29,22 +35,24 @@ const TEST_USERS = {
 };
 
 class WelcomeMessageTester {
-  private welcomeService: WelcomeMessageService;
-  private smsService: AWSSMSService;
+  private welcomeService: TwilioWelcomeMessageService;
+  private smsService: TwilioSMSService;
   
   constructor() {
-    this.welcomeService = new WelcomeMessageService();
-    this.smsService = new AWSSMSService();
+    this.welcomeService = new TwilioWelcomeMessageService();
+    this.smsService = new TwilioSMSService();
   }
   
   async run() {
-    console.log(chalk.blue.bold('\n🧪 Welcome Message Testing Suite\n'));
+    console.log(chalk.blue.bold('\n🧪 Welcome Message Testing Suite (Twilio)\n'));
     
-    // Check sandbox mode
-    const isSandbox = process.env.AWS_SANDBOX_MODE !== 'false';
-    if (isSandbox) {
-      console.log(chalk.yellow('⚠️  Running in SANDBOX mode'));
-      console.log(chalk.yellow('   Only verified numbers will receive messages\n'));
+    // Show message channel mode
+    const messageChannel = process.env.MESSAGE_CHANNEL || 'sms';
+    console.log(chalk.cyan(`📱 Message Channel: ${messageChannel.toUpperCase()}`));
+    if (messageChannel === 'whatsapp') {
+      console.log(chalk.yellow('   Note: WhatsApp mode - users must opt-in to sandbox first\n'));
+    } else {
+      console.log(chalk.gray('   Sending via SMS\n'));
     }
     
     const { mode } = await inquirer.prompt([
@@ -132,8 +140,8 @@ class WelcomeMessageTester {
       {
         type: 'confirm',
         name: 'isVerified',
-        message: 'Is this number verified in AWS sandbox?',
-        default: false
+        message: 'Has this number opted-in (WhatsApp) or is it a valid recipient?',
+        default: true
       },
       {
         type: 'list',

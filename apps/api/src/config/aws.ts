@@ -8,7 +8,7 @@ const awsConfigSchema = z.object({
   phoneNumber: z.string().optional(), // Will be added after 10DLC approval
   snsTopicArn: z.string(),
   sandboxMode: z.boolean(),
-  environment: z.enum(['local', 'staging', 'production']),
+  environment: z.enum(['local', 'staging', 'production', 'test']),
 });
 
 class AWSConfig {
@@ -22,7 +22,7 @@ class AWSConfig {
   private loadConfig() {
     // Determine environment from NODE_ENV, mapping 'development' to 'local'
     const nodeEnv = process.env.NODE_ENV || 'local';
-    const environment = nodeEnv === 'development' ? 'local' : nodeEnv as 'local' | 'staging' | 'production';
+    const environment = nodeEnv === 'development' ? 'local' : nodeEnv as 'local' | 'staging' | 'production' | 'test';
     
     // Parse and validate using zod
     return awsConfigSchema.parse({

@@ -42,6 +42,7 @@
     "send-sms:local": "curl -sS -X POST http://localhost:3000/api/run-now",
     "send-sms:remote": "curl -sS -X POST $APP_URL/api/run-now",
 
+    "test": "NODE_ENV=test jest",
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
     "test:plaid:staging": "NODE_ENV=staging tsx tests/test.plaid.ts",

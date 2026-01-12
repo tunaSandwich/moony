@@ -23,7 +23,7 @@ interface BatchMetricsOptions {
 }
 
 export class MetricsLogger {
-  private cloudWatchClient: CloudWatchClient;
+  private cloudWatchClient!: CloudWatchClient;
   private defaultNamespace: string;
   private isEnabled: boolean;
   private metricsQueue: CustomMetric[];
