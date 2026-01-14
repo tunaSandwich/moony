@@ -384,8 +384,13 @@ export class WebhookController {
           error: targetCalculationError.message
         });
         
-        // Graceful fallback to basic calculation
-        dailyTarget = this.calculationService.calculateDailyTarget(goalAmount, 0);
+        // Graceful fallback using period-aware calculation with zero spending
+        dailyTarget = this.calculationService.calculatePeriodAwareDailyTarget(
+          goalAmount,
+          0,
+          periodStart,
+          periodEnd
+        );
         calculationError = 'Unable to fetch current spending data';
       }
 

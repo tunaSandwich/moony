@@ -4,7 +4,7 @@ import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
-import { WelcomeMessageService } from '../services/aws/welcomeMessageService.js';
+import { TwilioWelcomeMessageService } from '../services/twilio/welcomeMessageService.js';
 
 // Use shared Prisma client
 
@@ -50,7 +50,7 @@ const isValidVerificationCode = (code: string): boolean => {
 
 export class PhoneVerificationController {
   private twilioClient: twilio.Twilio;
-  private welcomeMessageService: WelcomeMessageService;
+  private welcomeMessageService: TwilioWelcomeMessageService;
 
   constructor() {
     // Validate required environment variables
@@ -67,7 +67,7 @@ export class PhoneVerificationController {
     }
     
     this.twilioClient = twilio(accountSid, authToken);
-    this.welcomeMessageService = new WelcomeMessageService();
+    this.welcomeMessageService = new TwilioWelcomeMessageService();
   }
 
   public sendVerificationCode = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -357,37 +357,29 @@ export class PhoneVerificationController {
   });
 
   /**
-   * Send welcome message via AWS after successful phone verification
+   * Send welcome message via Twilio after successful phone verification
    * Non-blocking operation with comprehensive error handling
    */
   public sendWelcomeSMS = async (userId: string): Promise<void> => {
     try {
-      logger.info('Sending welcome message via AWS', { userId });
+      logger.info('Sending welcome message via Twilio', { userId });
       
       const result = await this.welcomeMessageService.sendWelcomeMessage(userId, {
         triggerAnalytics: true // Trigger analytics calculation for new users
       });
       
       if (result.success) {
-        logger.info('Welcome message sent successfully via AWS', {
+        logger.info('Welcome message sent successfully via Twilio', {
           userId,
           messageId: result.messageId,
           scenario: result.scenario
         });
       } else {
-        // Check if it's a sandbox limitation
-        if (result.sandboxLimited) {
-          logger.warn('Welcome message blocked by AWS sandbox', {
-            userId,
-            error: result.error
-          });
-          // Don't log as error - this is expected in sandbox mode
-        } else {
-          logger.error('Failed to send welcome message via AWS', {
-            userId,
-            error: result.error
-          });
-        }
+        // Twilio doesn't have the same sandbox limitations as AWS
+        logger.error('Failed to send welcome message via Twilio', {
+          userId,
+          error: result.error
+        });
       }
       
     } catch (error: any) {
@@ -400,7 +392,7 @@ export class PhoneVerificationController {
   };
 
   /**
-   * Resend welcome message for verified users via AWS
+   * Resend welcome message for verified users via Twilio
    */
   public resendWelcomeMessage = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const userId = req.user?.id;
@@ -410,7 +402,7 @@ export class PhoneVerificationController {
     }
 
     try {
-      logger.info('Resending welcome message via AWS for user', { userId });
+      logger.info('Resending welcome message via Twilio for user', { userId });
 
       // Look up user from database and verify they are phone verified
       const user = await prisma.user.findUnique({
@@ -429,27 +421,14 @@ export class PhoneVerificationController {
         throw new AppError('Phone number must be verified before receiving messages', 403);
       }
 
-      // Check AWS sandbox verification
-      const isSandboxMode = process.env.AWS_SANDBOX_MODE !== 'false';
-      if (isSandboxMode) {
-        // Check if it's a simulator number
-        const simulatorNumbers = ['+12065559457', '+12065559453'];
-        if (!simulatorNumbers.includes(user.phoneNumber || '')) {
-          logger.warn('Cannot resend to unverified number in sandbox', { userId });
-          
-          res.status(200).json({
-            message: 'Message queued for delivery',
-            warning: 'Phone number needs AWS sandbox verification'
-          });
-          return;
-        }
-      }
+      // Twilio doesn't require sandbox verification like AWS
+      // Messages will be sent directly via Twilio
 
-      // Use AWS welcome message service
+      // Use Twilio welcome message service
       const result = await this.welcomeMessageService.resendWelcomeMessage(userId);
 
       if (result.success) {
-        logger.info('Welcome message resent successfully via AWS', { 
+        logger.info('Welcome message resent successfully via Twilio', { 
           userId,
           messageId: result.messageId 
         });
@@ -459,7 +438,7 @@ export class PhoneVerificationController {
           messageId: result.messageId
         });
       } else {
-        logger.error('Failed to resend welcome message via AWS', {
+        logger.error('Failed to resend welcome message via Twilio', {
           userId,
           error: result.error
         });
@@ -486,7 +465,7 @@ export class PhoneVerificationController {
   });
 
   /**
-   * Send budget confirmation via AWS when user sets their budget
+   * Send budget confirmation via Twilio when user sets their budget
    * This will be called from the webhook handler in Phase 4
    */
   public sendBudgetConfirmation = async (
@@ -500,7 +479,7 @@ export class PhoneVerificationController {
       );
       
       if (result.success) {
-        logger.info('Budget confirmation sent via AWS', {
+        logger.info('Budget confirmation sent via Twilio', {
           userId,
           messageId: result.messageId,
           monthlyBudget

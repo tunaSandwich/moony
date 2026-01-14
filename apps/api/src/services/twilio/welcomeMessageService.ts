@@ -1,15 +1,4 @@
-/**
- * @deprecated This AWS implementation is deprecated and kept as a fallback.
- * Primary implementation: ../twilio/welcomeMessageService.ts
- * 
- * Migration: January 2026
- * Reason: Migrating to Twilio for unified SMS/WhatsApp messaging
- * 
- * To switch back to AWS (emergency fallback):
- * 1. In phoneVerificationController.ts, change import back to this file
- */
-
-import { AWSSMSService } from './smsService.js';
+import { TwilioSMSService } from './smsService.js';
 import { prisma } from '../../db.js';
 import { PlaidAnalyticsService } from '../plaidAnalyticsService.js';
 import { TemplateService } from '../templateService.js';
@@ -45,16 +34,12 @@ export interface WelcomeMessageResult {
   sandboxLimited?: boolean;
 }
 
-/**
- * @deprecated Use TwilioWelcomeMessageService instead.
- * AWS SMS service for sending welcome and budget messages.
- */
-export class WelcomeMessageService {
-  private smsService: AWSSMSService;
+export class TwilioWelcomeMessageService {
+  private smsService: TwilioSMSService;
   private analyticsService: PlaidAnalyticsService;
   
   constructor() {
-    this.smsService = new AWSSMSService();
+    this.smsService = new TwilioSMSService();
     this.analyticsService = new PlaidAnalyticsService();
   }
   
@@ -66,7 +51,7 @@ export class WelcomeMessageService {
     options: WelcomeMessageOptions = {}
   ): Promise<WelcomeMessageResult> {
     try {
-      logger.info('Preparing welcome message', { userId, options });
+      logger.info('Preparing welcome message via Twilio', { userId, options });
       
       // Fetch user data with analytics
       let user = (await prisma.user.findUnique({
@@ -94,28 +79,6 @@ export class WelcomeMessageService {
           error: 'User not found',
           scenario: 'C'
         };
-      }
-      
-      // Check if this is a simulator number in sandbox mode
-      const isSandboxMode = process.env.AWS_SANDBOX_MODE !== 'false';
-      const useSimulatorOverride = process.env.AWS_USE_SIMULATOR_OVERRIDE === 'true';
-      const isSimulator = this.isSimulatorNumber(user.phoneNumber);
-      
-      if (isSandboxMode) {
-        logger.info('AWS sandbox mode active', {
-          userId,
-          isSimulatorNumber: isSimulator,
-          useSimulatorOverride,
-          originalNumber: this.maskPhoneNumber(user.phoneNumber)
-        });
-        
-        if (useSimulatorOverride && !isSimulator) {
-          logger.info('Real number will be overridden with simulator in sandbox', {
-            userId,
-            originalNumber: this.maskPhoneNumber(user.phoneNumber),
-            simulatorDestination: process.env.AWS_SIMULATOR_DESTINATION
-          });
-        }
       }
       
       // Handle reconnection scenario
@@ -154,7 +117,7 @@ export class WelcomeMessageService {
       const scenario = this.determineScenario(user.spendingAnalytics, options.forceScenario);
       const message = this.buildWelcomeMessage(user, scenario);
       
-      // Send via AWS
+      // Send via Twilio
       const result = await this.smsService.sendMessage({
         to: user.phoneNumber,
         body: message,
@@ -163,10 +126,11 @@ export class WelcomeMessageService {
       });
       
       if (result.success && result.messageId) {
-        logger.info('Welcome message sent successfully', {
+        logger.info('Welcome message sent successfully via Twilio', {
           userId,
           scenario,
-          messageId: result.messageId
+          messageId: result.messageId,
+          channel: result.channel
         });
         
         // Log metrics for welcome message
@@ -178,11 +142,13 @@ export class WelcomeMessageService {
         messageId: result.messageId,
         error: result.error,
         scenario,
-        sandboxLimited: result.sandboxSkipped
+        // Map Twilio's retryable flag to sandboxLimited for compatibility
+        // Twilio doesn't have the same sandbox concept as AWS
+        sandboxLimited: false
       };
       
     } catch (error: any) {
-      logger.error('Failed to send welcome message', {
+      logger.error('Failed to send welcome message via Twilio', {
         userId,
         error: error.message
       });
@@ -218,7 +184,7 @@ export class WelcomeMessageService {
       messageId: result.messageId,
       error: result.error,
       scenario: 'reconnection',
-      sandboxLimited: result.sandboxSkipped
+      sandboxLimited: false
     };
   }
   
@@ -361,11 +327,11 @@ export class WelcomeMessageService {
         messageId: result.messageId,
         error: result.error,
         scenario: 'C',
-        sandboxLimited: result.sandboxSkipped
+        sandboxLimited: false
       };
       
     } catch (error: any) {
-      logger.error('Failed to send budget confirmation', {
+      logger.error('Failed to send budget confirmation via Twilio', {
         userId,
         error: error.message
       });
@@ -431,11 +397,11 @@ export class WelcomeMessageService {
         messageId: result.messageId,
         error: result.error,
         scenario: 'C',
-        sandboxLimited: result.sandboxSkipped
+        sandboxLimited: false
       };
       
     } catch (error: any) {
-      logger.error('Failed to send budget update confirmation', {
+      logger.error('Failed to send budget update confirmation via Twilio', {
         userId,
         error: error.message
       });
@@ -482,11 +448,11 @@ export class WelcomeMessageService {
         messageId: result.messageId,
         error: result.error,
         scenario: 'C',
-        sandboxLimited: result.sandboxSkipped
+        sandboxLimited: false
       };
       
     } catch (error: any) {
-      logger.error('Failed to send data error message', {
+      logger.error('Failed to send data error message via Twilio', {
         userId,
         error: error.message
       });
@@ -496,30 +462,5 @@ export class WelcomeMessageService {
         scenario: 'C'
       };
     }
-  }
-  
-  private isSimulatorNumber(phoneNumber: string): boolean {
-    const simulatorNumbers = [
-      // Origination simulators
-      '+12065559457',
-      '+12065559453', 
-      // Destination simulators
-      '+14254147755',
-      '+14254147156',
-      '+14254147266',
-      '+14254147489',
-      '+14254147499',
-      '+14254147511',
-      '+14254147600',
-      '+14254147633',
-      '+14254147654',
-      '+14254147688'
-    ];
-    return simulatorNumbers.includes(phoneNumber);
-  }
-  
-  private maskPhoneNumber(phoneNumber: string): string {
-    if (phoneNumber.length <= 4) return phoneNumber;
-    return `****${phoneNumber.slice(-4)}`;
   }
 }

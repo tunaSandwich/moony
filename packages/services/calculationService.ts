@@ -98,9 +98,9 @@ export class CalculationService {
     periodEnd: Date
   ): number {
     try {
-      // Get YYYY-MM-DD strings for comparison
-      const startDateStr = format(startOfMonth(periodStart), 'yyyy-MM-dd');
-      const endDateStr = format(endOfMonth(periodStart), 'yyyy-MM-dd');
+      // Get YYYY-MM-DD strings for comparison using the actual period bounds
+      const startDateStr = format(periodStart, 'yyyy-MM-dd');
+      const endDateStr = format(periodEnd, 'yyyy-MM-dd');
       
       let total = 0;
       

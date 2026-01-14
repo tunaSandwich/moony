@@ -31,24 +31,29 @@ export class TwilioIncomingMessageHandler {
   }
   
   /**
-   * Process incoming SMS message from Twilio webhook
+   * Process incoming SMS/WhatsApp message from Twilio webhook
    */
   async processIncomingMessage(message: TwilioIncomingSMSMessage): Promise<void> {
     const startTime = Date.now();
     
     try {
-      logger.info('Processing incoming Twilio SMS message', {
-        from: this.maskPhoneNumber(message.From),
+      // Strip WhatsApp prefix if present (WhatsApp sends "whatsapp:+1234567890")
+      const phoneNumber = this.normalizePhoneNumber(message.From);
+      const isWhatsApp = message.From.startsWith('whatsapp:');
+      
+      logger.info('Processing incoming Twilio message', {
+        from: this.maskPhoneNumber(phoneNumber),
         to: this.maskPhoneNumber(message.To),
         messageSid: message.MessageSid,
         bodyLength: message.Body.length,
-        numSegments: message.NumSegments
+        numSegments: message.NumSegments,
+        channel: isWhatsApp ? 'whatsapp' : 'sms'
       });
       
-      // Look up user by phone number
+      // Look up user by phone number (normalized, without whatsapp: prefix)
       const user = await prisma.user.findFirst({
         where: { 
-          phoneNumber: message.From,
+          phoneNumber: phoneNumber,
           phoneVerified: true,
           isActive: true
         },
@@ -64,7 +69,8 @@ export class TwilioIncomingMessageHandler {
       
       if (!user) {
         logger.warn('No active user found for phone number', {
-          phone: this.maskPhoneNumber(message.From)
+          phone: this.maskPhoneNumber(phoneNumber),
+          channel: isWhatsApp ? 'whatsapp' : 'sms'
         });
         // Don't send error message to unknown numbers
         return;
@@ -350,8 +356,21 @@ For support: support@moony.app`;
     });
   }
   
+  /**
+   * Normalize phone number by stripping WhatsApp prefix if present
+   * WhatsApp sends "whatsapp:+1234567890", we need "+1234567890"
+   */
+  private normalizePhoneNumber(phoneNumber: string): string {
+    if (phoneNumber.startsWith('whatsapp:')) {
+      return phoneNumber.replace('whatsapp:', '');
+    }
+    return phoneNumber;
+  }
+  
   private maskPhoneNumber(phoneNumber: string): string {
-    if (phoneNumber.length <= 4) return phoneNumber;
-    return `****${phoneNumber.slice(-4)}`;
+    // First normalize, then mask
+    const normalized = this.normalizePhoneNumber(phoneNumber);
+    if (normalized.length <= 4) return normalized;
+    return `****${normalized.slice(-4)}`;
   }
 }
