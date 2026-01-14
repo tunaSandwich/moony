@@ -16,6 +16,7 @@
     "api:dev": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx watch apps/api/server.ts",
     "api:dev:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx watch apps/api/server.ts",
     "api:start:production": "NODE_ENV=production node scripts/sync-prisma-env.mjs && NODE_ENV=production tsx apps/api/server.ts",
+    "api:start:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/server.ts",
 
     "web:dev": "npm --prefix apps/web run dev",
     "web:build": "npm --prefix apps/web run build",
