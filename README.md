@@ -2,37 +2,6 @@
 
 **Daily spending guidance via SMS** — connects to your bank, calculates how much you can spend today, and texts you every morning.
 
-## Architecture
-
-```mermaid
-  flowchart LR
-      subgraph Frontend
-          A[React] --> B[Plaid Link]
-      end
-
-      subgraph Backend
-          C[Express API] --> D[Prisma/PostgreSQL]
-          E[Scheduler] --> C
-      end
-
-      subgraph External
-          B --> F[Plaid API]
-          C --> F
-          C --> G[Twilio SMS/WhatsApp]
-          C --> I[Twilio Verify]
-          J[Twilio SNS] --> C
-      end
-
-      E -->|8am daily| C
-      C -->|Send SMS| G
-      G -->|SMS/WhatsApp| K[📱 User]
-      K -->|Reply| G
-      K -->|Reply| J
-      G -->|Webhook| C
-      J -->|Webhook| C
-```
-
-
 https://github.com/user-attachments/assets/61500fe9-2460-4f7c-a8e5-deaef9e80510
 
 **Key flows:**
