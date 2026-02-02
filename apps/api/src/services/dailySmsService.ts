@@ -1,13 +1,12 @@
 import { PrismaClient, User, SpendingGoal, UserSpendingAnalytics } from '@prisma/client';
-import { prisma } from '../../src/db.js';
+import { prisma as defaultPrisma } from '../../src/db.js';
 import { format as formatDate } from 'date-fns';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
-import { AWSSMSService } from './aws/smsService.js';
-import { TwilioSMSService } from './twilio/smsService.js';
+import { TwilioSMSService, SendSMSResult } from './twilio/smsService.js';
 import { logger } from '@logger';
 import { metricsLogger } from '../utils/metricsLogger.js';
 
-interface DailySmsResult {
+export interface DailySmsResult {
   totalUsers: number;
   successCount: number;
   failureCount: number;
@@ -15,27 +14,33 @@ interface DailySmsResult {
   errors: Array<{ userId: string; error: string }>;
 }
 
+// Interface for SMS service to allow mocking in tests
+export interface ISmsService {
+  sendMessage(params: {
+    to: string;
+    body: string;
+    userId?: string;
+    messageType?: 'TRANSACTIONAL' | 'PROMOTIONAL';
+  }): Promise<SendSMSResult>;
+}
+
+export interface DailySmsServiceDependencies {
+  prisma?: PrismaClient;
+  smsService?: ISmsService;
+  calculationService?: CalculationService;
+}
 
 export class DailySmsService {
   private prisma: PrismaClient;
   private calculationService: CalculationService;
-  private smsService: AWSSMSService | TwilioSMSService;
-  private provider: string;
+  private smsService: ISmsService;
 
-  constructor() {
-    this.prisma = prisma;
-    this.calculationService = new CalculationService();
+  constructor(deps: DailySmsServiceDependencies = {}) {
+    this.prisma = deps.prisma ?? defaultPrisma;
+    this.calculationService = deps.calculationService ?? new CalculationService();
+    this.smsService = deps.smsService ?? new TwilioSMSService();
     
-    // Determine SMS provider based on environment variable
-    this.provider = process.env.SMS_PROVIDER || 'twilio'; // Default to Twilio
-    
-    if (this.provider === 'twilio') {
-      this.smsService = new TwilioSMSService();
-      logger.info('[DailySmsService] Using Twilio SMS provider');
-    } else {
-      this.smsService = new AWSSMSService();
-      logger.info('[DailySmsService] Using AWS SMS provider');
-    }
+    logger.info('[DailySmsService] Initialized with Twilio SMS provider');
   }
 
   async sendDailyMessages(): Promise<DailySmsResult> {
@@ -67,8 +72,7 @@ export class DailySmsService {
       result.totalUsers = users.length;
 
       logger.info('[DailySmsService] Starting daily message job', {
-        totalUsers: result.totalUsers,
-        smsProvider: this.provider.toUpperCase()
+        totalUsers: result.totalUsers
       });
 
       // Process each user
@@ -104,7 +108,7 @@ export class DailySmsService {
           // Log metrics for daily SMS
           metricsLogger.logDailySms('daily');
 
-          // Rate limiting for SMS providers (to stay within limits)
+          // Rate limiting (to stay within provider limits)
           await this.delay(100); // 100ms delay between messages
 
         } catch (error: any) {
@@ -180,20 +184,17 @@ export class DailySmsService {
       messageType: 'TRANSACTIONAL' as const
     };
     
-    const result = await this.smsService.sendMessage(sendParams);
+    const sendResult = await this.smsService.sendMessage(sendParams);
 
-    if (result.success) {
-      const logData: any = {
+    if (sendResult.success) {
+      logger.info('[DailySmsService] Message sent successfully', {
         userId: user.id,
         userName: `${user.firstName} ${user.lastName}`,
-        provider: this.provider.toUpperCase(),
         todaysTarget,
-        messageId: (result as any).messageId
-      };
-
-      logger.info('[DailySmsService] Message sent successfully', logData);
+        messageId: sendResult.messageId
+      });
     } else {
-      throw new Error(`Message send failed: ${result.error}`);
+      throw new Error(`Message send failed: ${sendResult.error}`);
     }
   }
 

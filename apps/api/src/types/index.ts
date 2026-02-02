@@ -25,7 +25,7 @@ export interface HealthStatus {
   services: {
     plaid: boolean;
     database?: boolean;
-    awsSms?: boolean;
+    sms?: boolean;
     environment?: boolean;
   };
 }

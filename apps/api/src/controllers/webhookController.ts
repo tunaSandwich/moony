@@ -4,7 +4,7 @@ import { prisma } from '../../src/db.js';
 import { logger } from '@logger';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { AWSSMSService } from '../services/aws/smsService.js';
+import { TwilioSMSService } from '../services/twilio/smsService.js';
 import { WebhookParser } from '../utils/webhookParser.js';
 import { CalculationService } from '../../../../packages/services/calculationService.js';
 import { PlaidAnalyticsService } from '../services/plaidAnalyticsService.js';
@@ -110,23 +110,23 @@ const calculatePeriodDates = (monthStartDay?: number): { periodStart: Date, peri
   return { periodStart, periodEnd, actualMonthStartDay };
 };
 
-// Utility function to send response message via AWS SMS
+// Utility function to send response message via Twilio SMS/WhatsApp
 const sendResponse = async (to: string, message: string, preferredChannel?: 'sms' | 'whatsapp'): Promise<void> => {
   try {
-    const awsSmsService = new AWSSMSService();
+    const smsService = new TwilioSMSService();
     
-    const result = await awsSmsService.sendMessage({
+    const result = await smsService.sendMessage({
       to,
       body: message,
       messageType: 'TRANSACTIONAL'
     });
 
     if (result.success) {
-      logger.info('Response message sent successfully via AWS', { 
+      logger.info('Response message sent successfully via Twilio', { 
         to: WebhookParser.maskPhoneNumber(to),
         messageId: result.messageId,
         messageLength: message.length,
-        provider: 'AWS'
+        channel: result.channel || 'sms'
       });
     } else {
       logger.error('Failed to send response message via AWS', {
