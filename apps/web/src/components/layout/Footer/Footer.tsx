@@ -23,9 +23,8 @@ export interface FooterProps {
 }
 
 const DEFAULT_LINKS: FooterLink[] = [
-  { label: 'PRIVACY POLICY', href: '#' },
-  { label: 'TERMS OF SERVICE', href: '#' },
-  { label: 'LICENSE AGREEMENT', href: '#' },
+  { label: 'PRIVACY POLICY', href: '/privacy' },
+  { label: 'TERMS OF SERVICE', href: '/terms' },
 ];
 
 /**
