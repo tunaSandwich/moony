@@ -111,7 +111,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen relative overflow-hidden bg-pink-bg">
       {/* Fixed Header with Logo and Strong Blur - Exactly 120px */}
-      <Header ref={headerRef} />
+      <Header ref={headerRef} showAuthAction />
 
       {/* Fixed Text Section - Exactly 280px from top */}
       <div 

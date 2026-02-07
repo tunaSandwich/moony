@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TopBar } from '@/components/ui/TopBar';
 import { Header } from '@/components';
-import { Button } from '@/components/ui/Button';
 import { goalsApi } from '@/api';
 import type { SpendingGoal } from '@/api/goals';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,8 +80,19 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-pink-bg">
-      {/* Fixed Header with Logo */}
-      <Header />
+      {/* Fixed Header with Logo + Logout in top-right */}
+      <Header
+        rightSlot={
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="text-sm font-medium transition-opacity duration-200 hover:opacity-70 disabled:opacity-50"
+            style={{ color: colors.gray[900] }}
+          >
+            {isLoggingOut ? 'Logging out...' : 'Log out'}
+          </button>
+        }
+      />
 
       {/* Main Content */}
       <div
@@ -215,17 +225,6 @@ const DashboardPage = () => {
                 ) : null}
               </div>
 
-              {/* Logout Button */}
-              <Button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                isLoading={isLoggingOut}
-                className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
-                style={{ color: colors.gray[900] }}
-                size="lg"
-              >
-                {isLoggingOut ? 'Logging out...' : 'Log Out'}
-              </Button>
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import logoText from '@/assets/icons/logo_text.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,10 +10,16 @@ interface HeaderProps {
   className?: string;
 
   /**
-   * Whether to show the auth action (login / profile) on the right.
-   * Defaults to true.
+   * Whether to show the landing-page auth links (login / profile) on the right.
+   * Only the landing page should set this to true.
    */
   showAuthAction?: boolean;
+
+  /**
+   * Optional custom content rendered in the top-right area.
+   * Takes precedence over showAuthAction when provided.
+   */
+  rightSlot?: ReactNode;
 }
 
 /**
@@ -25,10 +31,10 @@ interface HeaderProps {
  * - Gradient fade effect
  * - Responsive logo sizing
  * - Ref forwarding for scroll animations
- * - Conditional login / profile icon on the right
+ * - Optional right slot for page-specific actions
  */
 export const Header = forwardRef<HTMLElement, HeaderProps>(
-  ({ className = '', showAuthAction = true }, ref) => {
+  ({ className = '', showAuthAction = false, rightSlot }, ref) => {
     const { isAuthenticated, isLoading } = useAuth();
 
     return (
@@ -48,8 +54,10 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
           />
         </Link>
 
-        {/* Auth action — top-right, mirrors logo positioning */}
-        {showAuthAction && !isLoading && (
+        {/* Right area — custom slot takes precedence, then auth action */}
+        {rightSlot ? (
+          <div className="absolute top-4 right-10 z-10">{rightSlot}</div>
+        ) : showAuthAction && !isLoading ? (
           <div className="absolute top-4 right-10 z-10">
             {isAuthenticated ? (
               <Link
@@ -57,7 +65,6 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                 aria-label="Go to dashboard"
                 className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1E1E1E]/8 hover:bg-[#1E1E1E]/15 transition-colors duration-200"
               >
-                {/* Simple profile / user SVG icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -79,11 +86,11 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
                 className="text-sm font-medium transition-opacity duration-200 hover:opacity-70"
                 style={{ color: '#1E1E1E' }}
               >
-                Log in
+                Log in / Sign up
               </Link>
             )}
           </div>
-        )}
+        ) : null}
       </header>
     );
   }
