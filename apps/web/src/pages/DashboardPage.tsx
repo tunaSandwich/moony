@@ -68,6 +68,17 @@ const DashboardPage = () => {
   const isOverBudget =
     budgetGoal && spentAmount ? parseFloat(String(spentAmount)) > budgetGoal : false;
 
+  // Calculate time progress through the current period
+  const timeProgressPercent = (() => {
+    if (!goal?.periodStart || !goal?.periodEnd) return 0;
+    const start = new Date(goal.periodStart).getTime();
+    const end = new Date(goal.periodEnd).getTime();
+    const now = Date.now();
+    if (now <= start) return 0;
+    if (now >= end) return 100;
+    return Math.round(((now - start) / (end - start)) * 100);
+  })();
+
   return (
     <div className="min-h-screen relative overflow-hidden bg-pink-bg">
       {/* Fixed Header with Logo */}
@@ -137,60 +148,71 @@ const DashboardPage = () => {
                   </span>
                 </div>
 
-                {/* Progress bar */}
+                {/* Spending progress bar */}
                 {budgetGoal ? (
-                  <div className="w-full bg-white/20 rounded-full h-2.5">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: colors.gray[500] }}>
+                        Budget used
+                      </span>
+                      <span className="text-xs font-medium" style={{ color: colors.gray[700] }}>
+                        {Math.round(progressPercent)}%
+                      </span>
+                    </div>
                     <div
-                      className="h-2.5 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${progressPercent}%`,
-                        background: isOverBudget
-                          ? '#ef4444'
-                          : 'linear-gradient(90deg, #f472b6, #f9a8d4)',
-                      }}
-                    />
+                      className="w-full rounded-full h-1.5"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.08)' }}
+                    >
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-500 min-w-[6px]"
+                        style={{
+                          width: `${progressPercent}%`,
+                          background: isOverBudget
+                            ? '#ef4444'
+                            : 'linear-gradient(90deg, #f472b6, #f9a8d4)',
+                        }}
+                      />
+                    </div>
+                    {spentAmount ? (
+                      <p className="text-xs text-right" style={{ color: colors.gray[500] }}>
+                        {formatCurrency(
+                          Math.max(budgetGoal - parseFloat(String(spentAmount)), 0)
+                        )}{' '}
+                        remaining
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
 
-                {budgetGoal && spentAmount ? (
-                  <p
-                    className="text-xs mt-2 text-right"
-                    style={{ color: colors.gray[700] }}
-                  >
-                    {formatCurrency(
-                      Math.max(budgetGoal - parseFloat(String(spentAmount)), 0)
-                    )}{' '}
-                    remaining
-                  </p>
+                {/* Time progress bar */}
+                {goal?.periodStart && goal?.periodEnd ? (
+                  <div className="space-y-1.5 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: colors.gray[500] }}>
+                        Month elapsed
+                      </span>
+                      <span className="text-xs font-medium" style={{ color: colors.gray[700] }}>
+                        {timeProgressPercent}%
+                      </span>
+                    </div>
+                    <div
+                      className="w-full rounded-full h-1.5"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.08)' }}
+                    >
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-500 min-w-[6px]"
+                        style={{
+                          width: `${timeProgressPercent}%`,
+                          background: 'linear-gradient(90deg, #94a3b8, #cbd5e1)',
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs" style={{ color: colors.gray[500] }}>
+                      <span>{formatDate(goal.periodStart)}</span>
+                      <span>{formatDate(goal.periodEnd)}</span>
+                    </div>
+                  </div>
                 ) : null}
-              </div>
-
-              {/* Period Dates Card */}
-              <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                <h2
-                  className="text-sm font-medium mb-3"
-                  style={{ color: colors.gray[700] }}
-                >
-                  Current Period
-                </h2>
-                <div className="flex justify-between text-sm" style={{ color: colors.gray[900] }}>
-                  <div>
-                    <span className="block text-xs" style={{ color: colors.gray[700] }}>
-                      Start
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(goal?.periodStart)}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="block text-xs" style={{ color: colors.gray[700] }}>
-                      End
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(goal?.periodEnd)}
-                    </span>
-                  </div>
-                </div>
               </div>
 
               {/* Logout Button */}
