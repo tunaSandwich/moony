@@ -1,31 +1,36 @@
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import logoText from '@/assets/icons/logo_text.png';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
   /**
    * Optional className for additional styling
    */
   className?: string;
-  
+
   /**
-   * Whether to show navigation items (future feature)
+   * Whether to show the auth action (login / profile) on the right.
+   * Defaults to true.
    */
-  showNav?: boolean;
+  showAuthAction?: boolean;
 }
 
 /**
  * Reusable header component with logo and gradient background.
  * Used across all main pages for consistent branding.
- * 
+ *
  * Features:
  * - Fixed positioning with backdrop blur
  * - Gradient fade effect
  * - Responsive logo sizing
  * - Ref forwarding for scroll animations
+ * - Conditional login / profile icon on the right
  */
 export const Header = forwardRef<HTMLElement, HeaderProps>(
-  ({ className = '', showNav = false }, ref) => {
+  ({ className = '', showAuthAction = true }, ref) => {
+    const { isAuthenticated, isLoading } = useAuth();
+
     return (
       <header
         ref={ref}
@@ -34,7 +39,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
           background: 'var(--header-gradient)',
         }}
       >
-        {/* Logo */}
+        {/* Logo — top-left */}
         <Link to="/" className="absolute top-5 left-10 z-10" aria-label="Go to home">
           <img
             src={logoText}
@@ -43,11 +48,41 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
           />
         </Link>
 
-        {/* Future: Navigation items will go here when showNav is true */}
-        {showNav && (
-          <nav className="absolute top-1/2 right-10 -translate-y-1/2">
-            {/* Navigation items TBD */}
-          </nav>
+        {/* Auth action — top-right, mirrors logo positioning */}
+        {showAuthAction && !isLoading && (
+          <div className="absolute top-4 right-10 z-10">
+            {isAuthenticated ? (
+              <Link
+                to="/dashboard"
+                aria-label="Go to dashboard"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1E1E1E]/8 hover:bg-[#1E1E1E]/15 transition-colors duration-200"
+              >
+                {/* Simple profile / user SVG icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#1E1E1E"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-[18px] h-[18px]"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M20 21a8 8 0 1 0-16 0" />
+                </svg>
+              </Link>
+            ) : (
+              <Link
+                to="/invite"
+                className="text-sm font-medium transition-opacity duration-200 hover:opacity-70"
+                style={{ color: '#1E1E1E' }}
+              >
+                Log in
+              </Link>
+            )}
+          </div>
         )}
       </header>
     );
