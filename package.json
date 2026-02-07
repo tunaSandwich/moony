@@ -12,18 +12,15 @@
     "scheduler:start:production": "NODE_ENV=production tsx apps/scheduler/index.ts",
     "scheduler:now": "NODE_ENV=local tsx apps/scheduler/tests/test-run-daily-now.ts",
     "scheduler:now:staging": "NODE_ENV=staging tsx apps/scheduler/tests/test-run-daily-now.ts",
-
     "api:dev": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx watch apps/api/server.ts",
     "api:dev:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx watch apps/api/server.ts",
     "api:start:production": "NODE_ENV=production node scripts/sync-prisma-env.mjs && NODE_ENV=production tsx apps/api/server.ts",
     "api:start:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/server.ts",
-
     "web:dev": "npm --prefix apps/web run dev",
     "web:build": "npm --prefix apps/web run build",
     "web:start": "npm --prefix apps/web run start",
     "web:test": "npm --prefix apps/web run test",
     "web:lint": "npm --prefix apps/web run lint",
-
     "db:studio": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma studio --schema=apps/api/prisma/schema.prisma",
     "db:studio:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && npx prisma studio --schema=apps/api/prisma/schema.prisma",
     "db:migrate": "NODE_ENV=local node scripts/sync-prisma-env.mjs && npx prisma migrate dev --schema=apps/api/prisma/schema.prisma",
@@ -36,13 +33,10 @@
     "db:seed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts",
     "db:seed:clear": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear",
     "db:seed:clearAndSeed": "NODE_ENV=local node scripts/sync-prisma-env.mjs && tsx apps/api/prisma/seed.ts --clear && tsx apps/api/prisma/seed.ts",
-
     "user:create": "NODE_ENV=local node scripts/sync-prisma-env.mjs && NODE_ENV=local tsx apps/api/scripts/create-user.ts",
     "user:create:staging": "NODE_ENV=staging node scripts/sync-prisma-env.mjs && NODE_ENV=staging tsx apps/api/scripts/create-user.ts",
-
     "send-sms:local": "curl -sS -X POST http://localhost:3000/api/run-now",
     "send-sms:remote": "curl -sS -X POST $APP_URL/api/run-now",
-
     "test": "NODE_ENV=test jest",
     "test:unit": "NODE_ENV=test jest",
     "test:plaid": "NODE_ENV=local tsx tests/test.plaid.ts",
@@ -61,17 +55,14 @@
     "test:aws-daily-sms": "NODE_ENV=local tsx apps/api/scripts/test-aws-daily-sms.ts",
     "test:aws-integration": "NODE_ENV=local tsx apps/api/scripts/test-aws-integration.ts",
     "test:aws-basic": "NODE_ENV=local tsx apps/api/scripts/test-aws-basic.ts",
-
     "setup:webhook": "NODE_ENV=local tsx apps/api/scripts/setup-sns-webhook.ts",
     "setup:webhook:staging": "NODE_ENV=staging tsx apps/api/scripts/setup-sns-webhook.ts",
-
     "verify:sms-config": "NODE_ENV=local tsx apps/api/scripts/verify-sms-config.ts",
     "setup:monitoring": "NODE_ENV=production tsx apps/api/scripts/setup-monitoring.ts",
     "test:monitoring": "NODE_ENV=local tsx apps/api/scripts/test-monitoring-setup.ts",
     "check:production": "NODE_ENV=production tsx apps/api/scripts/production-checklist.ts",
     "check:readiness": "NODE_ENV=local tsx apps/api/scripts/production-checklist.ts",
     "start:production": "NODE_ENV=production node scripts/sync-prisma-env.mjs && NODE_ENV=production tsx apps/api/server.ts",
-
     "build": "npx prisma generate --schema=apps/api/prisma/schema.prisma",
     "deploy:staging": "railway up --environment staging",
     "deploy:production": "bash apps/api/scripts/deploy-production.sh",
@@ -92,6 +83,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.13.0",
     "concurrently": "^9.2.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.0.3",
@@ -104,6 +96,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.23",
     "@types/jest": "^30.0.0",

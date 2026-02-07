@@ -8,6 +8,7 @@ import { authApi } from '@/api';
 import { colors } from '@/design-system';
 import { PhoneInput } from '@/components/forms/PhoneInput';
 import { validatePhoneNumber } from '@/utils/validators';
+import { useAuth } from '@/contexts/AuthContext';
 
 const InviteCodePage = () => {
   const [viewState, setViewState] = useState<'enter-code' | 'request-access' | 'confirmation'>('enter-code');
@@ -19,6 +20,7 @@ const InviteCodePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { refreshSession } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,16 +38,30 @@ const InviteCodePage = () => {
     setError('');
     
     try {
-      // Call the API to validate invite code
+      // Call the API to validate invite code (sets httpOnly cookie + localStorage fallback)
       const response = await authApi.validateInviteCode(inviteCode, phoneNumber);
       
       if (import.meta.env.DEV) {
         console.log('User authenticated:', response.user);
         console.log('Token stored successfully');
       }
-      
-      // Navigate to bank connection step
-      navigate('/connect-bank');
+
+      // Refresh session to get onboarding state, then route accordingly
+      await refreshSession();
+
+      // Determine where to go based on onboarding progress
+      const session = await authApi.getSession();
+      const { onboarding } = session;
+
+      if (!onboarding.hasConnectedBank) {
+        navigate('/connect-bank');
+      } else if (!onboarding.phoneVerified) {
+        navigate('/phone-verification');
+      } else if (!onboarding.hasSpendingGoal) {
+        navigate('/check-phone');
+      } else {
+        navigate('/dashboard');
+      }
       
     } catch (error) {
       // Error is already user-friendly thanks to our interceptor

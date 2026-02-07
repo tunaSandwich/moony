@@ -3,6 +3,7 @@ import healthRoutes from './health.js';
 import plaidRoutes from './plaid.js';
 import jobRoutes from './jobs.js';
 import inviteRoutes from './invite.js';
+import authRoutes from './auth.js';
 import twilioRoutes from './twilio.js';
 import webhookRoutes from './webhooks.js';
 import awsWebhooksRoutes from './aws-webhooks.js';
@@ -14,6 +15,7 @@ const router = Router();
 
 // Mount route modules
 router.use('/', healthRoutes);
+router.use('/api/auth', authRoutes);
 router.use('/api/plaid', plaidRoutes);
 router.use('/api/twilio', twilioRoutes);
 router.use('/api/webhooks', webhookRoutes);

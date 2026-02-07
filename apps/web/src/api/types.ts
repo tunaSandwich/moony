@@ -25,6 +25,18 @@ export interface ApiSuccess<T> {
   data: T;
 }
 
+// Session / Onboarding Types
+export interface OnboardingState {
+  hasConnectedBank: boolean;
+  phoneVerified: boolean;
+  hasSpendingGoal: boolean;
+}
+
+export interface SessionResponse {
+  user: User;
+  onboarding: OnboardingState;
+}
+
 // Auth API Types
 export interface ValidateInviteCodeRequest {
   code: string;

@@ -13,13 +13,11 @@ export const authenticateJWT = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Read token from httpOnly cookie first, fall back to Authorization header
+  const cookieToken = req.cookies?.session_token;
   const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
-    throw new AppError('Authorization token required', 401);
-  }
-
-  const token = authHeader.split(' ')[1]; // Remove 'Bearer ' prefix
+  const headerToken = authHeader?.split(' ')[1];
+  const token = cookieToken || headerToken;
 
   if (!token) {
     throw new AppError('Authorization token required', 401);

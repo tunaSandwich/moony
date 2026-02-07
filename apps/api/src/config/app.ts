@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { logger } from '@logger';
 import { 
@@ -27,6 +28,9 @@ export const createApp = (): express.Application => {
   // Security middleware
   app.use(securityHeaders);
   app.use(generalRateLimit);
+
+  // Cookie parser (must come before routes that read cookies)
+  app.use(cookieParser());
 
   // CORS configuration
   app.use(cors({
