@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api';
 import { removeToken } from '@/api/client';
 import type { User, OnboardingState } from '@/api/types';
@@ -17,6 +18,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setOnboarding(null);
     setIsAuthenticated(false);
-  }, []);
+    navigate('/');
+  }, [navigate]);
 
   // Check session on mount
   useEffect(() => {
