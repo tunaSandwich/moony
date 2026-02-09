@@ -7,6 +7,7 @@ import PhoneVerificationPage from './pages/PhoneVerificationPage';
 import CheckPhonePage from './pages/CheckPhonePage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import CompliancePage from './pages/CompliancePage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/check-phone" element={<CheckPhonePage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/compliance" element={<CompliancePage />} />
         <Route path="/api-test" element={<ApiTestPage />} />
         <Route path="/plaid-test" element={<PlaidTestPage />} />
       </Routes>

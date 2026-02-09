@@ -220,7 +220,7 @@ const PhoneVerificationPage = () => {
                   <strong>I consent to receive daily spending notifications via SMS from moony.</strong>
                   <br />
                   <label htmlFor="smsConsent" className="text-sm leading-relaxed" style={{ color: '#8B869E' }}>
-                    Message frequency: 1-2 messages per day. Your carrier's standard messaging rates apply.
+                    Message frequency: 1-2 messages per day. Msg & data rates may apply.
                     <br />
                     Mobile information will not be shared with third parties for marketing purposes.
                     <br />
