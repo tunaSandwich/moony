@@ -1,3 +1,6 @@
+import consentUnchecked from '@/assets/images/twilioCompliance/consent-unchecked.png';
+import consentChecked from '@/assets/images/twilioCompliance/consent-checked.png';
+
 const CompliancePage = () => {
   return (
     <div className="min-h-screen bg-pink-bg py-8 px-4 sm:px-6 lg:px-8">
@@ -20,7 +23,7 @@ const CompliancePage = () => {
               </h2>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <img
-                  src="/compliance/consent-unchecked.png"
+                  src={consentUnchecked}
                   alt="SMS consent checkbox unchecked state"
                   className="w-full h-auto rounded-lg shadow-sm"
                 />
@@ -34,7 +37,7 @@ const CompliancePage = () => {
               </h2>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <img
-                  src="/compliance/consent-checked.png"
+                  src={consentChecked}
                   alt="SMS consent checkbox checked state"
                   className="w-full h-auto rounded-lg shadow-sm"
                 />
