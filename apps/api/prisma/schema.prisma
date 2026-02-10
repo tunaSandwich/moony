@@ -43,6 +43,7 @@ model SpendingGoal {
   periodStart   DateTime       @map("period_start") @db.Date
   periodEnd     DateTime       @map("period_end") @db.Date
   isActive      Boolean        @default(true) @map("is_active")
+  source        String         @default("user") // "user" | "rollover"
   createdAt     DateTime       @default(now()) @map("created_at")
   dailyMessages DailyMessage[]
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)

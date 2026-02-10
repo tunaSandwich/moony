@@ -14,6 +14,7 @@ export const SMS_TEMPLATE_CATEGORIES = {
   WELCOME: 'welcome',
   DAILY: 'daily',
   BUDGET: 'budget',
+  MONTHLY: 'monthly',
   ERROR: 'error',
   SYSTEM: 'system'
 } as const;
@@ -61,6 +62,33 @@ export const BUDGET_TEMPLATES = {
     name: 'Budget Updated',
     template: 'moony\n\n✅ Budget updated to ${monthlyBudget} for {currentMonthName}.\n\n🎯 New daily target: ${dailyTarget}\nProgress: ${currentSpending} spent of ${monthlyBudget}',
     variables: ['monthlyBudget', 'currentMonthName', 'dailyTarget', 'currentSpending']
+  }
+};
+
+export const MONTHLY_TEMPLATES = {
+  CRUSHED_IT: {
+    id: 'monthly_crushed_it',
+    name: 'Month End - Under Budget',
+    template: 'moony\n\n🎉 Amazing work, {firstName}! {monthName} wrap-up:\n\nYou spent {totalSpent} of your {budgetGoal} goal\n💰 That\'s {amountSaved} saved!\n\nReady for {nextMonthName}?\nReply with your new goal or we\'ll keep it at {currentGoal}.',
+    variables: ['firstName', 'monthName', 'totalSpent', 'budgetGoal', 'amountSaved', 'nextMonthName', 'currentGoal']
+  },
+  CLOSE_CALL: {
+    id: 'monthly_close_call',
+    name: 'Month End - Close Call',
+    template: 'moony\n\n✅ Nice job, {firstName}! {monthName} wrap-up:\n\nYou spent {totalSpent} of your {budgetGoal} goal\n💪 Saved {amountSaved} by staying disciplined\n\nWant to aim higher for {nextMonthName}?\nReply with your new goal or we\'ll keep it at {currentGoal}.',
+    variables: ['firstName', 'monthName', 'totalSpent', 'budgetGoal', 'amountSaved', 'nextMonthName', 'currentGoal']
+  },
+  SMALL_MISS: {
+    id: 'monthly_small_miss',
+    name: 'Month End - Slightly Over',
+    template: 'moony\n\n📊 Hey {firstName}, here\'s your {monthName} wrap-up:\n\nYou spent {totalSpent} against your {budgetGoal} goal\nThat\'s {amountOver} over ({percentOver}%)\n\nWhat\'s your goal for {nextMonthName}? Fresh start tomorrow!\nReply with a number or we\'ll stick with {currentGoal}.',
+    variables: ['firstName', 'monthName', 'totalSpent', 'budgetGoal', 'amountOver', 'percentOver', 'nextMonthName', 'currentGoal']
+  },
+  SIGNIFICANT_MISS: {
+    id: 'monthly_significant_miss',
+    name: 'Month End - Over Budget',
+    template: 'moony\n\n📊 {monthName} wrap-up, {firstName}:\n\nTotal spent: {totalSpent} (Goal was {budgetGoal})\n\nNew month = clean slate. What\'s your {nextMonthName} goal?\nReply with a number (maybe {suggestedGoal} to start?)',
+    variables: ['firstName', 'monthName', 'totalSpent', 'budgetGoal', 'nextMonthName', 'suggestedGoal']
   }
 };
 
@@ -146,6 +174,7 @@ export const SYSTEM_TEMPLATES = {
 export const ALL_TEMPLATES = {
   ...WELCOME_TEMPLATES,
   ...BUDGET_TEMPLATES,
+  ...MONTHLY_TEMPLATES,
   ...DAILY_TEMPLATES,
   ...ERROR_TEMPLATES,
   SUPPORT: SUPPORT_TEMPLATE,
