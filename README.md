@@ -49,7 +49,7 @@ npm run db:migrate
 
 # Run
 npm run dev        # API + scheduler
-npm run dev:web    # Frontend (separate terminal)
+npm run web:dev    # Frontend (separate terminal)
 ```
 
 ## Documentation

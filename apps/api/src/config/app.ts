@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { logger } from '@logger';
 import { 
@@ -28,9 +29,14 @@ export const createApp = (): express.Application => {
   app.use(securityHeaders);
   app.use(generalRateLimit);
 
+  // Cookie parser (must come before routes that read cookies)
+  app.use(cookieParser());
+
   // CORS configuration
+  // When credentials: true, origin CANNOT be '*' — browsers reject it.
+  // Use CORS_ORIGIN env var in production; reflect request origin in dev.
   app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORS_ORIGIN || true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -82,7 +88,7 @@ export const getServerConfig = () => {
     PORT,
     HOST,
     NODE_ENV,
-    CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
+    CORS_ORIGIN: process.env.CORS_ORIGIN || '(reflect request origin)',
   });
 
   return { PORT, HOST, NODE_ENV };

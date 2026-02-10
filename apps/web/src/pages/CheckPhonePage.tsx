@@ -5,11 +5,21 @@ import { twilioApi } from '@/api/twilio';
 
 const CheckPhonePage = () => {
   const [showResend, setShowResend] = useState(false);
+  const [showToast, setShowToast] = useState(true);
   const [resendState, setResendState] = useState({
     isResending: false,
     success: false,
     error: null as string | null
   });
+
+  // Auto-dismiss toast after 6 seconds
+  useEffect(() => {
+    const toastTimer = setTimeout(() => {
+      setShowToast(false);
+    }, 6000);
+
+    return () => clearTimeout(toastTimer);
+  }, []);
 
   // Show resend button after 45 seconds
   useEffect(() => {
@@ -46,6 +56,18 @@ const CheckPhonePage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{backgroundColor: '#FFF8FC'}}>
+      {/* Toast notification */}
+      {showToast && (
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-lg border border-green-300 shadow-lg rounded-xl px-5 py-3 max-w-sm transition-all duration-500 animate-fade-in"
+          role="status"
+        >
+          <p className="text-sm font-medium" style={{ color: '#1E1E1E' }}>
+            We sent you a text message! Follow next steps on SMS to continue.
+          </p>
+        </div>
+      )}
+
       {/* Fixed Header with Logo */}
       <Header />
 

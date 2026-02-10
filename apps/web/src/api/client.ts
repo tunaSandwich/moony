@@ -18,14 +18,16 @@ export const removeToken = (): void => {
 
 export const logout = (): void => {
   removeToken();
-  // Redirect to login page or clear app state as needed
-  window.location.href = '/';
+  // Note: navigation is handled by AuthContext + ProtectedRoute, not here.
+  // A hard redirect (window.location.href) would break the AuthContext
+  // session check which expects to gracefully handle 401s.
 };
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   timeout: 10000,
+  withCredentials: true, // Send httpOnly cookies with every request
   headers: {
     'Content-Type': 'application/json',
   },
@@ -57,9 +59,9 @@ apiClient.interceptors.response.use(
       throw new Error(NETWORK_ERROR_MESSAGE);
     }
 
-    // Handle 401 unauthorized - logout user
+    // Handle 401 unauthorized - clear local token and let AuthContext handle the redirect
     if (error.response.status === 401) {
-      logout();
+      removeToken();
       throw new Error('Your session has expired. Please log in again');
     }
 
