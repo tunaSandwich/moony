@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ApiTestPage from './pages/ApiTestPage';
+import CompliancePage from './pages/CompliancePage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/invite" element={<InviteCodePage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/compliance" element={<CompliancePage />} />
           <Route path="/api-test" element={<ApiTestPage />} />
           <Route path="/plaid-test" element={<PlaidTestPage />} />
 
