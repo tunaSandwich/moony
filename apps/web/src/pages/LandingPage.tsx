@@ -34,15 +34,7 @@ const LandingPage = () => {
   };
 
   const handleHowItWorks = () => {
-    const videoSection = document.getElementById('how-it-works');
-    if (videoSection) {
-      // Calculate scroll position with 100px offset from top
-      const offsetTop = videoSection.offsetTop + 25;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: 'smooth'
-      });
-    }
+    navigate('/how-it-works');
   };
 
 

@@ -13,6 +13,7 @@ import ApiTestPage from './pages/ApiTestPage';
 import CompliancePage from './pages/CompliancePage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/compliance" element={<CompliancePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/api-test" element={<ApiTestPage />} />
           <Route path="/plaid-test" element={<PlaidTestPage />} />
 
