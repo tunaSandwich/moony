@@ -11,6 +11,7 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ApiTestPage from './pages/ApiTestPage';
 import CompliancePage from './pages/CompliancePage';
+import AboutPage from './pages/AboutPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/compliance" element={<CompliancePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/api-test" element={<ApiTestPage />} />
           <Route path="/plaid-test" element={<PlaidTestPage />} />
 
