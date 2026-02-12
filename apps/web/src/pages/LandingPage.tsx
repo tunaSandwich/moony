@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { Header, Footer, BankLogos, PhoneVideo } from '@/components';
+import { Header, BankLogos, PhoneVideo } from '@/components';
 import phoneVideo from '@/assets/images/hand_and_phone_crop.mp4';
 import { colors, easingStrings } from '@/design-system';
 import { useReducedMotion, useSmoothScroll, useScrollFade } from '@/hooks';
@@ -219,9 +219,6 @@ const LandingPage = () => {
           className="w-16 h-16 mx-auto"
         />
       </div>
-
-      {/* Footer */}
-      <Footer />
 
       {/* Background decorative elements */}
       <div className="absolute top-20 left-4 sm:left-10 w-16 sm:w-20 h-16 sm:h-20 bg-coral-300 rounded-full opacity-20 blur-xl animate-pulse"></div>

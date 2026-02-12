@@ -3,7 +3,7 @@ export { PlaidLink, type PlaidLinkProps } from './PlaidLink';
 export * from './ui/Button';
 
 // Layout components
-export { Header, Footer } from './layout';
+export { Header, Footer, AppLayout } from './layout';
 export type { FooterLink, FooterProps } from './layout';
 
 // Section components
