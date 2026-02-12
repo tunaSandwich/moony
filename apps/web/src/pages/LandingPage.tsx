@@ -192,17 +192,47 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Bottom Section */}
+      {/* What moony does — explainer section */}
+      <div className="relative z-20 py-16 px-4">
+        <div className="max-w-2xl mx-auto text-center space-y-5">
+          <h2
+            className="text-xl sm:text-2xl font-semibold"
+            style={{ color: colors.gray[900] }}
+          >
+            Budgeting that fits in a text message
+          </h2>
+          <p
+            className="text-sm sm:text-base leading-relaxed"
+            style={{ color: colors.gray[700] }}
+          >
+            moony connects securely to your bank through Plaid and sends you a
+            daily text message with your spending update. Know exactly how much
+            you can spend each day to stay on budget. No app to open&nbsp;&mdash;
+            just simple, helpful texts.
+          </p>
+          <div
+            className="flex flex-col sm:flex-row justify-center gap-6 pt-2 text-sm"
+            style={{ color: colors.gray[700] }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-lg" aria-hidden="true">🔒</span>
+              <span>Bank-level security via Plaid</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-lg" aria-hidden="true">💬</span>
+              <span>1–2 texts per day</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-lg" aria-hidden="true">🚫</span>
+              <span>Reply STOP anytime</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bank Compatibility Section */}
       <div className="relative z-20 py-10 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Description */}
-          <p className="text-sm sm:text-lg mb-10 leading-relaxed font-bold" style={{ color: colors.gray[700] }}>
-            Connect your bank and phone. 
-            Set your goal. 
-            Stay on budget with daily text updates.
-          </p>
-
-          {/* Bank Compatibility Section */}
           <BankLogos 
             logos={BANK_LOGOS}
             heading="Works with your bank"
