@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { AppLayout } from '@/components';
 import LandingPage from './pages/LandingPage';
 import InviteCodePage from './pages/InviteCodePage';
 import PlaidConnectionPage from './pages/PlaidConnectionPage';
@@ -11,6 +12,9 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ApiTestPage from './pages/ApiTestPage';
 import CompliancePage from './pages/CompliancePage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 import { PlaidTestPage } from './pages/PlaidTestPage';
 
 function App() {
@@ -18,21 +22,27 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/invite" element={<InviteCodePage />} />
-          <Route path="/terms" element={<TermsOfServicePage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/compliance" element={<CompliancePage />} />
-          <Route path="/api-test" element={<ApiTestPage />} />
-          <Route path="/plaid-test" element={<PlaidTestPage />} />
+          {/* AppLayout wraps all routes to render the shared Footer */}
+          <Route element={<AppLayout />}>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/invite" element={<InviteCodePage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/compliance" element={<CompliancePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/api-test" element={<ApiTestPage />} />
+            <Route path="/plaid-test" element={<PlaidTestPage />} />
 
-          {/* Protected routes — require valid session */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/connect-bank" element={<PlaidConnectionPage />} />
-            <Route path="/phone-verification" element={<PhoneVerificationPage />} />
-            <Route path="/check-phone" element={<CheckPhonePage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* Protected routes — require valid session */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/connect-bank" element={<PlaidConnectionPage />} />
+              <Route path="/phone-verification" element={<PhoneVerificationPage />} />
+              <Route path="/check-phone" element={<CheckPhonePage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+            </Route>
           </Route>
         </Routes>
       </AuthProvider>

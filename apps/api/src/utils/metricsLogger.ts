@@ -242,11 +242,12 @@ export class MetricsLogger {
     });
   }
 
-  public logDailySms(messageType: 'daily' | 'welcome' | 'budget'): void {
+  public logDailySms(messageType: 'daily' | 'welcome' | 'budget' | 'monthly'): void {
     const metricNameMap = {
       daily: 'DailyMessages',
       welcome: 'WelcomeMessages',
-      budget: 'BudgetReplies'
+      budget: 'BudgetReplies',
+      monthly: 'MonthlySummaries'
     };
 
     this.queueMetric({
