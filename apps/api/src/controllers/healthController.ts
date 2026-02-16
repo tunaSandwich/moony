@@ -3,16 +3,16 @@ import { PlaidService } from '@services/plaidService';
 import { logger } from '@logger';
 import { HealthStatus, ApiResponse } from '../types/index.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
-import { AWSSMSService } from '../services/aws/smsService.js';
+import { TwilioSMSService } from '../services/twilio/smsService.js';
 import { prisma } from '../db.js';
 
 export class HealthController {
   private plaidService: PlaidService;
-  private awsSmsService: AWSSMSService;
+  private smsService: TwilioSMSService;
 
   constructor() {
     this.plaidService = new PlaidService();
-    this.awsSmsService = new AWSSMSService();
+    this.smsService = new TwilioSMSService();
   }
 
   public getHealth = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -56,7 +56,7 @@ export class HealthController {
     const services: HealthStatus['services'] = {
       plaid: false,
       database: false,
-      awsSms: false,
+      sms: false,
       environment: false,
     };
 
@@ -78,22 +78,21 @@ export class HealthController {
       services.plaid = false;
     }
 
-    // Check AWS SMS service
+    // Check SMS service (Twilio)
     try {
       // Simple initialization check - doesn't send actual SMS
-      const initialized = !!this.awsSmsService;
-      services.awsSms = initialized;
+      const initialized = !!this.smsService;
+      services.sms = initialized;
     } catch (error) {
-      logger.warn('AWS SMS health check failed', error);
-      services.awsSms = false;
+      logger.warn('SMS service health check failed', error);
+      services.sms = false;
     }
 
     // Check environment configuration
     const requiredEnvVars = [
       'DATABASE_URL',
-      'AWS_REGION',
-      'AWS_ACCESS_KEY_ID',
-      'AWS_SECRET_ACCESS_KEY',
+      'TWILIO_ACCOUNT_SID',
+      'TWILIO_AUTH_TOKEN',
       'JWT_SECRET'
     ];
     
@@ -107,7 +106,7 @@ export class HealthController {
     const criticalServices = [
       services.database,    // Database is always critical
       services.environment, // Environment variables are critical
-      services.awsSms      // SMS service is critical for core functionality
+      services.sms          // SMS service is critical for core functionality
     ];
     
     // Plaid is important but not critical for basic operation
