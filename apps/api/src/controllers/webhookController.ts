@@ -41,6 +41,7 @@ const validateTwilioSignature = (req: Request): boolean => {
   }
   
   if (!signature) {
+    logger.warn('Missing x-twilio-signature header on incoming webhook');
     return false;
   }
 
@@ -50,11 +51,27 @@ const validateTwilioSignature = (req: Request): boolean => {
     return false;
   }
 
-  // Get the full URL for signature validation
-  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  // Build URL for signature validation.
+  // Use req.hostname (strips port) rather than req.get('host') (may include port)
+  // to avoid mismatches behind Railway/proxy where Host header may include :443.
+  // req.protocol already respects the "trust proxy" setting (uses X-Forwarded-Proto).
+  const url = `${req.protocol}://${req.hostname}${req.originalUrl}`;
   
   try {
-    return twilio.validateRequest(authToken, signature, url, req.body);
+    const isValid = twilio.validateRequest(authToken, signature, url, req.body);
+    if (!isValid) {
+      logger.warn('Twilio signature validation failed', {
+        reconstructedUrl: url,
+        protocol: req.protocol,
+        hostname: req.hostname,
+        hostHeader: req.get('host'),
+        originalUrl: req.originalUrl,
+        xForwardedProto: req.headers['x-forwarded-proto'],
+        xForwardedHost: req.headers['x-forwarded-host'],
+        bodyKeys: Object.keys(req.body || {}).join(', ')
+      });
+    }
+    return isValid;
   } catch (error) {
     logger.error('Error validating Twilio signature', { error: (error as Error).message });
     return false;

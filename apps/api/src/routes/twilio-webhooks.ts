@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
+import twilio from 'twilio';
 import { TwilioIncomingMessageHandler, TwilioIncomingSMSMessage } from '../services/twilio/incomingMessageHandler.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { logger } from '@logger';
 import rateLimit from 'express-rate-limit';
-import crypto from 'crypto';
 
 const router = Router();
 const messageHandler = new TwilioIncomingMessageHandler();
@@ -24,7 +24,8 @@ const webhookLimiter = rateLimit({
 
 /**
  * Verify Twilio webhook signature for security
- * This prevents unauthorized access to the webhook endpoint
+ * Uses the official Twilio SDK validateRequest for reliability.
+ * This prevents unauthorized access to the webhook endpoint.
  */
 function verifyTwilioSignature(req: Request): boolean {
   try {
@@ -32,7 +33,10 @@ function verifyTwilioSignature(req: Request): boolean {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     
     if (!twilioSignature || !authToken) {
-      logger.error('Missing Twilio signature or auth token');
+      logger.error('Missing Twilio signature or auth token', {
+        hasSignature: !!twilioSignature,
+        hasAuthToken: !!authToken
+      });
       return false;
     }
     
@@ -42,33 +46,25 @@ function verifyTwilioSignature(req: Request): boolean {
       return true;
     }
     
-    // Build the URL that Twilio used to reach this endpoint
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const url = `${protocol}://${host}${req.originalUrl}`;
+    // Build URL for signature validation.
+    // Use req.hostname (strips port) rather than req.get('host') or req.headers.host
+    // to avoid mismatches behind Railway/proxy where Host header may include :443.
+    // req.protocol already respects the "trust proxy" setting (uses X-Forwarded-Proto).
+    const url = `${req.protocol}://${req.hostname}${req.originalUrl}`;
     
-    // Create the signature
-    const params = Object.keys(req.body)
-      .sort()
-      .map(key => `${key}${req.body[key]}`)
-      .join('');
-    
-    const data = url + params;
-    const expectedSignature = crypto
-      .createHmac('sha1', authToken)
-      .update(data, 'utf-8')
-      .digest('base64');
-    
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(twilioSignature, 'base64'),
-      Buffer.from(expectedSignature, 'base64')
-    );
+    // Use the official Twilio SDK for signature validation
+    const isValid = twilio.validateRequest(authToken, twilioSignature, url, req.body);
     
     if (!isValid) {
-      logger.error('Twilio signature verification failed', {
-        url,
-        expectedSignature: expectedSignature.substring(0, 10) + '...',
-        receivedSignature: twilioSignature.substring(0, 10) + '...'
+      logger.warn('Twilio signature verification failed', {
+        reconstructedUrl: url,
+        protocol: req.protocol,
+        hostname: req.hostname,
+        hostHeader: req.get('host'),
+        originalUrl: req.originalUrl,
+        xForwardedProto: req.headers['x-forwarded-proto'],
+        xForwardedHost: req.headers['x-forwarded-host'],
+        bodyKeys: Object.keys(req.body || {}).join(', ')
       });
     }
     
