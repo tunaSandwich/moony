@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { TopBar } from '@/components/ui/TopBar';
 import { plaidApi } from '@/api/plaid';
 import { Header } from '@/components';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PlaidConnectionPage = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -13,6 +14,7 @@ const PlaidConnectionPage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { refreshSession } = useAuth();
 
   // Initialize Plaid Link
   const { open, ready } = usePlaidLink({
@@ -23,6 +25,9 @@ const PlaidConnectionPage = () => {
       
       try {
         await plaidApi.connectAccount(publicToken);
+        
+        // Refresh session so AuthContext has updated onboarding state
+        await refreshSession();
         
         // Clear link token to prevent re-launch bug
         setLinkToken(null);
@@ -37,7 +42,7 @@ const PlaidConnectionPage = () => {
         setError(errorMessage);
         setIsConnecting(false);
       }
-    }, []),
+    }, [refreshSession]),
 
     onExit: useCallback((error: unknown) => {
       setIsConnecting(false);

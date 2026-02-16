@@ -8,6 +8,7 @@ import { Header } from '@/components';
 import { PhoneInput } from '@/components/forms/PhoneInput';
 import { parseE164, validatePhoneForCountry } from '@/utils/phoneFormatters';
 import { countries } from '@/components/forms/PhoneInput/countryData';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface VerificationState {
   smsConsentGiven: boolean;
@@ -23,6 +24,7 @@ interface VerificationState {
 
 const PhoneVerificationPage = () => {
   const navigate = useNavigate();
+  const { refreshSession } = useAuth();
   const [state, setState] = useState<VerificationState>({
     smsConsentGiven: false,
     phoneNumber: '',
@@ -108,12 +110,11 @@ const PhoneVerificationPage = () => {
 
     try {
       await twilioApi.verifyPhoneNumber(state.verificationCode);
-      updateState({ isVerified: true, isLoading: false });
       
-      // Navigate to bridge screen after successful verification
-      setTimeout(() => {
-        navigate('/check-phone');
-      }, 4000); // Extended to 4 seconds so user can read the success message
+      // Refresh session so AuthContext has updated onboarding state
+      await refreshSession();
+      
+      updateState({ isVerified: true, isLoading: false });
     } catch (error) {
       updateState({ 
         error: error instanceof Error ? error.message : 'Invalid verification code', 
@@ -156,21 +157,32 @@ const PhoneVerificationPage = () => {
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md shadow-xl border border-white/20">
             <TopBar radiusMode="inherit" />
             
-            <div className="text-center space-y-6">
-              <div className="text-6xl">📱</div>
+            <div className="text-center space-y-8 animate-fade-in">
+              {/* Success Icon */}
+              <div className="flex justify-center">
+                <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center animate-scale-in">
+                  <svg className="w-10 h-10" style={{ color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+
               <h1 className="text-2xl font-light" style={{ color: '#1E1E1E' }}>
                 Phone Verified!
               </h1>
               <p className="text-sm" style={{ color: '#1E1E1E', opacity: 0.8 }}>
-                Setting up your spending tracker...
+                We just sent you a text message. Follow the instructions on your phone to set your spending goal.
               </p>
-              
-              <div className="flex justify-center">
-                <svg className="animate-spin h-6 w-6" style={{ color: '#1E1E1E' }} viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              </div>
+
+              {/* Next Button */}
+              <Button
+                onClick={() => navigate('/check-phone')}
+                className="w-full bg-white/80 border-gray-300 hover:bg-white/90 backdrop-blur-sm rounded-lg font-medium"
+                style={{ color: '#1E1E1E' }}
+                size="lg"
+              >
+                Next
+              </Button>
             </div>
           </div>
         </div>
