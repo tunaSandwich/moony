@@ -10,7 +10,6 @@ import { prisma } from '../db.js';
 import { addMonths, format, isLastDayOfMonth, startOfDay } from 'date-fns';
 import { TemplateService } from './templateService.js';
 import { MONTHLY_TEMPLATES } from '../templates/smsTemplates.js';
-import { AWSSMSService } from './aws/smsService.js';
 import { TwilioSMSService } from './twilio/smsService.js';
 import { logger } from '@logger';
 import { metricsLogger } from '../utils/metricsLogger.js';
@@ -27,17 +26,11 @@ export interface MonthlySmsResult {
 
 export class MonthlySmsService {
   private prisma: PrismaClient;
-  private smsService: AWSSMSService | TwilioSMSService;
-  private provider: string;
+  private smsService: TwilioSMSService;
 
   constructor(prismaClient: PrismaClient = prisma) {
     this.prisma = prismaClient;
-    this.provider = process.env.SMS_PROVIDER || 'twilio';
-    if (this.provider === 'twilio') {
-      this.smsService = new TwilioSMSService();
-    } else {
-      this.smsService = new AWSSMSService();
-    }
+    this.smsService = new TwilioSMSService();
   }
 
   private formatCurrency(amount: number): string {
