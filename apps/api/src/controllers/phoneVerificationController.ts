@@ -251,8 +251,8 @@ export class PhoneVerificationController {
             logger.info('Phone number verified successfully (dev mode)', { userId });
           });
 
-          // Send welcome SMS with analytics data
-          this.sendWelcomeSMS(userId);
+          // Send welcome SMS with analytics data (awaited to ensure delivery)
+          await this.sendWelcomeSMS(userId);
 
           res.status(200).json({
             message: ERROR_MESSAGES.VERIFICATION_SUCCESS,
@@ -292,8 +292,8 @@ export class PhoneVerificationController {
           });
         });
 
-        // Send welcome SMS with analytics data
-        this.sendWelcomeSMS(userId);
+        // Send welcome SMS with analytics data (awaited to ensure delivery)
+        await this.sendWelcomeSMS(userId);
 
         // Return success response after successful database update
         res.status(200).json({
